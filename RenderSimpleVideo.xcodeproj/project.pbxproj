@@ -17,6 +17,9 @@
 		3894670C2C3C061F00EA4632 /* backt.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 3894670B2C3C061F00EA4632 /* backt.jpg */; };
 		38B30B512C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 38B30B502C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png */; };
 		38B30B532C3D5AED00369AFA /* iPhoneOverlay.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 38B30B522C3D5AED00369AFA /* iPhoneOverlay.jpg */; };
+		38B56F202C3EF2540056227B /* VideoOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */; };
+		38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 38B56F212C3EF3D10056227B /* screencap1.jpg */; };
+		38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F232C3EF9090056227B /* VideoComposer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +34,9 @@
 		3894670B2C3C061F00EA4632 /* backt.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = backt.jpg; sourceTree = "<group>"; };
 		38B30B502C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 14 Pro - Space Black - Portrait.png"; sourceTree = "<group>"; };
 		38B30B522C3D5AED00369AFA /* iPhoneOverlay.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = iPhoneOverlay.jpg; sourceTree = "<group>"; };
+		38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoOptionsView.swift; sourceTree = "<group>"; };
+		38B56F212C3EF3D10056227B /* screencap1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = screencap1.jpg; sourceTree = "<group>"; };
+		38B56F232C3EF9090056227B /* VideoComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComposer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,12 +72,15 @@
 				389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */,
 				389466F72C3BE15700EA4632 /* ContentView.swift */,
 				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
+				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
+				38B56F232C3EF9090056227B /* VideoComposer.swift */,
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
 				389467072C3BE73F00EA4632 /* screen2.mp4 */,
 				389467092C3BEAEA00EA4632 /* videouiux.mov */,
 				3894670B2C3C061F00EA4632 /* backt.jpg */,
 				38B30B502C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png */,
 				38B30B522C3D5AED00369AFA /* iPhoneOverlay.jpg */,
+				38B56F212C3EF3D10056227B /* screencap1.jpg */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
 			);
 			path = RenderSimpleVideo;
@@ -145,6 +154,7 @@
 			files = (
 				38B30B512C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png in Resources */,
 				389467082C3BE73F00EA4632 /* screen2.mp4 in Resources */,
+				38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */,
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
 				3894670C2C3C061F00EA4632 /* backt.jpg in Resources */,
 				38B30B532C3D5AED00369AFA /* iPhoneOverlay.jpg in Resources */,
@@ -160,8 +170,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */,
 				389467042C3BE16B00EA4632 /* RenderVideoEditorView.swift in Sources */,
 				389466F82C3BE15700EA4632 /* ContentView.swift in Sources */,
+				38B56F202C3EF2540056227B /* VideoOptionsView.swift in Sources */,
 				389466F62C3BE15700EA4632 /* RenderSimpleVideoApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
