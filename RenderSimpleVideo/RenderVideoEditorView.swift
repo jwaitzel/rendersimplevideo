@@ -7,7 +7,7 @@
 
 import SwiftUI
 import AVKit
-
+import CoreImage
 
 struct RenderVideoEditorView: View {
     
@@ -26,12 +26,6 @@ struct RenderVideoEditorView: View {
             
             Button("Render") {
                 renderComposition()
-//                testCreateImageVideo()
-//                createAndExportComposition { err in
-//                    print(err)
-//                }
-                
-//                testCreateImageVideo()
             }
         }
         
@@ -43,15 +37,15 @@ struct RenderVideoEditorView: View {
         let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
 //        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimg19AF.mp4")
 //        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimg1DAA.mp4")
-        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimgF166.mp4")
-        let videoAsset = AVURLAsset(url: videoURL)
+//        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimgF166.mp4")
+//        let videoAsset = AVURLAsset(url: videoURL)
 
 //        let backgroundImageURL = Bundle.main.url(forResource: "backt", withExtension: "jpg")!
 //        let imageRef = UIImage(contentsOfFile: backgroundImageURL.path())!.cgImage!
 //        let outputBackVideoURL = FileManager.default.temporaryDirectory.appendingPathComponent("outputimg\(UUID().uuidString.prefix(4)).mp4")
         
         
-        videoComposer.createAndExportComposition(videoURL: videoURL, backVideoURL: backVideoURL, outputURL: outputURL) { err in
+        videoComposer.createAndExportComposition(videoURL: videoURL, outputURL: outputURL) { err in
             if let err {
                 print("Error ", err)
             } else {
@@ -105,7 +99,7 @@ enum RenderError: Error {
 
 class VideoComposer {
     
-    func createAndExportComposition(videoURL: URL, backVideoURL: URL, outputURL: URL, completion: @escaping (Error?) -> Void) {
+    func createAndExportComposition(videoURL: URL, outputURL: URL, completion: @escaping (Error?) -> Void) {
         // Create an AVMutableComposition
         let composition = AVMutableComposition()
         
@@ -122,11 +116,10 @@ class VideoComposer {
         
         // Load your video and audio assets
         let videoAsset = AVURLAsset(url: videoURL)
-        let backAsset = AVURLAsset(url: backVideoURL)
+//        let backAsset = AVURLAsset(url: backVideoURL)
         
         // Get the first video and audio tracks from your assets
-        guard let videoTrack = videoAsset.tracks(withMediaType: .video).first,
-              let backVideoAsset = backAsset.tracks(withMediaType: .video).first else {
+        guard let videoTrack = videoAsset.tracks(withMediaType: .video).first else {
             completion(RenderError.failedFetchAssetTrack)
             return
         }
@@ -137,7 +130,6 @@ class VideoComposer {
         do {
             // Add the video track to the composition
             try compositionVideoTrack.insertTimeRange(timeRange, of: videoTrack, at: .zero)
-            try backgroundTrack.insertTimeRange(timeRange, of: backVideoAsset, at: .zero)
         } catch {
             completion(error)
             return
@@ -154,73 +146,71 @@ class VideoComposer {
         let scaleToFitBackgroundHeight = renderSize.height / backgroundTrack.naturalSize.height
 
         /// Background Transform
-        let backgroundLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: backgroundTrack)
-        backgroundLayerInstruction.setTransform(.init(scaleX: scaleToFitBackgroundWidth, y: scaleToFitBackgroundHeight), at: .zero)
+//        let backgroundLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: backgroundTrack)
+//        backgroundLayerInstruction.setTransform(.init(scaleX: scaleToFitBackgroundWidth, y: scaleToFitBackgroundHeight), at: .zero)
 //        backgroundLayerInstruction.trackID = overlayTrackID
         
         /// Video transform
-        let videoLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
+//        let videoLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
         let videoTrackSize = compositionVideoTrack.naturalSize
         
         let videoScaleToFit = renderSize.height / videoTrackSize.height
-        let newVideoSize = CGSize(width: videoTrackSize.width * videoScaleToFit, height: videoTrackSize.height * videoScaleToFit)
+        let scaleParameter = 0.9
+        let videoAddScale = videoScaleToFit * scaleParameter
+        let newVideoSize = CGSize(width: videoTrackSize.width * videoAddScale, height: videoTrackSize.height * videoAddScale)
         let translationX = renderSize.width / 2.0 - newVideoSize.width / 2.0
-        print("Video track size \(videoTrackSize) videoScaleToFit \(videoScaleToFit) newVideoSize \(newVideoSize)")
-        let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: 0.0)
-        let multVideoTransform = CGAffineTransform(scaleX: videoScaleToFit, y: videoScaleToFit).concatenating(translateToCenterTransform)
+        let translationY = renderSize.height / 2.0 - newVideoSize.height / 2.0
+        print("Video track size \(videoTrackSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
         
-        videoLayerInstruction.setTransform(multVideoTransform, at: .zero)
+        let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: translationY)
+        let multVideoTransform = CGAffineTransform(scaleX: videoAddScale, y: videoAddScale).concatenating(translateToCenterTransform)
         
-        //// WORK FOR SIMULATOR
-//        let layerImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
-//        guard let watermarkImage: CIImage =  CIImage(image: UIImage(contentsOfFile: layerImgURL.path)!) else { print("error"); return }
-//
-//        let filter = CIFilter(name: "CISourceAtopCompositing")!
-////        filter.setDefaults()
-//        filter.setValue(watermarkImage.clampedToExtent(), forKey: kCIInputImageKey)
-//        let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
-////            print("request \(filteringRequest.compositionTime.seconds)")
-//            let source = filteringRequest.sourceImage.transformed(by: multVideoTransform).cropped(to: filteringRequest.sourceImage.extent)
-//            filter.setValue(source, forKey: "inputBackgroundImage")
-//            // Provide the filter output to the composition
-//            filteringRequest.finish(with: filter.outputImage!, context: nil)
-//        }
+//        videoLayerInstruction.setTransform(multVideoTransform, at: .zero)
+                
+        //MARK: CI Filter composition
+        let backColor = CIColor(color: UIColor.red)
+        let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
         
-        // Create a video composition for layering
-        let mutableVideoComposition = AVMutableVideoComposition(propertiesOf: composition)
+        let compositeColor = CIFilter(name: "CIBlendWithMask")!
+        compositeColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
         
-//        let backgroundLayer = CALayer()
-//        backgroundLayer.isOpaque = true
-//        backgroundLayer.frame = CGRect(origin: .zero, size: renderSize)
-//        
-//        let videoLayer = CALayer()
-//        videoLayer.frame = CGRect(origin: .zero, size: renderSize)
-//        videoLayer.isOpaque = true
-//        let overlayLayer = CALayer()
-//        overlayLayer.frame = CGRect(origin: .zero, size: renderSize)
-//        overlayLayer.isOpaque = true
-        
-//        let layerImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
-//        let layerImgURL = Bundle.main.url(forResource: "iPhoneOverlay", withExtension: "jpg")!
-//        let iphoneLayerImg = UIImage(contentsOfFile: layerImgURL.path)!.cgImage!
-//        overlayLayer.contents = iphoneLayerImg
-//        overlayLayer.contentsGravity = .resizeAspect
-//        
-//        let outputLayer = CALayer()
-//        outputLayer.frame = CGRect(origin: .zero, size: renderSize)
-//        outputLayer.isOpaque = true
-//        outputLayer.addSublayer(backgroundLayer)
-//        outputLayer.addSublayer(videoLayer)
-//        outputLayer.addSublayer(overlayLayer)
-        
-        
+        let iphoneOverlayImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
+        let iphoneOverlayImg = UIImage(contentsOfFile: iphoneOverlayImgURL.path)!
+        guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error"); return }
 
-//        mutableVideoComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: outputLayer)
-        //AVVideoCompositionCoreAnimationTool(additionalLayer: outputLayer, asTrackID: overlayTrackID)
-        //
-
-        instruction.layerInstructions = [videoLayerInstruction, backgroundLayerInstruction]
-        mutableVideoComposition.instructions = [instruction]
+        let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
+        let overlayScaleParameter = 0.94
+        let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
+        let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
+        let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
+        let iphoneOverlayTranslationX = renderSize.width / 2.0 - iphoneOverlayResize.width / 2.0
+        let iphoneOverlayTranslationY = renderSize.height / 2.0 - iphoneOverlayResize.height / 2.0
+        let iphoneOverlayTranslation = CGAffineTransform(translationX: iphoneOverlayTranslationX, y: iphoneOverlayTranslationY)
+        let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(iphoneOverlayTranslation)
+        
+        print("New resize for overlay \(iphoneOverlayResize)")
+        
+//        let maskFilterOnVideo = CIFilter(name: "CISourceInCompositing")!
+        let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
+        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: newVideoSize), translateToCenterTransform)
+        roundedRectangleGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
+        roundedRectangleGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
+        roundedRectangleGenerator.setValue(55, forKey: kCIInputRadiusKey)
+        compositeColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
+        
+        let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
+        iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
+        
+        let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
+            
+            let source = filteringRequest.sourceImage.transformed(by: multVideoTransform).cropped(to: filteringRequest.sourceImage.extent)
+            compositeColor.setValue(source, forKey: kCIInputImageKey)
+            iphoneOverlayComposite.setValue(compositeColor.outputImage, forKey: kCIInputBackgroundImageKey)
+            
+            // Provide the filter output to the composition
+            filteringRequest.finish(with: iphoneOverlayComposite.outputImage!, context: nil)
+        }
+        
         mutableVideoComposition.renderSize = renderSize
         
         // Set up an AVAssetExportSession to export the composition
@@ -229,7 +219,7 @@ class VideoComposer {
             return
         }
 
-//        exportSession.timeRange = timeRange
+        exportSession.timeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600))
         exportSession.outputURL = outputURL
         exportSession.outputFileType = .mp4
         exportSession.videoComposition = mutableVideoComposition
