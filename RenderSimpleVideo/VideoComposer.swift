@@ -28,7 +28,6 @@ class VideoComposer {
             completion(RenderError.failedCompositionTrack)
             return
         }
-        
 
         //Delete file if exists
 //        try? FileManager.default.removeItem(at: outputURL)
