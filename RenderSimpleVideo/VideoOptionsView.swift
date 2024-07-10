@@ -19,6 +19,8 @@ struct VideoOptionsView: View {
     @State private var offsetX: CGFloat = 0.0
     @State private var offsetY: CGFloat = 0.0
     
+    @State private var scaleVideo: CGFloat = 100.0
+    
     @State private var timer: Timer?
     
 //    var totalOff: CGFloat {
@@ -58,6 +60,8 @@ struct VideoOptionsView: View {
                 BlenderStyleInput(value: $offsetX, title: "Position X")
                 
                 BlenderStyleInput(value: $offsetY, title: "Y")
+                
+                BlenderStyleInput(value: $scaleVideo, title: "Scale Video")
             }
 //            .border(.green)
             .padding(.horizontal, 16)
@@ -75,7 +79,7 @@ struct VideoOptionsView: View {
 //                applyFilters()
 //            })
         }
-        .onChange(of: (offsetX + offsetY)) { _ in
+        .onChange(of: (offsetX + offsetY + scaleVideo)) { _ in
             applyFilters()
         }
         .onChange(of: backColor) { _ in
@@ -92,7 +96,7 @@ struct VideoOptionsView: View {
         let videoTrackSize = uiImg.size
         
         let videoScaleToFit = renderSize.height / videoTrackSize.height
-        let scaleParameter = 0.9
+        let scaleParameter = scaleVideo / 100.0
         let videoAddScale = videoScaleToFit * scaleParameter
         let newVideoSize = CGSize(width: videoTrackSize.width * videoAddScale, height: videoTrackSize.height * videoAddScale)
         let translationX = renderSize.width / 2.0 - newVideoSize.width / 2.0 + self.offsetX
