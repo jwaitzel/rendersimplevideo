@@ -36,3 +36,22 @@ struct MP4Video: Transferable {
         }
     }
 }
+
+struct QuickTimeVideo: Transferable {
+    var url: URL
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(contentType: .quickTimeMovie, shouldAttemptToOpenInPlace: shoudOpenInPlace) { video in
+            return SentTransferredFile(video.url)
+        } importing: { trasferableFile in
+            let fileName = trasferableFile.file.lastPathComponent
+            let copy: URL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+            print("Temp filename \(copy) \(trasferableFile.file)")
+            if FileManager.default.fileExists(atPath: copy.path) {
+                try FileManager.default.removeItem(at: copy)
+            }
+            
+            try FileManager.default.copyItem(at: trasferableFile.file, to: copy)
+            return .init(url: copy)
+        }
+    }
+}

@@ -10,7 +10,6 @@ import AVKit
 import CoreImage
 import PhotosUI
 
-
 struct RenderVideoEditorView: View {
     
     @State private var player: AVPlayer?
@@ -51,6 +50,13 @@ struct RenderVideoEditorView: View {
                     .foregroundStyle(.gray.opacity(0.2))
                     .frame(width: 300, height: 300)
                     .overlay {
+                        if let thumb = selectedVideoThumbnail {
+                            Image(uiImage: thumb)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        }
+                    }
+                    .overlay {
                         if let player {
                             VideoPlayer(player: player)
                                 .scaledToFit()
@@ -90,11 +96,32 @@ struct RenderVideoEditorView: View {
                              
                              guard let firsItem = newSelectedItem.first else { return }
 
-                             if let video = try await firsItem.loadTransferable(type: MP4Video.self) {
-                                 print("Loaded video \(video.url)")
-                                 
+                             guard let type = firsItem.supportedContentTypes.first else {
+                                 print("There is no supported type")
+                                 return
+                             }
+
+                             var itemVideoURL: URL?
+                             if type.conforms(to: UTType.mpeg4Movie) {
+                                 if let video = try await firsItem.loadTransferable(type: MP4Video.self) {
+                                     print("Loaded video \(video.url)")
+                                     itemVideoURL = video.url
+                                 } else {
+                                     print("error mp4")
+                                 }
+                             } else if type.conforms(to: UTType.quickTimeMovie) {
+                                 if let video = try await firsItem.loadTransferable(type: QuickTimeVideo.self) {
+                                     itemVideoURL = video.url
+                                 } else {
+                                     print("error mov")
+                                 }
+                             } else {
+                                print("no video")
+                            }
+                            
+                             if let itemVideoURL {
                                  let thumbSize: CGSize = .init(width: 512, height: 512)
-                                 let asset = AVAsset(url: video.url)
+                                 let asset = AVAsset(url: itemVideoURL)
                                  let generator = AVAssetImageGenerator(asset: asset)
                                  generator.appliesPreferredTrackTransform = true
                                  generator.maximumSize = thumbSize
@@ -104,22 +131,9 @@ struct RenderVideoEditorView: View {
                                  let thumbnail = UIImage(cgImage: colorCorrectedImage)
                                  await MainActor.run {
                                      self.selectedVideoThumbnail = thumbnail
-                                     self.selectedVideoURL = video.url
+                                     self.selectedVideoURL = itemVideoURL
                                  }
-                             } else {
-                                 print("no video")
                              }
-                             
-//                             if let video = try await newSelectedItems?.first?.loadTransferable(type: MP4Video.self) {
-////                                 loadState = .loaded(movie)
-//                             } else {
-////                                 loadState = .failed
-//                             }
-//                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.0, execute: {
-//                                 mapLocInfo.images = newImgs
-//                                 ImageFoResourceController.shared.selectedImages = newImgs
-//                             })
-                             
                          }
                      }
                     
