@@ -8,6 +8,8 @@
 import SwiftUI
 import AVKit
 import CoreImage
+import PhotosUI
+
 
 struct RenderVideoEditorView: View {
     
@@ -16,6 +18,15 @@ struct RenderVideoEditorView: View {
     @State private var videoComposer: VideoComposer = .init()
     
     @Environment(\.containerNavPath) var navPath
+    
+    @State private var showImagePicker: Bool = false
+    
+    @State private var selectedItems: [PhotosPickerItem] = []
+    
+    @State private var showVideoOptions: Bool = false
+    
+    @State private var selectedVideoURL: URL?
+    @State private var selectedVideoThumbnail: UIImage?
     
     var body: some View {
         
@@ -29,10 +40,6 @@ struct RenderVideoEditorView: View {
                         .font(.system(size: 24))
                         .foregroundStyle(Color.secondary)
                         .frame(width: 44, height: 44)
-//                        .background {
-//                            Circle()
-//                                .foregroundStyle(Color(uiColor: .systemGray2))
-//                        }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
@@ -40,24 +47,101 @@ struct RenderVideoEditorView: View {
             .padding(.horizontal, 16)
             
             VStack {
-                
-                if let player {
-                    VideoPlayer(player: player)
-                        .scaledToFit()
-                }
-                                
+                Rectangle()
+                    .foregroundStyle(.gray.opacity(0.2))
+                    .frame(width: 300, height: 300)
+                    .overlay {
+                        if let player {
+                            VideoPlayer(player: player)
+                                .scaledToFit()
+                        }
+                    }
+                    .padding(.bottom, 64)
             }
             
             VStack {
                 
+                let iconSize: CGFloat = 34.0
+                let btnSquareSize: CGFloat = 64.0
                 HStack {
-                    Button("Video") {
-                        
+                    Button {
+                        showImagePicker.toggle()
+                    } label: {
+                        VStack(spacing: 2) {
+                            Image(systemName: "iphone.badge.play")
+                                .font(.system(size: 24))
+                                .frame(width:iconSize, height: iconSize)
+
+                            Text("Video")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(width:btnSquareSize, height: btnSquareSize)
+                        .background {
+                            RoundedRectangle(cornerRadius: 8)
+                                .foregroundStyle(.secondary.opacity(0.2))
+                        }
                     }
+                    .foregroundStyle(.primary)
+                    .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .videos) //.all(of: [, .screenRecordings]
+                    /// Load when selected items change
+                     .onChange(of: selectedItems) { newSelectedItem in
+                         Task {
+                             
+                             guard let firsItem = newSelectedItem.first else { return }
+
+                             if let video = try await firsItem.loadTransferable(type: MP4Video.self) {
+                                 print("Loaded video \(video.url)")
+                                 
+                                 let thumbSize: CGSize = .init(width: 512, height: 512)
+                                 let asset = AVAsset(url: video.url)
+                                 let generator = AVAssetImageGenerator(asset: asset)
+                                 generator.appliesPreferredTrackTransform = true
+                                 generator.maximumSize = thumbSize
+
+                                 let cgImage = try await generator.image(at: .zero).image
+                                 guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
+                                 let thumbnail = UIImage(cgImage: colorCorrectedImage)
+                                 await MainActor.run {
+                                     self.selectedVideoThumbnail = thumbnail
+                                     self.selectedVideoURL = video.url
+                                 }
+                             } else {
+                                 print("no video")
+                             }
+                             
+//                             if let video = try await newSelectedItems?.first?.loadTransferable(type: MP4Video.self) {
+////                                 loadState = .loaded(movie)
+//                             } else {
+////                                 loadState = .failed
+//                             }
+//                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.0, execute: {
+//                                 mapLocInfo.images = newImgs
+//                                 ImageFoResourceController.shared.selectedImages = newImgs
+//                             })
+                             
+                         }
+                     }
                     
-                    Button("Edit") {
-                        
+                    Button {
+                        showEditViewAction()
+                    } label: {
+                        VStack(spacing: 2) {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 24))
+                                .frame(width:iconSize, height: iconSize)
+
+                            Text("Options")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(width:btnSquareSize, height: btnSquareSize)
+                        .background {
+                            RoundedRectangle(cornerRadius: 8)
+                                .foregroundStyle(.secondary.opacity(0.2))
+                        }
                     }
+                    .foregroundStyle(.primary)
                 }
                 .frame(maxWidth: .infinity)
                 .overlay(alignment: .trailing) {
@@ -82,22 +166,44 @@ struct RenderVideoEditorView: View {
             .frame(maxHeight: .infinity, alignment: .bottom)
             
         }
+        .overlay(content: {
+            if showVideoOptions {
+                OptionsOverlayView()
+            }
+        })
         
+    }
+    
+    @ViewBuilder
+    func OptionsOverlayView() -> some View {
+        ZStack {
+            Rectangle()
+                .foregroundStyle(Color.black.opacity(0.6))
+            
+            Rectangle()
+                .foregroundStyle(.ultraThinMaterial)
+            
+            VideoOptionsView()
+        }
+        .ignoresSafeArea()
+        .contentShape(.rect)
+        .onTapGesture {
+            withAnimation {
+                showVideoOptions = false
+            }
+        }
+    }
+    
+    func showEditViewAction() {
+        withAnimation {
+            showVideoOptions.toggle()
+        }
     }
     
     func renderComposition() {
         
         let videoURL = Bundle.main.url(forResource: "screen2", withExtension: "mp4")!
         let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
-//        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimg19AF.mp4")
-//        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimg1DAA.mp4")
-//        let backVideoURL = URL.temporaryDirectory.appending(path: "outputimgF166.mp4")
-//        let videoAsset = AVURLAsset(url: videoURL)
-
-//        let backgroundImageURL = Bundle.main.url(forResource: "backt", withExtension: "jpg")!
-//        let imageRef = UIImage(contentsOfFile: backgroundImageURL.path())!.cgImage!
-//        let outputBackVideoURL = FileManager.default.temporaryDirectory.appendingPathComponent("outputimg\(UUID().uuidString.prefix(4)).mp4")
-        
         
         videoComposer.createAndExportComposition(videoURL: videoURL, outputURL: outputURL) { err in
             if let err {
@@ -111,9 +217,6 @@ struct RenderVideoEditorView: View {
             }
             
         }
-//        try? videoComposer.createVideoFromImage(imageRef, duration: videoAsset.duration.seconds, outputURL: outputBackVideoURL) {
-//            
-//        }
     }
     
     func testCreateImageVideo() {
