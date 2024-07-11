@@ -20,8 +20,11 @@ struct MainView: View {
                     switch newRoute {
                     case .settings:
                         SettingsView()
-                    default:
-                        EmptyView();
+                            .environment(\.containerNavPath, $appState.navPath)
+                    case .toSAndPP:
+                        ToSAndPPView()
+                    case .uelaAgree:
+                        EULAAgreementView()
                     }
                 }
         }

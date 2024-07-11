@@ -23,6 +23,7 @@ struct RenderVideoEditorView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     
     @State private var showVideoOptions: Bool = false
+//    @State private var showOptionsBackground: Bool = false
     
     @State private var selectedVideoURL: URL?
     @State private var selectedVideoThumbnail: UIImage?
@@ -197,19 +198,22 @@ struct RenderVideoEditorView: View {
                 .foregroundStyle(.ultraThinMaterial)
             
             VideoOptionsView()
+                .transition(.scale.combined(with: .opacity))
+
         }
         .ignoresSafeArea()
         .contentShape(.rect)
         .onTapGesture {
-            withAnimation {
+            withAnimation(.linear(duration: 0.23)) {
                 showVideoOptions = false
+//                showOptionsBackground = false
             }
         }
     }
     
     func showEditViewAction() {
-        withAnimation {
-            showVideoOptions.toggle()
+        withAnimation(.easeOut(duration: 0.3)) {
+            showVideoOptions = true
         }
     }
     
