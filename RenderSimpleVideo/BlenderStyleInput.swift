@@ -13,6 +13,7 @@ struct BlenderStyleInput: View {
     @State private var startValue: CGFloat = 0.0
     
     var title: String
+    var unitStr: String = "px"
 
     var body: some View {
         ZStack {
@@ -42,7 +43,7 @@ struct BlenderStyleInput: View {
                                 
                         }
                         
-                        Text("\(Int(value)) px")
+                        Text("\(Int(value)) \(unitStr)")
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
