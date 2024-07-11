@@ -11,22 +11,76 @@ import CoreImage
 
 struct RenderVideoEditorView: View {
     
-    @State private var player: AVPlayer? // = AVPlayer(url: Bundle.main.url(forResource: "screen2", withExtension: "mp4")!)
+    @State private var player: AVPlayer?
 
     @State private var videoComposer: VideoComposer = .init()
     
+    @Environment(\.containerNavPath) var navPath
+    
     var body: some View {
-        VStack {
+        
+        ZStack {
             
-            if let player {
-                VideoPlayer(player: player)
-                    .scaledToFit()
+            HStack {
+                Button {
+                    navPath.wrappedValue.append(Routes.settings)
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color.secondary)
+                        .frame(width: 44, height: 44)
+//                        .background {
+//                            Circle()
+//                                .foregroundStyle(Color(uiColor: .systemGray2))
+//                        }
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .padding(.horizontal, 16)
+            
+            VStack {
+                
+                if let player {
+                    VideoPlayer(player: player)
+                        .scaledToFit()
+                }
+                                
             }
             
-            
-            Button("Render") {
-                renderComposition()
+            VStack {
+                
+                HStack {
+                    Button("Video") {
+                        
+                    }
+                    
+                    Button("Edit") {
+                        
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .overlay(alignment: .trailing) {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.system(size: 24))
+                            .offset(y: -2)
+                            .foregroundStyle(Color(uiColor: .systemBackground))
+                            .frame(width: 44, height: 44)
+                            .background {
+                                Circle()
+                                    .foregroundStyle(.primary)
+                            }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+
             }
+            .frame(maxHeight: .infinity, alignment: .bottom)
+            
         }
         
     }
@@ -90,5 +144,6 @@ struct RenderVideoEditorView: View {
 
 
 #Preview {
-    RenderVideoEditorView()
+//    RenderVideoEditorView()
+    MainView()
 }

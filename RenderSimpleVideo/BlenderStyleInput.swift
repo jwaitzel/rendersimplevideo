@@ -14,6 +14,7 @@ struct BlenderStyleInput: View {
     
     var title: String
     var unitStr: String = "px"
+    var unitScale: CGFloat = 1.0
 
     var body: some View {
         ZStack {
@@ -40,8 +41,8 @@ struct BlenderStyleInput: View {
                                 .background {
                                     Color(uiColor: .systemGray5)
                                 }
-                                
                         }
+                        .foregroundStyle(.primary)
                         
                         Text("\(Int(value)) \(unitStr)")
                             .font(.subheadline)
@@ -57,13 +58,13 @@ struct BlenderStyleInput: View {
                                     Color(uiColor: .systemGray5)
                                 }
                         }
-                        
+                        .foregroundStyle(.primary)
                     }
                     .contentShape(.rect)
                     .simultaneousGesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged({ val in
-                                value = val.translation.width + startValue
+                                value = val.translation.width  * unitScale + startValue
                             })
                             .onEnded({ _ in
                                 startValue = value
@@ -76,14 +77,19 @@ struct BlenderStyleInput: View {
                 
             }
         }
+        .onAppear {
+            startValue = value
+        }
     }
 }
 
 #Preview {
     struct Prev: View {
-        @State private var offX: CGFloat = 0
+        @State private var offX: CGFloat = 100
         var body: some View {
-            BlenderStyleInput(value: $offX, title: "Position X")
+            BlenderStyleInput(value: $offX, title: "Scale", unitStr: "%", unitScale: 0.1)
+//            BlenderStyleInput(value: $offX, title: "Position X", unitStr: "px")
+
         }
     }
     return Prev()

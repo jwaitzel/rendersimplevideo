@@ -19,37 +19,22 @@ struct VideoOptionsView: View {
     @State private var offsetX: CGFloat = 0.0
     @State private var offsetY: CGFloat = 0.0
     
-    @State private var scaleVideo: CGFloat = 100.0
-    
+    @State private var scaleVideo: CGFloat = 90.0
+//    @State private var scaleMask: CGFloat = 95.0
+    @State private var maskCorners: CGFloat = 55.0
+
     @State private var timer: Timer?
-    
-//    var totalOff: CGFloat {
-//        offsetX //+ dragOffsetX
-//    }
-    
+        
     var body: some View {
         VStack {
-            HStack {
-//                Image(uiImage: uiImg)
-//                    .resizable()
-//                    .aspectRatio(contentMode: .fit)
-//                    .frame(width: 200)
-//                    .border(.black)
-                
-                if let appImg = self.screenFiltered {
-                    Image(uiImage: appImg)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 300)
-                        .border(.black)
-                }
+            if let appImg = self.screenFiltered {
+                Image(uiImage: appImg)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 300)
+                    .border(.black)
+                    .padding(.bottom, 24)
             }
-            
-            
-//            Button("Apply") {
-//                applyFilters()
-//            }
-//            .buttonStyle(.borderedProminent)
             
             Group {
                 ColorPicker(selection: $backColor, label: {
@@ -61,10 +46,17 @@ struct VideoOptionsView: View {
                 
                 BlenderStyleInput(value: $offsetY, title: "Y")
                 
-                BlenderStyleInput(value: $scaleVideo, title: "Scale Video")
+                BlenderStyleInput(value: $scaleVideo, title: "Scale Video", unitStr: "%", unitScale: 0.1)
+                
+//                BlenderStyleInput(value: $scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
+                
+//                BlenderStyleInput(value: $maskCorners, title: "Mask Corners", unitStr: "px")
+
+
             }
 //            .border(.green)
             .padding(.horizontal, 16)
+            
             
         }
         .onAppear {
@@ -79,7 +71,7 @@ struct VideoOptionsView: View {
 //                applyFilters()
 //            })
         }
-        .onChange(of: (offsetX + offsetY + scaleVideo)) { _ in
+        .onChange(of: (offsetX + offsetY + scaleVideo + maskCorners)) { _ in
             applyFilters()
         }
         .onChange(of: backColor) { _ in
@@ -118,7 +110,7 @@ struct VideoOptionsView: View {
         guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error"); return }
 
         let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
-        let overlayScaleParameter = 0.94
+        let overlayScaleParameter = (scaleVideo + 5) / 100.0
         let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
         let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
         let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
@@ -126,15 +118,16 @@ struct VideoOptionsView: View {
         let iphoneOverlayTranslationY = renderSize.height / 2.0 - iphoneOverlayResize.height / 2.0 + self.offsetY
         let iphoneOverlayTranslation = CGAffineTransform(translationX: iphoneOverlayTranslationX, y: iphoneOverlayTranslationY)
         let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(iphoneOverlayTranslation)
-        
+
         print("New resize for overlay \(iphoneOverlayResize)")
         
+        let adjustCorners = 55.0 * overlayScaleParameter
 //        let maskFilterOnVideo = CIFilter(name: "CISourceInCompositing")!
         let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
         let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: newVideoSize), translateToCenterTransform)
         roundedRectangleGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
         roundedRectangleGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
-        roundedRectangleGenerator.setValue(55, forKey: kCIInputRadiusKey)
+        roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
         compositeColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
         
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
@@ -149,7 +142,6 @@ struct VideoOptionsView: View {
 
         let context = CIContext()
         let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
-
         
         self.screenFiltered = UIImage(cgImage: cgOutputImage)
         
