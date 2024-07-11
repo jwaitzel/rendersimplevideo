@@ -76,6 +76,35 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		3844A1272C4068E9002FE045 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
+				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
+				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
+				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
+				3844A11E2C3FFFA3002FE045 /* Settings */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		3844A1282C406936002FE045 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				3844A1232C400E4E002FE045 /* MiscExtensions.swift */,
+				3844A1252C40559A002FE045 /* VideoTransferable.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		3844A1292C406942002FE045 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				38B56F232C3EF9090056227B /* VideoComposer.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
 		389466E92C3BE15700EA4632 = {
 			isa = PBXGroup;
 			children = (
@@ -97,15 +126,10 @@
 			children = (
 				389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */,
 				389466F72C3BE15700EA4632 /* ContentView.swift */,
-				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
 				3844A1212C400033002FE045 /* AppState.swift */,
-				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
-				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
-				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
-				38B56F232C3EF9090056227B /* VideoComposer.swift */,
-				3844A1232C400E4E002FE045 /* MiscExtensions.swift */,
-				3844A1252C40559A002FE045 /* VideoTransferable.swift */,
-				3844A11E2C3FFFA3002FE045 /* Settings */,
+				3844A1272C4068E9002FE045 /* View */,
+				3844A1292C406942002FE045 /* Controllers */,
+				3844A1282C406936002FE045 /* Support */,
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
 				389467072C3BE73F00EA4632 /* screen2.mp4 */,
 				389467092C3BEAEA00EA4632 /* videouiux.mov */,

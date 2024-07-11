@@ -185,7 +185,6 @@ struct RenderVideoEditorView: View {
                 OptionsOverlayView()
             }
         })
-        
     }
     
     @ViewBuilder
