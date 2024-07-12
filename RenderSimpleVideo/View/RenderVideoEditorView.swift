@@ -10,6 +10,7 @@ import AVKit
 import CoreImage
 import PhotosUI
 
+
 struct RenderVideoEditorView: View {
     
     @State private var player: AVPlayer?
@@ -23,10 +24,8 @@ struct RenderVideoEditorView: View {
     @State private var selectedItems: [PhotosPickerItem] = []
     
     @State private var showVideoOptions: Bool = false
-//    @State private var showOptionsBackground: Bool = false
     
-    @State private var selectedVideoURL: URL?
-    @State private var selectedVideoThumbnail: UIImage?
+    @StateObject var renderOptions: RenderOptions = .init()
     
     var body: some View {
         
@@ -51,7 +50,7 @@ struct RenderVideoEditorView: View {
                     .foregroundStyle(.gray.opacity(0.2))
                     .frame(width: 300, height: 300)
                     .overlay {
-                        if let thumb = selectedVideoThumbnail {
+                        if let thumb = renderOptions.selectedVideoThumbnail {
                             Image(uiImage: thumb)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -131,8 +130,8 @@ struct RenderVideoEditorView: View {
                                  guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
                                  let thumbnail = UIImage(cgImage: colorCorrectedImage)
                                  await MainActor.run {
-                                     self.selectedVideoThumbnail = thumbnail
-                                     self.selectedVideoURL = itemVideoURL
+                                     self.renderOptions.selectedVideoThumbnail = thumbnail
+                                     self.renderOptions.selectedVideoURL = itemVideoURL
                                  }
                              }
                          }
@@ -184,6 +183,7 @@ struct RenderVideoEditorView: View {
         .overlay(content: {
             if showVideoOptions {
                 OptionsOverlayView()
+                    .environmentObject(renderOptions)
             }
         })
     }
