@@ -62,7 +62,7 @@ struct RenderVideoEditorView: View {
                                 .scaledToFit()
                         }
                     }
-                    .padding(.bottom, 64)
+                    .padding(.bottom, 84)
             }
             
             VStack {
@@ -196,19 +196,19 @@ struct RenderVideoEditorView: View {
             
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial)
-            
+                .contentShape(.rect)
+                .onTapGesture {
+                    withAnimation(.linear(duration: 0.23)) {
+                        showVideoOptions = false
+        //                showOptionsBackground = false
+                    }
+                }
+
             VideoOptionsView()
                 .transition(.scale.combined(with: .opacity))
 
         }
         .ignoresSafeArea()
-        .contentShape(.rect)
-        .onTapGesture {
-            withAnimation(.linear(duration: 0.23)) {
-                showVideoOptions = false
-//                showOptionsBackground = false
-            }
-        }
     }
     
     func showEditViewAction() {
