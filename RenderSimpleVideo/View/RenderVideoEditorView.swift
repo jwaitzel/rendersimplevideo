@@ -186,6 +186,15 @@ struct RenderVideoEditorView: View {
                     .environmentObject(renderOptions)
             }
         })
+        .onAppear {
+            self.setDefaultData()
+        }
+    }
+    
+    func setDefaultData() {
+        //uiux-short
+        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
+        self.renderOptions.selectedVideoThumbnail = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
     }
     
     @ViewBuilder
@@ -204,7 +213,7 @@ struct RenderVideoEditorView: View {
                     }
                 }
 
-            VideoOptionsView()
+            VideoOptionsView(screenImage: self.renderOptions.selectedVideoThumbnail!)
                 .transition(.scale.combined(with: .opacity))
 
         }

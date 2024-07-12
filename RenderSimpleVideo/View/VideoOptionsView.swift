@@ -9,8 +9,8 @@ import SwiftUI
 
 struct VideoOptionsView: View {
     
-    let uiImg = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
-
+    var screenImage: UIImage
+    
     @State private var screenFiltered: UIImage?
     
     @EnvironmentObject var renderOptions: RenderOptions
@@ -78,7 +78,7 @@ struct VideoOptionsView: View {
         let sqRenderSize: CGFloat = 1024
         let renderSize: CGSize = CGSize(width: sqRenderSize, height: sqRenderSize)
 
-        let videoTrackSize = uiImg.size
+        let videoTrackSize = screenImage.size
         
         let videoScaleToFit = renderSize.height / videoTrackSize.height
         let scaleParameter = renderOptions.scaleVideo / 100.0
@@ -126,7 +126,7 @@ struct VideoOptionsView: View {
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
-        let sourceCI = CIImage(image: uiImg)!
+        let sourceCI = CIImage(image: screenImage)!
         let source = sourceCI.transformed(by: multVideoTransform).cropped(to: sourceCI.extent)
         compositeColor.setValue(source, forKey: kCIInputImageKey)
         iphoneOverlayComposite.setValue(compositeColor.outputImage, forKey: kCIInputBackgroundImageKey)
@@ -142,5 +142,12 @@ struct VideoOptionsView: View {
 }
 
 #Preview {
-    VideoOptionsView()
+    struct PreviewData: View {
+        let img = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        var body: some View {
+            VideoOptionsView(screenImage: img)
+        }
+    }
+    
+    return PreviewData()
 }
