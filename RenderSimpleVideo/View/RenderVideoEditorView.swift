@@ -196,7 +196,7 @@ struct RenderVideoEditorView: View {
                         Text("Rendering...")
                             .font(.subheadline)
 
-                        ProgressView(value: 20, total: 100)
+                        ProgressView(value: self.renderProgress, total: 1.0)
                             .padding(.horizontal, 16)
                             .progressViewStyle(.automatic)
                     } else if renderState == .finish {
@@ -213,15 +213,33 @@ struct RenderVideoEditorView: View {
         
         guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
         let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
-
-        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions) { err in
+        DispatchQueue.main.async {
+            self.renderState = .rendering
+        }
+        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, progress: { perc in
+            DispatchQueue.main.async {
+                self.renderProgress = perc
+            }
+        }) { err in
             if let err {
                 print("Error ", err)
+                DispatchQueue.main.async {
+                    self.renderState = .none
+                }
             } else {
                 print("Completed \(outputURL)")
                 DispatchQueue.main.async {
                     self.player = AVPlayer(url: outputURL)
                     self.shareContent(videoURL: outputURL)
+                    
+                    DispatchQueue.main.async {
+                        self.renderState = .finish
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            withAnimation(.easeInOut) {
+                                self.renderState = .none
+                            }
+                        }
+                    }
                 }
 
             }
@@ -336,24 +354,6 @@ struct RenderVideoEditorView: View {
         }
     }
     
-    func renderComposition() {
-        
-        let videoURL = Bundle.main.url(forResource: "screen2", withExtension: "mp4")!
-        let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
-        
-        videoComposer.createAndExportComposition(videoURL: videoURL, outputURL: outputURL, renderOptions: self.renderOptions) { err in
-            if let err {
-                print("Error ", err)
-            } else {
-                print("Completed \(outputURL)")
-                DispatchQueue.main.async {
-                    self.player = AVPlayer(url: outputURL)
-                }
-
-            }
-            
-        }
-    }
     
 }
 

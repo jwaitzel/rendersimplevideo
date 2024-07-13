@@ -99,10 +99,10 @@ class VideoComposer {
 
     }
     
-    func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, completion: @escaping (Error?) -> Void) {
+    func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping (Error?) -> Void) {
         // Create an AVMutableComposition
         let composition = AVMutableComposition()
-        
+        let startRenderTime = Date()
         // Create video and audio tracks in our composition
         guard let compositionVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid),
               let backgroundTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
@@ -144,6 +144,7 @@ class VideoComposer {
             guard let iphoneOverlayComposite = self.compositeBackground(videoSize: videoTrackSize, sourceFrame: filteringRequest.sourceImage, renderOptions: renderOptions) else {
                 print("Failed composite"); return
             }
+            progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
             
             // Provide the filter output to the composition
             filteringRequest.finish(with: iphoneOverlayComposite.outputImage!, context: nil)
@@ -166,7 +167,8 @@ class VideoComposer {
         exportSession.exportAsynchronously {
             switch exportSession.status {
             case .completed:
-                print("Completed \(outputURL)")
+                let endTiem = Date().timeIntervalSince(startRenderTime)
+                print("Completed \(outputURL) in time \(endTiem)")
                 completion(nil)
             case .failed:
                 completion(exportSession.error)
