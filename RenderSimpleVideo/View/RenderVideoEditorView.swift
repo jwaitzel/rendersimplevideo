@@ -50,7 +50,7 @@ struct RenderVideoEditorView: View {
                     .foregroundStyle(renderOptions.backColor)
                     .frame(width: 300, height: 300)
                     .overlay {
-                        if let thumb = renderOptions.selectedVideoThumbnail {
+                        if let thumb = renderOptions.selectedFiltered {
                             Image(uiImage: thumb)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -230,6 +230,8 @@ struct RenderVideoEditorView: View {
                 await MainActor.run {
                     self.renderOptions.selectedVideoThumbnail = thumbnail
                     self.renderOptions.selectedVideoURL = itemVideoURL
+                    let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
+                    self.renderOptions.selectedFiltered = filteredImg
                     print("set thumbnail \(thumbnail)")
                 }
             }
@@ -241,7 +243,11 @@ struct RenderVideoEditorView: View {
     func setDefaultData() {
         //uiux-short
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
-        self.renderOptions.selectedVideoThumbnail = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        self.renderOptions.selectedVideoThumbnail = defaultThumb
+        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
+        self.renderOptions.selectedFiltered = filteredImg
+
     }
     
     @ViewBuilder

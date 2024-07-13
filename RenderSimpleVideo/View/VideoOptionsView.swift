@@ -13,7 +13,7 @@ struct VideoOptionsView: View {
     
     var screenImage: UIImage
     
-    @State private var screenFiltered: UIImage?
+//    @State private var screenFiltered: UIImage?
     
     @EnvironmentObject var renderOptions: RenderOptions
     
@@ -21,12 +21,12 @@ struct VideoOptionsView: View {
         
     var body: some View {
         VStack {
-            if let appImg = self.screenFiltered {
+            if let appImg = self.renderOptions.selectedFiltered {
                 Image(uiImage: appImg)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300)
-                    .border(.black)
+                    .border(.black.opacity(0.1))
                     .padding(.bottom, 24)
             }
             
@@ -71,7 +71,8 @@ struct VideoOptionsView: View {
     
     func applyFilters() {
         if let filteredImg = videoComposer.createImagePreview(self.screenImage, renderOptions: self.renderOptions) {
-            self.screenFiltered = filteredImg
+//            self.screenFiltered = filteredImg
+            self.renderOptions.selectedFiltered = filteredImg
         }
     }
 }

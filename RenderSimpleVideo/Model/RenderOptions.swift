@@ -11,6 +11,8 @@ class RenderOptions: ObservableObject {
     
     @Published var selectedVideoURL: URL?
     @Published var selectedVideoThumbnail: UIImage?
+    @Published var selectedFiltered: UIImage?
+
     @Published var backColor: Color = .green
     
     @Published var offsetX: CGFloat = 0.0
