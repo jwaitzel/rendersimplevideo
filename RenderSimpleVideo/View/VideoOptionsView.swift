@@ -9,17 +9,15 @@ import SwiftUI
 
 struct VideoOptionsView: View {
     
+    let videoComposer = VideoComposer()
+    
     var screenImage: UIImage
     
     @State private var screenFiltered: UIImage?
     
     @EnvironmentObject var renderOptions: RenderOptions
-
-//    @State private var offsetMask: CGPoint = .zero
     
     @State private var timer: Timer?
-    
-    let videoComposer = VideoComposer()
         
     var body: some View {
         VStack {
@@ -55,19 +53,12 @@ struct VideoOptionsView: View {
 
 
             }
-//            .border(.green)
             .padding(.horizontal, 16)
-            
             
         }
         .onAppear {
             print("onAppear")
-//            UISlider.appearance().thumbTintColor = UIColor.orange
-            UISlider.appearance().maximumTrackTintColor = UIColor.systemGray5
-            UISlider.appearance().minimumTrackTintColor = UIColor.systemGray5
-            
             applyFilters()
-            
         }
         .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners)) { _ in
             applyFilters()

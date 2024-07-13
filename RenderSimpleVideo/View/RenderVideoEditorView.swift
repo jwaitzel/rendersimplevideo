@@ -154,6 +154,36 @@ struct RenderVideoEditorView: View {
     
     func makeVideoWithComposition() {
         
+        guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
+        let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
+
+        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions) { err in
+            if let err {
+                print("Error ", err)
+            } else {
+                print("Completed \(outputURL)")
+                DispatchQueue.main.async {
+                    self.player = AVPlayer(url: outputURL)
+                    self.shareContent(videoURL: outputURL)
+                }
+
+            }
+            
+        }
+        
+    }
+    
+    func shareContent(videoURL: URL) {
+        
+        let itemsToShare = [videoURL] // Add more items if needed (e.g., URLs, images)
+        
+        let activityViewController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
+        
+        guard let rootVC = UIApplication.shared.connectedScenes.compactMap({$0 as? UIWindowScene}).first?.windows.first?.rootViewController else{
+            return
+        }
+
+        rootVC.present(activityViewController, animated: true, completion: nil)
     }
     
     func processSelectedVideo(_ newSelectedItems: [PhotosPickerItem]) {
@@ -248,7 +278,7 @@ struct RenderVideoEditorView: View {
         let videoURL = Bundle.main.url(forResource: "screen2", withExtension: "mp4")!
         let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
         
-        videoComposer.createAndExportComposition(videoURL: videoURL, outputURL: outputURL) { err in
+        videoComposer.createAndExportComposition(videoURL: videoURL, outputURL: outputURL, renderOptions: self.renderOptions) { err in
             if let err {
                 print("Error ", err)
             } else {
@@ -260,30 +290,6 @@ struct RenderVideoEditorView: View {
             }
             
         }
-    }
-    
-    func testCreateImageVideo() {
-        
-        let videoURL = Bundle.main.url(forResource: "screen2", withExtension: "mp4")!
-        let videoAsset = AVURLAsset(url: videoURL)
-
-        let backgroundImageURL = Bundle.main.url(forResource: "backt", withExtension: "jpg")!
-        let imageRef = UIImage(contentsOfFile: backgroundImageURL.path())!.cgImage!
-        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("outputimg\(UUID().uuidString.prefix(4)).mp4")
-        
-        try? videoComposer.createVideoFromImage(imageRef, duration: videoAsset.duration.seconds, outputURL: outputURL) {
-            print("Finished \(outputURL)")
-        }
-        
-//        try? createVideoFromImage(imageRef, duration: videoAsset.duration.seconds, outputURL: outputURL, completion: {
-//            print("finished making background video \(outputURL)")
-//            
-//            createAndExportComposition(backVideo: outputURL) { error in
-//                print("error \(error)")
-//            }
-//            
-//        })
-        
     }
     
 }
