@@ -18,6 +18,8 @@ struct VideoOptionsView: View {
 //    @State private var offsetMask: CGPoint = .zero
     
     @State private var timer: Timer?
+    
+    let videoComposer = VideoComposer()
         
     var body: some View {
         VStack {
@@ -45,11 +47,10 @@ struct VideoOptionsView: View {
                 
 //                BlenderStyleInput(value: $offsetMask.x, title: "Mask X", unitStr: "px", unitScale: 1)
 //
-//                
 //                BlenderStyleInput(value: $offsetMask.y, title: "Y", unitStr: "px", unitScale: 1)
-
+//
 //                BlenderStyleInput(value: $scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
-                
+//
 //                BlenderStyleInput(value: $maskCorners, title: "Mask Corners", unitStr: "px")
 
 
@@ -67,9 +68,6 @@ struct VideoOptionsView: View {
             
             applyFilters()
             
-//            timer = Timer.scheduledTimer(withTimeInterval: 1 / 10, repeats: true, block: { _ in
-//                applyFilters()
-//            })
         }
         .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners)) { _ in
             applyFilters()
@@ -81,71 +79,9 @@ struct VideoOptionsView: View {
     }
     
     func applyFilters() {
-        
-        let sqRenderSize: CGFloat = 1024
-        let renderSize: CGSize = CGSize(width: sqRenderSize, height: sqRenderSize)
-
-        let videoTrackSize = screenImage.size
-        
-        let videoScaleToFit = renderSize.height / videoTrackSize.height
-        let scaleParameter = renderOptions.scaleVideo / 100.0
-        let videoAddScale = videoScaleToFit * scaleParameter
-        let newVideoSize = CGSize(width: videoTrackSize.width * videoAddScale, height: videoTrackSize.height * videoAddScale)
-        let translationX = renderSize.width / 2.0 - newVideoSize.width / 2.0 + self.renderOptions.offsetX
-        let translationY = renderSize.height / 2.0 - newVideoSize.height / 2.0 + self.renderOptions.offsetY
-        print("Video track size \(videoTrackSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
-        
-        let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: translationY)
-        let multVideoTransform = CGAffineTransform(scaleX: videoAddScale, y: videoAddScale).concatenating(translateToCenterTransform)
-
-        let backColor = CIColor(color: UIColor(renderOptions.backColor))
-        let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
-        
-        let compositeColor = CIFilter(name: "CIBlendWithMask")! //CIBlendWithMask //CISourceOverCompositing
-        compositeColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-        
-        let iphoneOverlayImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
-        let iphoneOverlayImg = UIImage(contentsOfFile: iphoneOverlayImgURL.path)!
-        guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error ci overlay"); return }
-
-        let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
-        let overlayScaleParameter = (renderOptions.scaleVideo * 1.06) / 100.0
-        let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
-        let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
-        let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
-        let iphoneOverlayTranslationX = renderSize.width / 2.0 - iphoneOverlayResize.width / 2.0 + self.renderOptions.offsetX
-        let iphoneOverlayTranslationY = renderSize.height / 2.0 - iphoneOverlayResize.height / 2.0 + self.renderOptions.offsetY
-        let iphoneOverlayTranslation = CGAffineTransform(translationX: iphoneOverlayTranslationX, y: iphoneOverlayTranslationY)
-        let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(iphoneOverlayTranslation)
-
-        print("New resize for overlay \(iphoneOverlayResize)")
-        
-        let adjustCorners = 55.0 * overlayScaleParameter
-        let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
-        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: videoTrackSize), multVideoTransform)
-//        let maskOnlyOffset = CGAffineTransform(translationX: offsetMask.x, y: offsetMask.y)
-//        let fixxTransformedRect = CGRectApplyAffineTransform(videoTransformedRect, maskOnlyOffset)
-        roundedRectangleGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
-        roundedRectangleGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
-        roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
-        compositeColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
-        print("extent for rect \(videoTransformedRect)")
-        
-        let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
-        iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
-
-        let sourceCI = CIImage(image: screenImage)!
-        let source = sourceCI.transformed(by: multVideoTransform) //.cropped(to: sourceCI.extent)
-        compositeColor.setValue(source, forKey: kCIInputImageKey)
-        iphoneOverlayComposite.setValue(compositeColor.outputImage, forKey: kCIInputBackgroundImageKey)
-        
-        let outputCI = iphoneOverlayComposite.outputImage! //compositeColor.outputImage! // //
-
-        let context = CIContext()
-        let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
-        
-        self.screenFiltered = UIImage(cgImage: cgOutputImage)
-        
+        if let filteredImg = videoComposer.createImagePreview(self.screenImage, renderOptions: self.renderOptions) {
+            self.screenFiltered = filteredImg
+        }
     }
 }
 

@@ -18,6 +18,67 @@ enum RenderError: Error {
 
 class VideoComposer {
     
+    func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions) -> UIImage? {
+        
+        let renderSize = renderOptions.renderSize
+        let videoTrackSize = screenImage.size
+        let videoScaleToFit = renderSize.height / videoTrackSize.height
+        let scaleParameter = renderOptions.scaleVideo / 100.0
+        let videoAddScale = videoScaleToFit * scaleParameter
+        let newVideoSize = CGSize(width: videoTrackSize.width * videoAddScale, height: videoTrackSize.height * videoAddScale)
+        let translationX = renderSize.width / 2.0 - newVideoSize.width / 2.0 + renderOptions.offsetX
+        let translationY = renderSize.height / 2.0 - newVideoSize.height / 2.0 + renderOptions.offsetY
+        
+        print("Video track size \(videoTrackSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
+        
+        let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: translationY)
+        let multVideoTransform = CGAffineTransform(scaleX: videoAddScale, y: videoAddScale).concatenating(translateToCenterTransform)
+
+        let backColor = CIColor(color: UIColor(renderOptions.backColor))
+        let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
+        
+        let compositeColor = CIFilter(name: "CIBlendWithMask")! //CIBlendWithMask //CISourceOverCompositing
+        compositeColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
+        
+        let iphoneOverlayImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
+        let iphoneOverlayImg = UIImage(contentsOfFile: iphoneOverlayImgURL.path)!
+        guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error ci overlay"); return nil }
+
+        let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
+        let overlayScaleParameter = (renderOptions.scaleVideo * 1.06) / 100.0
+        let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
+        let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
+        let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
+        let iphoneOverlayTranslationX = renderSize.width / 2.0 - iphoneOverlayResize.width / 2.0 + renderOptions.offsetX
+        let iphoneOverlayTranslationY = renderSize.height / 2.0 - iphoneOverlayResize.height / 2.0 + renderOptions.offsetY
+        let iphoneOverlayTranslation = CGAffineTransform(translationX: iphoneOverlayTranslationX, y: iphoneOverlayTranslationY)
+        let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(iphoneOverlayTranslation)
+
+        let adjustCorners = 55.0 * overlayScaleParameter
+        let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
+        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: videoTrackSize), multVideoTransform)
+        roundedRectangleGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
+        roundedRectangleGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
+        roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
+        compositeColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
+        
+        let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
+        iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
+
+        let sourceCI = CIImage(image: screenImage)!
+        let source = sourceCI.transformed(by: multVideoTransform)
+        compositeColor.setValue(source, forKey: kCIInputImageKey)
+        iphoneOverlayComposite.setValue(compositeColor.outputImage, forKey: kCIInputBackgroundImageKey)
+        
+        let outputCI = iphoneOverlayComposite.outputImage! //compositeColor.outputImage! // //
+
+        let context = CIContext()
+        let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
+        
+        return UIImage(cgImage: cgOutputImage)
+
+    }
+    
     func createAndExportComposition(videoURL: URL, outputURL: URL, completion: @escaping (Error?) -> Void) {
         // Create an AVMutableComposition
         let composition = AVMutableComposition()
@@ -62,13 +123,6 @@ class VideoComposer {
         let scaleToFitBackgroundWidth = renderSize.width / backgroundTrack.naturalSize.width
         let scaleToFitBackgroundHeight = renderSize.height / backgroundTrack.naturalSize.height
 
-        /// Background Transform
-//        let backgroundLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: backgroundTrack)
-//        backgroundLayerInstruction.setTransform(.init(scaleX: scaleToFitBackgroundWidth, y: scaleToFitBackgroundHeight), at: .zero)
-//        backgroundLayerInstruction.trackID = overlayTrackID
-        
-        /// Video transform
-//        let videoLayerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
         let videoTrackSize = compositionVideoTrack.naturalSize
         
         let videoScaleToFit = renderSize.height / videoTrackSize.height
@@ -81,9 +135,7 @@ class VideoComposer {
         
         let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: translationY)
         let multVideoTransform = CGAffineTransform(scaleX: videoAddScale, y: videoAddScale).concatenating(translateToCenterTransform)
-        
-//        videoLayerInstruction.setTransform(multVideoTransform, at: .zero)
-                
+                        
         //MARK: CI Filter composition
         let backColor = CIColor(color: UIColor.red)
         let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!

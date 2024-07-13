@@ -18,4 +18,8 @@ class RenderOptions: ObservableObject {
     
     @Published var scaleVideo: CGFloat = 90.0
     @Published var maskCorners: CGFloat = 55.0
+    
+    @Published var renderSize: CGSize = .init(width: 1024, height: 1024)
+    
 }
+

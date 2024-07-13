@@ -119,7 +119,7 @@ struct RenderVideoEditorView: View {
                 .frame(maxWidth: .infinity)
                 .overlay(alignment: .trailing) {
                     Button {
-                        
+                        self.makeVideoWithComposition()
                     } label: {
                         Image(systemName: "square.and.arrow.down")
                             .font(.system(size: 24))
@@ -150,6 +150,10 @@ struct RenderVideoEditorView: View {
                 self.setDefaultData()
             }
         }
+    }
+    
+    func makeVideoWithComposition() {
+        
     }
     
     func processSelectedVideo(_ newSelectedItems: [PhotosPickerItem]) {
