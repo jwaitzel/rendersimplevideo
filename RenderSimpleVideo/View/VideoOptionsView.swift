@@ -14,8 +14,9 @@ struct VideoOptionsView: View {
     @State private var screenFiltered: UIImage?
     
     @EnvironmentObject var renderOptions: RenderOptions
-    
 
+//    @State private var offsetMask: CGPoint = .zero
+    
     @State private var timer: Timer?
         
     var body: some View {
@@ -41,6 +42,12 @@ struct VideoOptionsView: View {
                 
                 BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale Video", unitStr: "%", unitScale: 0.1)
                 
+                
+//                BlenderStyleInput(value: $offsetMask.x, title: "Mask X", unitStr: "px", unitScale: 1)
+//
+//                
+//                BlenderStyleInput(value: $offsetMask.y, title: "Y", unitStr: "px", unitScale: 1)
+
 //                BlenderStyleInput(value: $scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
                 
 //                BlenderStyleInput(value: $maskCorners, title: "Mask Corners", unitStr: "px")
@@ -91,19 +98,18 @@ struct VideoOptionsView: View {
         let translateToCenterTransform = CGAffineTransform(translationX: translationX, y: translationY)
         let multVideoTransform = CGAffineTransform(scaleX: videoAddScale, y: videoAddScale).concatenating(translateToCenterTransform)
 
-
         let backColor = CIColor(color: UIColor(renderOptions.backColor))
         let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
         
-        let compositeColor = CIFilter(name: "CIBlendWithMask")!
+        let compositeColor = CIFilter(name: "CIBlendWithMask")! //CIBlendWithMask //CISourceOverCompositing
         compositeColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
         
         let iphoneOverlayImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
         let iphoneOverlayImg = UIImage(contentsOfFile: iphoneOverlayImgURL.path)!
-        guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error"); return }
+        guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error ci overlay"); return }
 
         let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
-        let overlayScaleParameter = (renderOptions.scaleVideo + 5) / 100.0
+        let overlayScaleParameter = (renderOptions.scaleVideo * 1.06) / 100.0
         let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
         let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
         let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
@@ -115,23 +121,25 @@ struct VideoOptionsView: View {
         print("New resize for overlay \(iphoneOverlayResize)")
         
         let adjustCorners = 55.0 * overlayScaleParameter
-//        let maskFilterOnVideo = CIFilter(name: "CISourceInCompositing")!
         let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
-        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: newVideoSize), translateToCenterTransform)
+        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: videoTrackSize), multVideoTransform)
+//        let maskOnlyOffset = CGAffineTransform(translationX: offsetMask.x, y: offsetMask.y)
+//        let fixxTransformedRect = CGRectApplyAffineTransform(videoTransformedRect, maskOnlyOffset)
         roundedRectangleGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
         roundedRectangleGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
         roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
         compositeColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
+        print("extent for rect \(videoTransformedRect)")
         
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
         let sourceCI = CIImage(image: screenImage)!
-        let source = sourceCI.transformed(by: multVideoTransform).cropped(to: sourceCI.extent)
+        let source = sourceCI.transformed(by: multVideoTransform) //.cropped(to: sourceCI.extent)
         compositeColor.setValue(source, forKey: kCIInputImageKey)
         iphoneOverlayComposite.setValue(compositeColor.outputImage, forKey: kCIInputBackgroundImageKey)
         
-        let outputCI = iphoneOverlayComposite.outputImage!
+        let outputCI = iphoneOverlayComposite.outputImage! //compositeColor.outputImage! // //
 
         let context = CIContext()
         let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
@@ -144,8 +152,10 @@ struct VideoOptionsView: View {
 #Preview {
     struct PreviewData: View {
         let img = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        let renderOptions = RenderOptions()
         var body: some View {
             VideoOptionsView(screenImage: img)
+                .environmentObject(renderOptions)
         }
     }
     

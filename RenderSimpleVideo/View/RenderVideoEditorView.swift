@@ -47,13 +47,14 @@ struct RenderVideoEditorView: View {
             
             VStack {
                 Rectangle()
-                    .foregroundStyle(.gray.opacity(0.2))
+                    .foregroundStyle(renderOptions.backColor)
                     .frame(width: 300, height: 300)
                     .overlay {
                         if let thumb = renderOptions.selectedVideoThumbnail {
                             Image(uiImage: thumb)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
+                                .scaleEffect(0.9)
                         }
                     }
                     .overlay {
@@ -91,50 +92,8 @@ struct RenderVideoEditorView: View {
                     .foregroundStyle(.primary)
                     .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .videos) //.all(of: [, .screenRecordings]
                     /// Load when selected items change
-                     .onChange(of: selectedItems) { newSelectedItem in
-                         Task {
-                             
-                             guard let firsItem = newSelectedItem.first else { return }
-
-                             guard let type = firsItem.supportedContentTypes.first else {
-                                 print("There is no supported type")
-                                 return
-                             }
-
-                             var itemVideoURL: URL?
-                             if type.conforms(to: UTType.mpeg4Movie) {
-                                 if let video = try await firsItem.loadTransferable(type: MP4Video.self) {
-                                     print("Loaded video \(video.url)")
-                                     itemVideoURL = video.url
-                                 } else {
-                                     print("error mp4")
-                                 }
-                             } else if type.conforms(to: UTType.quickTimeMovie) {
-                                 if let video = try await firsItem.loadTransferable(type: QuickTimeVideo.self) {
-                                     itemVideoURL = video.url
-                                 } else {
-                                     print("error mov")
-                                 }
-                             } else {
-                                print("no video")
-                            }
-                            
-                             if let itemVideoURL {
-                                 let thumbSize: CGSize = .init(width: 512, height: 512)
-                                 let asset = AVAsset(url: itemVideoURL)
-                                 let generator = AVAssetImageGenerator(asset: asset)
-                                 generator.appliesPreferredTrackTransform = true
-                                 generator.maximumSize = thumbSize
-
-                                 let cgImage = try await generator.image(at: .zero).image
-                                 guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
-                                 let thumbnail = UIImage(cgImage: colorCorrectedImage)
-                                 await MainActor.run {
-                                     self.renderOptions.selectedVideoThumbnail = thumbnail
-                                     self.renderOptions.selectedVideoURL = itemVideoURL
-                                 }
-                             }
-                         }
+                     .onChange(of: selectedItems) { newSelectedItems in
+                         processSelectedVideo(newSelectedItems)
                      }
                     
                     Button {
@@ -187,8 +146,62 @@ struct RenderVideoEditorView: View {
             }
         })
         .onAppear {
-            self.setDefaultData()
+            if renderOptions.selectedVideoURL == nil { 
+                self.setDefaultData()
+            }
         }
+    }
+    
+    func processSelectedVideo(_ newSelectedItems: [PhotosPickerItem]) {
+        
+        Task {
+            
+            guard let firsItem = newSelectedItems.first else { return }
+
+            guard let type = firsItem.supportedContentTypes.first else {
+                print("There is no supported type")
+                return
+            }
+
+            var itemVideoURL: URL?
+            if type.conforms(to: UTType.mpeg4Movie) {
+                if let video = try await firsItem.loadTransferable(type: MP4Video.self) {
+                    print("Loaded video \(video.url)")
+                    itemVideoURL = video.url
+                } else {
+                    print("error mp4")
+                }
+            } else if type.conforms(to: UTType.quickTimeMovie) {
+                if let video = try await firsItem.loadTransferable(type: QuickTimeVideo.self) {
+                    itemVideoURL = video.url
+                } else {
+                    print("error mov")
+                }
+            } else {
+               print("no video")
+           }
+           
+            if let itemVideoURL {
+                let videoAsset = AVURLAsset(url: itemVideoURL)
+                let videoTrack = videoAsset.tracks(withMediaType: .video).first!
+                let thumbSize: CGSize = .init(width: videoTrack.naturalSize.width, height: videoTrack.naturalSize.height)
+                let asset = AVAsset(url: itemVideoURL)
+                let generator = AVAssetImageGenerator(asset: asset)
+                generator.appliesPreferredTrackTransform = true
+                generator.maximumSize = thumbSize
+
+                let cgImage = try await generator.image(at: .zero).image
+                guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
+                let thumbnail = UIImage(cgImage: colorCorrectedImage)
+                await MainActor.run {
+                    self.renderOptions.selectedVideoThumbnail = thumbnail
+                    self.renderOptions.selectedVideoURL = itemVideoURL
+                    print("set thumbnail \(thumbnail)")
+                }
+            }
+           
+        }
+        
     }
     
     func setDefaultData() {

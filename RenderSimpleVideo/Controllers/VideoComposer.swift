@@ -53,7 +53,6 @@ class VideoComposer {
             return
         }
         
-
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = timeRange
         
