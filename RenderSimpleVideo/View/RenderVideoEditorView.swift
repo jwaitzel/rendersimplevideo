@@ -14,7 +14,7 @@ import PhotosUI
 struct RenderVideoEditorView: View {
     
     @State private var player: AVPlayer?
-
+    
     @State private var videoComposer: VideoComposer = .init()
     
     @Environment(\.containerNavPath) var navPath
@@ -27,116 +27,27 @@ struct RenderVideoEditorView: View {
     
     @StateObject var renderOptions: RenderOptions = .init()
     
+    enum RenderState {
+        case none
+        case rendering
+        case finish
+    }
+    
+    @State private var renderState: RenderState = .none
+    @State private var renderProgress: CGFloat = 0
+    
+    
+    
     var body: some View {
         
         ZStack {
             
-            HStack {
-                Button {
-                    navPath.wrappedValue.append(Routes.settings)
-                } label: {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 24))
-                        .foregroundStyle(Color.secondary)
-                        .frame(width: 44, height: 44)
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.horizontal, 16)
+            gearSettingsButton
             
-            VStack {
-                Rectangle()
-                    .foregroundStyle(renderOptions.backColor)
-                    .frame(width: 300, height: 300)
-                    .overlay {
-                        if let thumb = renderOptions.selectedFiltered {
-                            Image(uiImage: thumb)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .scaleEffect(0.9)
-                        }
-                    }
-                    .overlay {
-                        if let player {
-                            VideoPlayer(player: player)
-                                .scaledToFit()
-                        }
-                    }
-                    .padding(.bottom, 84)
-            }
-            
-            VStack {
-                
-                let iconSize: CGFloat = 34.0
-                let btnSquareSize: CGFloat = 64.0
-                HStack {
-                    Button {
-                        showImagePicker.toggle()
-                    } label: {
-                        VStack(spacing: 2) {
-                            Image(systemName: "iphone.badge.play")
-                                .font(.system(size: 24))
-                                .frame(width:iconSize, height: iconSize)
+            centerContentRender
 
-                            Text("Video")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                        }
-                        .frame(width:btnSquareSize, height: btnSquareSize)
-                        .background {
-                            RoundedRectangle(cornerRadius: 8)
-                                .foregroundStyle(.secondary.opacity(0.2))
-                        }
-                    }
-                    .foregroundStyle(.primary)
-                    .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .videos) //.all(of: [, .screenRecordings]
-                    /// Load when selected items change
-                     .onChange(of: selectedItems) { newSelectedItems in
-                         processSelectedVideo(newSelectedItems)
-                     }
-                    
-                    Button {
-                        showEditViewAction()
-                    } label: {
-                        VStack(spacing: 2) {
-                            Image(systemName: "slider.horizontal.3")
-                                .font(.system(size: 24))
-                                .frame(width:iconSize, height: iconSize)
+            bottomActiosButtons
 
-                            Text("Options")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                        }
-                        .frame(width:btnSquareSize, height: btnSquareSize)
-                        .background {
-                            RoundedRectangle(cornerRadius: 8)
-                                .foregroundStyle(.secondary.opacity(0.2))
-                        }
-                    }
-                    .foregroundStyle(.primary)
-                }
-                .frame(maxWidth: .infinity)
-                .overlay(alignment: .trailing) {
-                    Button {
-                        self.makeVideoWithComposition()
-                    } label: {
-                        Image(systemName: "square.and.arrow.down")
-                            .font(.system(size: 24))
-                            .offset(y: -2)
-                            .foregroundStyle(Color(uiColor: .systemBackground))
-                            .frame(width: 44, height: 44)
-                            .background {
-                                Circle()
-                                    .foregroundStyle(.primary)
-                            }
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
-
-            }
-            .frame(maxHeight: .infinity, alignment: .bottom)
             
         }
         .overlay(content: {
@@ -146,10 +57,156 @@ struct RenderVideoEditorView: View {
             }
         })
         .onAppear {
-            if renderOptions.selectedVideoURL == nil { 
+            if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
             }
         }
+    }
+    
+    var bottomActiosButtons: some View {
+        VStack {
+            
+            let iconSize: CGFloat = 34.0
+            let btnSquareSize: CGFloat = 64.0
+            HStack {
+                Button {
+                    showImagePicker.toggle()
+                } label: {
+                    VStack(spacing: 2) {
+                        Image(systemName: "iphone.badge.play")
+                            .font(.system(size: 24))
+                            .frame(width:iconSize, height: iconSize)
+                        
+                        Text("Video")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(width:btnSquareSize, height: btnSquareSize)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.secondary.opacity(0.2))
+                    }
+                }
+                .foregroundStyle(.primary)
+                .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .videos) //.all(of: [, .screenRecordings]
+                /// Load when selected items change
+                .onChange(of: selectedItems) { newSelectedItems in
+                    processSelectedVideo(newSelectedItems)
+                }
+                
+                Button {
+                    showEditViewAction()
+                } label: {
+                    VStack(spacing: 2) {
+                        
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 24))
+                            .frame(width:iconSize, height: iconSize)
+                        
+                        Text("Options")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(width:btnSquareSize, height: btnSquareSize)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8)
+                            .foregroundStyle(.secondary.opacity(0.2))
+                    }
+                }
+                .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .trailing) {
+                Button {
+                    self.makeVideoWithComposition()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(.system(size: 24))
+                        .offset(y: -2)
+                        .foregroundStyle(Color(uiColor: .systemBackground))
+                        .frame(width: 44, height: 44)
+                        .background {
+                            Circle()
+                                .foregroundStyle(.primary)
+                        }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+            
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+    
+    var centerContentRender: some View {
+        VStack {
+            Rectangle()
+                .foregroundStyle(renderOptions.backColor)
+                .frame(width: 300, height: 300)
+                .overlay {
+                    if let thumb = renderOptions.selectedFiltered {
+                        Image(uiImage: thumb)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
+                .overlay {
+                    if let player {
+                        VideoPlayer(player: player)
+                            .scaledToFit()
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .shadow(color: .black.opacity(0.2), radius: 4.0, x: 0, y: 3)
+                .overlay {
+                    if renderState != .none {
+                        RenderStatusOverlay()
+                    }
+                }
+                .padding(.bottom, 84)
+        }
+    }
+    
+    var gearSettingsButton: some View {
+        HStack {
+            Button {
+                navPath.wrappedValue.append(Routes.settings)
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.secondary)
+                    .frame(width: 44, height: 44)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal, 16)
+    }
+    
+    @ViewBuilder
+    func RenderStatusOverlay() -> some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .foregroundStyle(.ultraThinMaterial)
+            .frame(width: 200, height: 200)
+            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+            .overlay {
+                VStack(spacing: 16) {
+                    
+                    if renderState == .rendering {
+                        Text("Rendering...")
+                            .font(.subheadline)
+
+                        ProgressView(value: 20, total: 100)
+                            .padding(.horizontal, 16)
+                            .progressViewStyle(.automatic)
+                    } else if renderState == .finish {
+                        Image(systemName: "checkmark.circle")
+                            .font(.system(size: 44))
+                            .fontWeight(.light)
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
     }
     
     func makeVideoWithComposition() {

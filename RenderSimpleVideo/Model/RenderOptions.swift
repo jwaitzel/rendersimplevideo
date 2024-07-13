@@ -13,7 +13,7 @@ class RenderOptions: ObservableObject {
     @Published var selectedVideoThumbnail: UIImage?
     @Published var selectedFiltered: UIImage?
 
-    @Published var backColor: Color = .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
+    @Published var backColor: Color = Color(uiColor: .systemGray6)// .pink// .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
     
     @Published var offsetX: CGFloat = 0.0
     @Published var offsetY: CGFloat = 0.0
