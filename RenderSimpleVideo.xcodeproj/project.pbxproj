@@ -15,6 +15,7 @@
 		3844A1242C400E4E002FE045 /* MiscExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1232C400E4E002FE045 /* MiscExtensions.swift */; };
 		3844A1262C40559A002FE045 /* VideoTransferable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1252C40559A002FE045 /* VideoTransferable.swift */; };
 		3844A12B2C4127A7002FE045 /* RenderOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A12A2C4127A7002FE045 /* RenderOptions.swift */; };
+		388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */ = {isa = PBXBuildFile; fileRef = 388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */; };
 		389466F62C3BE15700EA4632 /* RenderSimpleVideoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */; };
 		389466F82C3BE15700EA4632 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389466F72C3BE15700EA4632 /* ContentView.swift */; };
 		389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 389466F92C3BE15900EA4632 /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 		3844A1232C400E4E002FE045 /* MiscExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscExtensions.swift; sourceTree = "<group>"; };
 		3844A1252C40559A002FE045 /* VideoTransferable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTransferable.swift; sourceTree = "<group>"; };
 		3844A12A2C4127A7002FE045 /* RenderOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderOptions.swift; sourceTree = "<group>"; };
+		388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "uiux-black-sound.mov"; sourceTree = "<group>"; };
 		389466F22C3BE15700EA4632 /* RenderSimpleVideo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderSimpleVideo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderSimpleVideoApp.swift; sourceTree = "<group>"; };
 		389466F72C3BE15700EA4632 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
 				38B30B502C3D46C400369AFA /* iPhone 14 Pro - Space Black - Portrait.png */,
 				38B56F212C3EF3D10056227B /* screencap1.jpg */,
+				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
 				38AE63E42C419400002CE2C6 /* uiux-short.mp4 */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
 			);
@@ -215,6 +218,7 @@
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
 				389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */,
 				38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */,
+				388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +380,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save to Photos";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add screen captures";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -407,6 +412,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save to Photos";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add screen captures";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

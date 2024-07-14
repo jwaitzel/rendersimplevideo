@@ -104,8 +104,7 @@ class VideoComposer {
         let composition = AVMutableComposition()
         let startRenderTime = Date()
         // Create video and audio tracks in our composition
-        guard let compositionVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid),
-              let backgroundTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+        guard let compositionVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
             completion(RenderError.failedCompositionTrack)
             return
         }
@@ -115,7 +114,6 @@ class VideoComposer {
         
         // Load your video and audio assets
         let videoAsset = AVURLAsset(url: videoURL)
-//        let backAsset = AVURLAsset(url: backVideoURL)
         
         // Get the first video and audio tracks from your assets
         guard let videoTrack = videoAsset.tracks(withMediaType: .video).first else {
@@ -123,12 +121,22 @@ class VideoComposer {
             return
         }
         
+        var compositionAudioTrack: AVMutableCompositionTrack?
+        let audioTrack = videoAsset.tracks(withMediaType: .audio).first
+        if audioTrack != nil {
+            compositionAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+        }
+        
         // Define the time range for the entire video
         let timeRange = CMTimeRange(start: .zero, duration: videoAsset.duration)
         
         do {
             // Add the video track to the composition
+            compositionVideoTrack.preferredTransform = videoTrack.preferredTransform
             try compositionVideoTrack.insertTimeRange(timeRange, of: videoTrack, at: .zero)
+            if let audioTrack, let compositionAudioTrack {
+                try compositionAudioTrack.insertTimeRange(timeRange, of: audioTrack, at: .zero)
+            }
         } catch {
             completion(error)
             return
@@ -158,7 +166,7 @@ class VideoComposer {
             return
         }
 
-//        exportSession.timeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600))
+        exportSession.timeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600))
         exportSession.outputURL = outputURL
         exportSession.outputFileType = .mp4
         exportSession.videoComposition = mutableVideoComposition

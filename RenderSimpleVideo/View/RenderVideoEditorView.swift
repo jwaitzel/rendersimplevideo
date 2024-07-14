@@ -317,6 +317,7 @@ struct RenderVideoEditorView: View {
     
     func setDefaultData() {
         //uiux-short
+        //uiux-black-sound //uiux-black-sound
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
         let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
         self.renderOptions.selectedVideoThumbnail = defaultThumb
