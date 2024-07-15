@@ -12,6 +12,7 @@ enum RenderError: Error {
     case failedCompositionTrack
     case failedFetchAssetTrack
     case failedCreateExportSession
+    case failedCreateComposite
     case exportCancelled
     case unknownError
 }
@@ -71,7 +72,6 @@ class VideoComposer {
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
-        iphoneOverlayComposite.setValue(compositeBackColor.outputImage, forKey: kCIInputBackgroundImageKey)
 
         
         return (compositeBackColor, iphoneOverlayComposite, multVideoTransform)
@@ -79,13 +79,15 @@ class VideoComposer {
     
     func compositeBackground(videoSize: CGSize, sourceVideoImage: CIImage, renderOptions: RenderOptions) -> CIImage? {
         
-        let renderSize = renderOptions.renderSize
+//        let renderSize = renderOptions.renderSize
         let videoTrackSize = sourceVideoImage.extent.size
         
         guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
 
         let sourceCI = sourceVideoImage.transformed(by: videoTransform)
         compositeBackFilter.setValue(sourceCI, forKey: kCIInputImageKey)
+
+        iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
 
         
         return iphoneOverlayFilter.outputImage!
@@ -146,7 +148,7 @@ class VideoComposer {
         
         do {
             // Add the video track to the composition
-//            compositionVideoTrack.preferredTransform = videoTrack.preferredTransform
+            compositionVideoTrack.preferredTransform = videoTrack.preferredTransform
             //CMTime(seconds: videoAsset.duration.seconds / timeSpeedMultiplier, preferredTimescale: timeRange.duration.timescale)
             try compositionVideoTrack.insertTimeRange(timeRange, of: videoTrack, at: .zero)
             compositionVideoTrack.scaleTimeRange(timeRange, toDuration: videoAsset.duration)
@@ -158,25 +160,40 @@ class VideoComposer {
             completion(error)
             return
         }
+
+        var videoTrackSize = compositionVideoTrack.naturalSize
+        let videoPreferredTransform = videoTrack.preferredTransform
+        var isVideoAssetPortrait: Bool = false
+        if(videoPreferredTransform.a == 0 && videoPreferredTransform.b == 1.0 && videoPreferredTransform.c == -1.0 && videoPreferredTransform.d == 0)  { isVideoAssetPortrait = true}
+        if(videoPreferredTransform.a == 0 && videoPreferredTransform.b == -1.0 && videoPreferredTransform.c == 1.0 && videoPreferredTransform.d == 0)  { isVideoAssetPortrait = true}
+
+        videoTrackSize = CGSize(width: videoTrackSize.height, height: videoTrackSize.width)
         
-//        let instruction = AVMutableVideoCompositionInstruction()
-//        instruction.timeRange = timeRange
+        guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else {
+            completion(RenderError.failedCreateComposite)
+            return
+        }
         
-        let videoTrackSize = compositionVideoTrack.naturalSize
-        print("Video natural size \(videoTrackSize)")
+
+
+
+        print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
         let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
             
             let sourceImg = filteringRequest.sourceImage
-            let sourceImgTransf = sourceImg.transformed(by: videoTrack.preferredTransform)
+            let sourceImgTransf = sourceImg.transformed(by: videoTransform)
+            compositeBackFilter.setValue(sourceImgTransf, forKey: kCIInputImageKey)
+            
+            iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
             
             print("sourceImg \(sourceImg.extent)")
-            guard let iphoneOverlayComposite = self.compositeBackground(videoSize: videoTrackSize, sourceVideoImage: sourceImgTransf, renderOptions: renderOptions) else {
-                print("Failed composite"); return
-            }
+//            guard let iphoneOverlayComposite = self.compositeBackground(videoSize: videoTrackSize, sourceVideoImage: sourceImgTransf, renderOptions: renderOptions) else {
+//                print("Failed composite"); return
+//            }
             progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
             
             // Provide the filter output to the composition
-            filteringRequest.finish(with: iphoneOverlayComposite, context: nil)
+            filteringRequest.finish(with: iphoneOverlayFilter.outputImage!, context: nil)
         }
         
         mutableVideoComposition.renderSize = renderOptions.renderSize
@@ -208,91 +225,6 @@ class VideoComposer {
             }
         }
     }
-    
-    func createVideoFromImage(_ image: CGImage, duration: TimeInterval, outputURL: URL, completion: @escaping ()->()) throws {
-        
-        let size = CGSize(width: image.width, height: image.height)
-        
-        // Set up the AVAssetWriter
-        let assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: .mp4)
-        let videoSettings: [String: Any] = [
-            AVVideoCodecKey: AVVideoCodecType.h264,
-            AVVideoWidthKey: size.width,
-            AVVideoHeightKey: size.height
-        ]
-        let assetWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: assetWriterInput, sourcePixelBufferAttributes: nil)
-        
-        assetWriter.add(assetWriterInput)
-        assetWriter.startWriting()
-        assetWriter.startSession(atSourceTime: .zero)
-        
-        // Create a CVPixelBuffer from the CGImage
-        let pixelBuffer = try createPixelBuffer(from: image)
-        
-        // Calculate the number of frames
-        let fps = 30
-        let totalFrames = Int(duration * Double(fps))
-        let timescale: Int32 = 600
-        let frameDuration = CMTimeMake(value: Int64(timescale / Int32(fps)), timescale: timescale)
-        var imageIndex = 0
-
-        print("total frames \(totalFrames) \(frameDuration.seconds)")
-        
-        // Write frames
-        let queue = DispatchQueue(label: "com.videowriter.queue")
-        assetWriterInput.requestMediaDataWhenReady(on: queue) {
-            print("request more")
-            if assetWriterInput.isReadyForMoreMediaData {
-                let presentationTime = CMTimeMultiply(frameDuration, multiplier: Int32(imageIndex))
-                adaptor.append(pixelBuffer, withPresentationTime: presentationTime)
-                print("adding frame \(imageIndex) \(presentationTime)")
-                imageIndex += 1
-            }
-            
-            if imageIndex >= totalFrames {
-                assetWriterInput.markAsFinished()
-                assetWriter.finishWriting {
-                    print("Video writing completed")
-                    completion()
-                }
-            }
-        }
-    }
-    
-    func createPixelBuffer(from image: CGImage) throws -> CVPixelBuffer {
-        let attributes: [String: Any] = [
-            kCVPixelBufferCGImageCompatibilityKey as String: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey as String: true
-        ]
-        
-        var pixelBuffer: CVPixelBuffer?
-        let status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                         image.width,
-                                         image.height,
-                                         kCVPixelFormatType_32ARGB,
-                                         attributes as CFDictionary,
-                                         &pixelBuffer)
-        
-        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
-            throw NSError(domain: "PixelBufferCreation", code: 1, userInfo: nil)
-        }
-        
-        CVPixelBufferLockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
-        let context = CGContext(data: CVPixelBufferGetBaseAddress(buffer),
-                                width: image.width,
-                                height: image.height,
-                                bitsPerComponent: 8,
-                                bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
-                                space: CGColorSpaceCreateDeviceRGB(),
-                                bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
-        
-        context?.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
-        CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
-        
-        return buffer
-    }
-    
     
 }
 
