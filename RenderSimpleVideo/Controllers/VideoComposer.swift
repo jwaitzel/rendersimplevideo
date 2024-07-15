@@ -167,7 +167,9 @@ class VideoComposer {
         if(videoPreferredTransform.a == 0 && videoPreferredTransform.b == 1.0 && videoPreferredTransform.c == -1.0 && videoPreferredTransform.d == 0)  { isVideoAssetPortrait = true}
         if(videoPreferredTransform.a == 0 && videoPreferredTransform.b == -1.0 && videoPreferredTransform.c == 1.0 && videoPreferredTransform.d == 0)  { isVideoAssetPortrait = true}
 
-        videoTrackSize = CGSize(width: videoTrackSize.height, height: videoTrackSize.width)
+        if isVideoAssetPortrait {
+            videoTrackSize = CGSize(width: videoTrackSize.height, height: videoTrackSize.width)
+        }
         
         guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else {
             completion(RenderError.failedCreateComposite)
