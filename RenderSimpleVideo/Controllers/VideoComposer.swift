@@ -77,11 +77,13 @@ class VideoComposer {
         return (compositeBackColor, iphoneOverlayComposite, multVideoTransform)
     }
     
-    func compositeBackground(videoSize: CGSize, sourceVideoImage: CIImage, renderOptions: RenderOptions) -> CIImage? {
+    func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions) -> UIImage? {
         
-//        let renderSize = renderOptions.renderSize
-        let videoTrackSize = sourceVideoImage.extent.size
-        
+        let renderSize = renderOptions.renderSize
+        let videoTrackSize = screenImage.size
+        let sourceVideoImage = CIImage(image: screenImage)!
+        print("Video track size \(videoTrackSize)")
+
         guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
 
         let sourceCI = sourceVideoImage.transformed(by: videoTransform)
@@ -89,22 +91,7 @@ class VideoComposer {
 
         iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
 
-        
-        return iphoneOverlayFilter.outputImage!
-    }
-    
-    func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions) -> UIImage? {
-        
-        let renderSize = renderOptions.renderSize
-        let videoTrackSize = screenImage.size
-        let sourceCI = CIImage(image: screenImage)!
-        print("Video track size \(videoTrackSize)")
-
-        guard let iphoneOverlayCompositeImg = compositeBackground(videoSize: videoTrackSize, sourceVideoImage: sourceCI, renderOptions: renderOptions) else {
-            print("Failed composite"); return nil
-        }
-        
-        let outputCI = iphoneOverlayCompositeImg //compositeColor.outputImage! // //
+        let outputCI = iphoneOverlayFilter.outputImage!
 
         let context = CIContext()
         let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
@@ -177,8 +164,6 @@ class VideoComposer {
         }
         
 
-
-
         print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
         let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
             
@@ -189,9 +174,6 @@ class VideoComposer {
             iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
             
             print("sourceImg \(sourceImg.extent)")
-//            guard let iphoneOverlayComposite = self.compositeBackground(videoSize: videoTrackSize, sourceVideoImage: sourceImgTransf, renderOptions: renderOptions) else {
-//                print("Failed composite"); return
-//            }
             progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
             
             // Provide the filter output to the composition
