@@ -1,6 +1,6 @@
 //
 //  ToSAndPPView.swift
-//  HostsWorld
+//  RenderSampleVideo
 //
 //  Created by javi www on 6/7/23.
 //
@@ -28,9 +28,9 @@ struct ToSAndPPView_Previews: PreviewProvider {
 }
 
 let tosAllText = """
-Terms of Service for Real Estate Zoom & Showcase
+Terms of Service for Simple Video Mockup
 Last updated: June 2024
-Please read these Terms of Service ("Terms") carefully before using the Real Estate Zoom & Showcase mobile application (the "Service") operated by JRWAppDev ("us", "we", or "our").
+Please read these Terms of Service ("Terms") carefully before using the Simple Video Mockup mobile application (the "Service") operated by JRWAppDev ("us", "we", or "our").
 
 Acceptance of Terms
 
@@ -38,7 +38,7 @@ By using the Service, you agree to these Terms. If you disagree with any part of
 
 Description of Service
 
-Real Estate Zoom & Showcase is a mobile application designed to create GIFs for real estate advertisements. The app operates locally on your device and does not collect or transmit any user data.
+Simple Video Mockup is a mobile application designed to create GIFs for real estate advertisements. The app operates locally on your device and does not collect or transmit any user data.
 
 Use of Service
 
@@ -63,19 +63,19 @@ We reserve the right to modify or replace these Terms at any time. By continuing
 Contact Us
 
 If you have any questions about these Terms, please contact us at jrwappdev@gmail.com.
-By using Real Estate Zoom & Showcase, you acknowledge that you have read and understood these Terms.
+By using Simple Video Mockup, you acknowledge that you have read and understood these Terms.
 
 """
 
 
 let ppText = """
-Privacy Policy for Real Estate Zoom & Showcase
+Privacy Policy for Simple Video Mockup
 Last updated: June 2024
-JRWAppDev ("we", "us", or "our") operates the Real Estate Zoom & Showcase mobile application (the "Service"). This policy informs you of our approach to privacy and data handling.
+JRWAppDev ("we", "us", or "our") operates the Simple Video Mockup mobile application (the "Service"). This policy informs you of our approach to privacy and data handling.
 
 No Data Collection
 
-We do not collect, store, or process any personal data or usage information. The Real Estate Zoom & Showcase app functions solely to create GIFs and does not require or gather any user data to operate.
+We do not collect, store, or process any personal data or usage information. The Simple Video Mockup app functions solely to create GIFs and does not require or gather any user data to operate.
 
 App Functionality
 

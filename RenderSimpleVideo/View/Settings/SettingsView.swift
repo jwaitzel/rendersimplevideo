@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  AnimatedZoomMap
+//  RenderSampleVideo
 //
 //  Created by javi www on 7/1/24.
 //

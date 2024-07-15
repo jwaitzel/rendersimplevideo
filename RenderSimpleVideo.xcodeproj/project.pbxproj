@@ -379,6 +379,7 @@
 				DEVELOPMENT_TEAM = W95X63KDL2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Video Mockup";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save to Photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add screen captures";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -411,6 +412,7 @@
 				DEVELOPMENT_TEAM = W95X63KDL2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Video Mockup";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save to Photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Add screen captures";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

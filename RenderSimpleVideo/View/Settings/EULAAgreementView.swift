@@ -1,6 +1,6 @@
 //
 //  EULAAgreementView.swift
-//  HostsWorld
+//  RenderSampleVideo
 //
 //  Created by javi www on 6/21/23.
 //
@@ -26,7 +26,7 @@ struct EULAAgreementView_Previews: PreviewProvider {
 }
 
 let eulaAllText = """
-End User License Agreement for Real Estate Zoom & Showcase
+End User License Agreement for Simple Video Mockup
 This End User License Agreement ("Agreement") is a legal agreement between you (either an individual or a single entity) and JRWAppDev ("Company") for the software product identified above, which includes computer software and may include associated media, printed materials, and "online" or electronic documentation ("Software").
 By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this Agreement. If you do not agree to the terms of this Agreement, do not install or use the Software.
 
@@ -46,7 +46,7 @@ The Software is provided "AS IS" without warranty of any kind, either express or
 LIMITATION OF LIABILITY
 In no event shall the Company be liable for any damages whatsoever arising out of the use of or inability to use this Software.
 
-By using Real Estate Zoom & Showcase, you acknowledge that you have read this Agreement, understand it, and agree to be bound by its terms and conditions.
+By using Simple Video Mockup, you acknowledge that you have read this Agreement, understand it, and agree to be bound by its terms and conditions.
 
 """
 
