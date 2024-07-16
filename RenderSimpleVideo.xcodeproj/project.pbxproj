@@ -21,6 +21,7 @@
 		388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DE2C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png */; };
 		388D91E32C46A3FA00ABFC8E /* iPhone 15 Pro - Black Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DC2C46A3FA00ABFC8E /* iPhone 15 Pro - Black Titanium - Portrait.png */; };
 		388D91E42C46A3FA00ABFC8E /* iPhone 15 Pro - Blue Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DD2C46A3FA00ABFC8E /* iPhone 15 Pro - Blue Titanium - Portrait.png */; };
+		388D91E62C46A9B900ABFC8E /* WelcomeSimpleModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 388D91E52C46A9B900ABFC8E /* WelcomeSimpleModalView.swift */; };
 		389466F62C3BE15700EA4632 /* RenderSimpleVideoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */; };
 		389466F82C3BE15700EA4632 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389466F72C3BE15700EA4632 /* ContentView.swift */; };
 		389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 389466F92C3BE15900EA4632 /* Assets.xcassets */; };
@@ -49,6 +50,7 @@
 		388D91DD2C46A3FA00ABFC8E /* iPhone 15 Pro - Blue Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Blue Titanium - Portrait.png"; sourceTree = "<group>"; };
 		388D91DE2C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Natural Titanium - Portrait.png"; sourceTree = "<group>"; };
 		388D91DF2C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - White Titanium - Portrait.png"; sourceTree = "<group>"; };
+		388D91E52C46A9B900ABFC8E /* WelcomeSimpleModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeSimpleModalView.swift; sourceTree = "<group>"; };
 		389466F22C3BE15700EA4632 /* RenderSimpleVideo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderSimpleVideo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderSimpleVideoApp.swift; sourceTree = "<group>"; };
 		389466F72C3BE15700EA4632 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
 				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
 				388D91DA2C46961400ABFC8E /* ResultRenderView.swift */,
+				388D91E52C46A9B900ABFC8E /* WelcomeSimpleModalView.swift */,
 				3844A11E2C3FFFA3002FE045 /* Settings */,
 			);
 			path = View;
@@ -261,6 +264,7 @@
 				389466F82C3BE15700EA4632 /* ContentView.swift in Sources */,
 				3844A1202C3FFFB7002FE045 /* MainView.swift in Sources */,
 				38B56F202C3EF2540056227B /* VideoOptionsView.swift in Sources */,
+				388D91E62C46A9B900ABFC8E /* WelcomeSimpleModalView.swift in Sources */,
 				389466F62C3BE15700EA4632 /* RenderSimpleVideoApp.swift in Sources */,
 				3844A12B2C4127A7002FE045 /* RenderOptions.swift in Sources */,
 				3844A1222C400033002FE045 /* AppState.swift in Sources */,

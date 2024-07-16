@@ -11,6 +11,12 @@ struct MainView: View {
     
     @ObservedObject var appState: AppState = .shared
     
+    @AppStorage("didShowWelcome") var didShowWelcome: Bool = false
+
+    @State private var showWelcome: Bool = false
+    
+
+    
     var body: some View {
         
         NavigationStack(path: $appState.navPath) {
@@ -28,6 +34,10 @@ struct MainView: View {
                     }
                 }
         }
+        .sheet(isPresented: $showWelcome, content: {
+            WelcomeSimpleModalView()
+        })
+
         
     }
 }
