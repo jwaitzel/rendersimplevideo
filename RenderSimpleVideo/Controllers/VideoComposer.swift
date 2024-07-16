@@ -72,7 +72,6 @@ class VideoComposer {
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
-
         
         return (compositeBackColor, iphoneOverlayComposite, multVideoTransform)
     }
@@ -173,7 +172,7 @@ class VideoComposer {
             
             iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
             
-            print("sourceImg \(sourceImg.extent)")
+//            print("sourceImg \(sourceImg.extent)")
             progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
             
             // Provide the filter output to the composition
@@ -183,7 +182,8 @@ class VideoComposer {
         mutableVideoComposition.renderSize = renderOptions.renderSize
         
         // Set up an AVAssetExportSession to export the composition
-        guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetMediumQuality) else {
+        //AVAssetExportPresetMediumQuality
+        guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
             completion(RenderError.failedCreateExportSession)
             return
         }

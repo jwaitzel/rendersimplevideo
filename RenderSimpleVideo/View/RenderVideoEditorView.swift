@@ -12,9 +12,7 @@ import PhotosUI
 
 
 struct RenderVideoEditorView: View {
-    
-    @State private var player: AVPlayer?
-    
+        
     @State private var videoComposer: VideoComposer = .init()
     
     @Environment(\.containerNavPath) var navPath
@@ -27,6 +25,8 @@ struct RenderVideoEditorView: View {
     
     @StateObject var renderOptions: RenderOptions = .init()
     
+    @State private var showRenderResultView: Bool = false
+    
     enum RenderState {
         case none
         case rendering
@@ -36,7 +36,7 @@ struct RenderVideoEditorView: View {
     @State private var renderState: RenderState = .none
     @State private var renderProgress: CGFloat = 0
     
-    
+    @State private var renderVideoURL: URL?
     
     var body: some View {
         
@@ -48,7 +48,6 @@ struct RenderVideoEditorView: View {
 
             bottomActiosButtons
 
-            
         }
         .overlay(content: {
             if showVideoOptions {
@@ -56,9 +55,18 @@ struct RenderVideoEditorView: View {
                     .environmentObject(renderOptions)
             }
         })
+
         .onAppear {
             if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
+            }
+        }
+        .overlay {
+            if renderState == .rendering {
+                Rectangle()
+                    .foregroundStyle(.black.opacity(0.2))
+                    .ignoresSafeArea()
+                    .onTapGesture { }
             }
         }
     }
@@ -68,6 +76,7 @@ struct RenderVideoEditorView: View {
             
             let iconSize: CGFloat = 34.0
             let btnSquareSize: CGFloat = 64.0
+            
             HStack {
                 Button {
                     showImagePicker.toggle()
@@ -88,7 +97,7 @@ struct RenderVideoEditorView: View {
                     }
                 }
                 .foregroundStyle(.primary)
-                .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .videos) //.all(of: [, .screenRecordings]
+                .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
                 /// Load when selected items change
                 .onChange(of: selectedItems) { newSelectedItems in
                     processSelectedVideo(newSelectedItems)
@@ -118,6 +127,7 @@ struct RenderVideoEditorView: View {
             .frame(maxWidth: .infinity)
             .overlay(alignment: .trailing) {
                 Button {
+//                    showRenderResultView = true
                     self.makeVideoWithComposition()
                 } label: {
                     Image(systemName: "square.and.arrow.down")
@@ -136,6 +146,11 @@ struct RenderVideoEditorView: View {
             
         }
         .frame(maxHeight: .infinity, alignment: .bottom)
+        .sheet(isPresented: $showRenderResultView, content: {
+            if let renderVideoURL {
+                ResultRenderView(videoURL: renderVideoURL)
+            }
+        })
     }
     
     var centerContentRender: some View {
@@ -148,12 +163,6 @@ struct RenderVideoEditorView: View {
                         Image(uiImage: thumb)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                    }
-                }
-                .overlay {
-                    if let player {
-                        VideoPlayer(player: player)
-                            .scaledToFit()
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -209,6 +218,29 @@ struct RenderVideoEditorView: View {
             }
     }
     
+    @ViewBuilder
+    func OptionsOverlayView() -> some View {
+        ZStack {
+            Rectangle()
+                .foregroundStyle(Color.black.opacity(0.6))
+            
+            Rectangle()
+                .foregroundStyle(.ultraThinMaterial)
+                .contentShape(.rect)
+                .onTapGesture {
+                    withAnimation(.linear(duration: 0.23)) {
+                        showVideoOptions = false
+                    }
+                }
+
+            VideoOptionsView(screenImage: self.renderOptions.selectedVideoThumbnail!)
+                .transition(.scale.combined(with: .opacity))
+
+        }
+        .ignoresSafeArea()
+    }
+    
+    
     func makeVideoWithComposition() {
         
         guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
@@ -229,10 +261,9 @@ struct RenderVideoEditorView: View {
             } else {
                 print("Completed \(outputURL)")
                 DispatchQueue.main.async {
-                    self.player = AVPlayer(url: outputURL)
-                    self.shareContent(videoURL: outputURL)
-                    
-                    DispatchQueue.main.async {
+                    self.renderVideoURL = outputURL
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.showRenderResultView = true
                         self.renderState = .finish
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                             withAnimation(.easeInOut) {
@@ -246,19 +277,6 @@ struct RenderVideoEditorView: View {
             
         }
         
-    }
-    
-    func shareContent(videoURL: URL) {
-        
-        let itemsToShare = [videoURL] // Add more items if needed (e.g., URLs, images)
-        
-        let activityViewController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
-        
-        guard let rootVC = UIApplication.shared.connectedScenes.compactMap({$0 as? UIWindowScene}).first?.windows.first?.rootViewController else{
-            return
-        }
-
-        rootVC.present(activityViewController, animated: true, completion: nil)
     }
     
     func processSelectedVideo(_ newSelectedItems: [PhotosPickerItem]) {
@@ -326,28 +344,6 @@ struct RenderVideoEditorView: View {
 
     }
     
-    @ViewBuilder
-    func OptionsOverlayView() -> some View {
-        ZStack {
-            Rectangle()
-                .foregroundStyle(Color.black.opacity(0.6))
-            
-            Rectangle()
-                .foregroundStyle(.ultraThinMaterial)
-                .contentShape(.rect)
-                .onTapGesture {
-                    withAnimation(.linear(duration: 0.23)) {
-                        showVideoOptions = false
-        //                showOptionsBackground = false
-                    }
-                }
-
-            VideoOptionsView(screenImage: self.renderOptions.selectedVideoThumbnail!)
-                .transition(.scale.combined(with: .opacity))
-
-        }
-        .ignoresSafeArea()
-    }
     
     func showEditViewAction() {
         withAnimation(.easeOut(duration: 0.3)) {
