@@ -12,13 +12,11 @@ struct VideoOptionsView: View {
     let videoComposer = VideoComposer()
     
     var screenImage: UIImage
-    
-//    @State private var screenFiltered: UIImage?
-    
+        
     @EnvironmentObject var renderOptions: RenderOptions
     
     @State private var timer: Timer?
-        
+    
     var body: some View {
         VStack {
             if let appImg = self.renderOptions.selectedFiltered {
@@ -26,7 +24,8 @@ struct VideoOptionsView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300)
-                    .border(.black.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .shadow(color: .black.opacity(0.2), radius: 4.0, x: 0, y: 3)
                     .padding(.bottom, 24)
             }
             
@@ -35,6 +34,7 @@ struct VideoOptionsView: View {
                     Text("Back Color")
                         .frame(width: 120, alignment: .trailing)
                 })
+                .onTapGesture {}
                                     
                 BlenderStyleInput(value: $renderOptions.offsetX, title: "Position X")
                 
@@ -47,10 +47,30 @@ struct VideoOptionsView: View {
 //
 //                BlenderStyleInput(value: $offsetMask.y, title: "Y", unitStr: "px", unitScale: 1)
 //
-//                BlenderStyleInput(value: $scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
+//                BlenderStyleInput(value: $renderOptions.scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
 //
 //                BlenderStyleInput(value: $maskCorners, title: "Mask Corners", unitStr: "px")
 
+                HStack {
+                    Text("iPhone Color")
+                        .frame(width: 120, alignment: .trailing)
+                    
+                    Picker("", selection: $renderOptions.selectediPhoneColor) {
+                        ForEach(0..<iPhoneColorOptions.allCases.count, id: \.self) { idx in
+                            let iPhoneColor = iPhoneColorOptions.allCases[idx]
+                            Text(iPhoneColor.rawValue)
+                                .tag(iPhoneColor)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: renderOptions.selectediPhoneColor) { newVal in
+                        renderOptions.selectediPhoneOverlay = newVal.image()
+                        self.applyFilters()
+                    }
+                }
+                
+
+                    
 
             }
             .padding(.horizontal, 16)
@@ -60,7 +80,7 @@ struct VideoOptionsView: View {
             print("onAppear")
             applyFilters()
         }
-        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners)) { _ in
+        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask)) { _ in
             applyFilters()
         }
         .onChange(of: renderOptions.backColor) { _ in

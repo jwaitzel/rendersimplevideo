@@ -7,6 +7,31 @@
 
 import SwiftUI
 
+enum iPhoneColorOptions: String, CaseIterable {
+    case black
+    case blue
+    case natural
+    case white
+    
+    func image() -> UIImage {
+        var imgName = "iPhone 15 Pro - Black Titanium - Portrait"
+        switch self {
+        case .black:
+            imgName = "iPhone 15 Pro - Black Titanium - Portrait"
+        case .blue:
+            imgName = "iPhone 15 Pro - Blue Titanium - Portrait"
+        case .natural:
+            imgName = "iPhone 15 Pro - Natural Titanium - Portrait"
+        case .white:
+            imgName = "iPhone 15 Pro - White Titanium - Portrait"
+        }
+        
+        var imgURL: URL = Bundle.main.url(forResource: imgName, withExtension: "png")!
+        let iphoneOverlayImg = UIImage(contentsOfFile: imgURL.path)!
+        return iphoneOverlayImg
+    }
+}
+
 class RenderOptions: ObservableObject {
     
     @Published var selectedVideoURL: URL?
@@ -19,9 +44,19 @@ class RenderOptions: ObservableObject {
     @Published var offsetY: CGFloat = 0.0
     
     @Published var scaleVideo: CGFloat = 90.0
+    @Published var scaleMask: CGFloat = 94.0
+
     @Published var maskCorners: CGFloat = 55.0
     
     @Published var renderSize: CGSize = .init(width: 1024, height: 1024)
+    
+    @Published var selectediPhoneOverlay: UIImage?
+    
+    @Published var selectediPhoneColor: iPhoneColorOptions = .black
+    
+    init() {
+        self.selectediPhoneOverlay = selectediPhoneColor.image()
+    }
     
 }
 

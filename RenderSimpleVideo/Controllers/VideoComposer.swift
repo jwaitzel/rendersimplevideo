@@ -44,13 +44,13 @@ class VideoComposer {
         print("Video track size \(videoFrameSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
         
         /// Overlay Image
-        let iphoneOverlayImgURL = Bundle.main.url(forResource: "iPhone 14 Pro - Space Black - Portrait", withExtension: "png")!
-        let iphoneOverlayImg = UIImage(contentsOfFile: iphoneOverlayImgURL.path)!
+        guard let iphoneOverlayImg = renderOptions.selectediPhoneOverlay else { print("no overlay"); return nil }
         guard let iphoneOverlay: CIImage =  CIImage(image: iphoneOverlayImg) else { print("error ci overlay"); return nil }
 
         /// Overlay Transform
         let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
-        let overlayScaleParameter = (renderOptions.scaleVideo * 1.06) / 100.0
+        let overlayScaleParameter = (renderOptions.scaleVideo * 1.09) / 100.0 //renderOptions.scaleMask / 100 
+        print("overlays scale \(overlayScaleParameter)")
         let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
         let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
         let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
