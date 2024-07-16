@@ -68,6 +68,12 @@ class VideoComposer {
         roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
         compositeBackColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
         
+        let shadowRoundedRectGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
+        shadowRoundedRectGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
+        shadowRoundedRectGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
+        shadowRoundedRectGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
+
+        
         /// Composite background with video
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)

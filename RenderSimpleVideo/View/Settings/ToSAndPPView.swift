@@ -91,6 +91,6 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 
 Contact Us
 
-If you have any questions about this Privacy Policy, please contact us at [Your Contact Information].
+If you have any questions about this Privacy Policy, please contact us at jrwappdev@gmail.com.
 By using the Service, you acknowledge that you have read and understood this policy.
 """
