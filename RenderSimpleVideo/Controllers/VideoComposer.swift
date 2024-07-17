@@ -73,8 +73,8 @@ class VideoComposer {
         let shadowRescaleY = ovlerlayAddedScale * 0.94
         let shadowResize = CGSize(width: iphoneOverlay.extent.width * shadowRescaleX, height: iphoneOverlay.extent.height * shadowRescaleY)
         let shadowTranformScale = CGAffineTransform(scaleX: shadowRescaleX, y: shadowRescaleY)
-        let shadowTranslationX = renderSize.width / 2.0 - shadowResize.width / 2.0 + renderOptions.shadowOffset.x
-        let shadowTranslationY = renderSize.height / 2.0 - shadowResize.height / 2.0 + renderOptions.shadowOffset.y
+        let shadowTranslationX = renderSize.width / 2.0 - shadowResize.width / 2.0 + renderOptions.shadowOffset.x + renderOptions.offsetX
+        let shadowTranslationY = renderSize.height / 2.0 - shadowResize.height / 2.0 + renderOptions.shadowOffset.y + renderOptions.offsetY
         let shadowTranslationTransform = CGAffineTransform(translationX: shadowTranslationX, y: shadowTranslationY)
         let shadowAllTransform = shadowTranformScale.concatenating(shadowTranslationTransform)
 
