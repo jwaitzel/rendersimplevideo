@@ -69,13 +69,25 @@ class VideoComposer {
         
         ///Shadow for video
         let shadowRoundedRectGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
-        shadowRoundedRectGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
-        shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(1.0)), forKey: kCIInputColorKey)
-        shadowRoundedRectGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
+        let shadowRescaleX = ovlerlayAddedScale * 0.91
+        let shadowRescaleY = ovlerlayAddedScale * 0.94
+        let shadowResize = CGSize(width: iphoneOverlay.extent.width * shadowRescaleX, height: iphoneOverlay.extent.height * shadowRescaleY)
+        let shadowTranformScale = CGAffineTransform(scaleX: shadowRescaleX, y: shadowRescaleY)
+        let shadowTranslationX = renderSize.width / 2.0 - shadowResize.width / 2.0 + renderOptions.shadowOffset.x
+        let shadowTranslationY = renderSize.height / 2.0 - shadowResize.height / 2.0 + renderOptions.shadowOffset.y
+        let shadowTranslationTransform = CGAffineTransform(translationX: shadowTranslationX, y: shadowTranslationY)
+        let shadowAllTransform = shadowTranformScale.concatenating(shadowTranslationTransform)
+
+//        let shadowTranslation = CGAffineTransform(translationX: renderOptions.shadowOffset.x, y: renderOptions.shadowOffset.y)
+        let shadowRect = CGRectApplyAffineTransform(iphoneOverlay.extent, shadowAllTransform)
+        shadowRoundedRectGenerator.setValue(shadowRect, forKey: kCIInputExtentKey)
+        let shadowOpacityScaled = renderOptions.shadowOpacity / 100
+        shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(shadowOpacityScaled)), forKey: kCIInputColorKey)
+        shadowRoundedRectGenerator.setValue(adjustCorners * 1.45, forKey: kCIInputRadiusKey)
         
         let blurFilter = CIFilter(name: "CIGaussianBlur")!
         blurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
-        blurFilter.setValue(30, forKey: kCIInputRadiusKey)
+        blurFilter.setValue(renderOptions.shadowRadius , forKey: kCIInputRadiusKey)
 
         let backAndShadowComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
         backAndShadowComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)

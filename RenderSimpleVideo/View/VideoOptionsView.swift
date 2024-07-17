@@ -34,23 +34,19 @@ struct VideoOptionsView: View {
                     Text("Back Color")
                         .frame(width: 120, alignment: .trailing)
                 })
-                .onTapGesture {}
+                .background {
+                    Rectangle()
+                        .foregroundStyle(.clear)
+                        .onTapGesture {}
+                }
+                
                                     
                 BlenderStyleInput(value: $renderOptions.offsetX, title: "Position X")
                 
                 BlenderStyleInput(value: $renderOptions.offsetY, title: "Y")
                 
                 BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale Video", unitStr: "%", unitScale: 0.1)
-                
-                
-//                BlenderStyleInput(value: $offsetMask.x, title: "Mask X", unitStr: "px", unitScale: 1)
-//
-//                BlenderStyleInput(value: $offsetMask.y, title: "Y", unitStr: "px", unitScale: 1)
-//
-//                BlenderStyleInput(value: $renderOptions.scaleMask, title: "Scale iPhone", unitStr: "%", unitScale: 0.1)
-//
-//                BlenderStyleInput(value: $maskCorners, title: "Mask Corners", unitStr: "px")
-
+                                
                 HStack {
                     Text("iPhone Color")
                         .frame(width: 120, alignment: .trailing)
@@ -69,6 +65,13 @@ struct VideoOptionsView: View {
                     }
                 }
                 
+                BlenderStyleInput(value: $renderOptions.shadowOffset.x, title: "Shadow X", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.shadowOffset.y, title: "Y", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Radius", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1)
 
                     
 
@@ -80,9 +83,12 @@ struct VideoOptionsView: View {
             print("onAppear")
             applyFilters()
         }
-        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask)) { _ in
+        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask + renderOptions.shadowOffset.x + renderOptions.shadowOffset.y + renderOptions.shadowRadius + renderOptions.shadowOpacity)) { _ in
             applyFilters()
         }
+//        .onChange(of: renderOptions, perform: { value in
+//            applyFilters()
+//        })
         .onChange(of: renderOptions.backColor) { _ in
             applyFilters()
         }

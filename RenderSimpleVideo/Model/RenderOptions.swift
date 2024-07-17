@@ -54,6 +54,10 @@ class RenderOptions: ObservableObject {
     
     @Published var selectediPhoneColor: iPhoneColorOptions = .black
     
+    @Published var shadowOffset: CGPoint = .zero
+    @Published var shadowRadius: CGFloat = 16
+    @Published var shadowOpacity: CGFloat = 80.0
+
     init() {
         self.selectediPhoneOverlay = selectediPhoneColor.image()
     }
