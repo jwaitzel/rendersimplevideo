@@ -32,31 +32,44 @@ enum iPhoneColorOptions: String, CaseIterable {
     }
 }
 
+enum TextZPosition: String, CaseIterable {
+    case Behind
+    case Infront
+}
+
 class RenderOptions: ObservableObject {
     
     @Published var selectedVideoURL: URL?
     @Published var selectedVideoThumbnail: UIImage?
     @Published var selectedFiltered: UIImage?
-
-    @Published var backColor: Color = Color(uiColor: .systemGray6)// .pink// .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
     
+    @Published var renderSize: CGSize = .init(width: 1024, height: 1024)
+
     @Published var offsetX: CGFloat = 0.0
     @Published var offsetY: CGFloat = 0.0
     
     @Published var scaleVideo: CGFloat = 90.0
     @Published var scaleMask: CGFloat = 94.0
-
     @Published var maskCorners: CGFloat = 55.0
     
-    @Published var renderSize: CGSize = .init(width: 1024, height: 1024)
-    
+    @Published var videoSpeed: CGFloat = 100.0
+
     @Published var selectediPhoneOverlay: UIImage?
-    
     @Published var selectediPhoneColor: iPhoneColorOptions = .black
     
+    @Published var backColor: Color = Color(uiColor: .systemGray6)// .pink// .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
+
     @Published var shadowOffset: CGPoint = .zero
     @Published var shadowRadius: CGFloat = 16
     @Published var shadowOpacity: CGFloat = 80.0
+    
+    @Published var overlayText: String = ""
+    @Published var overlayTextOffset: CGPoint = .zero
+    @Published var overlayTextFontSize: CGFloat = 44
+    @Published var overlayTextScale: CGFloat = 100
+    @Published var overlayTextColor: UIColor = .black
+    @Published var overlayTextRotation: CGFloat = 0
+    @Published var overlayTextZPosition: TextZPosition = .Behind
 
     init() {
         self.selectediPhoneOverlay = selectediPhoneColor.image()

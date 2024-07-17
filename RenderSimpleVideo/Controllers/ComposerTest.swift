@@ -57,7 +57,30 @@ struct ComposerTest: View {
         compositeBackColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
         compositeBackColor.setValue(blurFilter.outputImage, forKey: kCIInputImageKey)
         
-        let outputCI = compositeBackColor.outputImage!
+        let fontSize: CGFloat = 120
+        let text = "Javi"
+        let color = UIColor.green
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: fontSize),
+            .foregroundColor: color
+        ]
+        let attributedString = NSAttributedString(string: text, attributes: attributes)
+        
+        // Create a CIImage from the attributed string
+        let textGenerator = CIFilter(name: "CIAttributedTextImageGenerator")
+        textGenerator?.setValue(attributedString, forKey: "inputText")
+        textGenerator?.setValue(1, forKey: "inputScaleFactor")
+        
+        guard let textImage = textGenerator?.outputImage else { return }
+        print("extent text \(textImage.extent)")
+        let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+        textComposite.setValue(compositeBackColor.outputImage, forKey: kCIInputBackgroundImageKey)
+        
+        let translateText = CGAffineTransform(translationX: 200, y: 400)
+        textComposite.setValue(textImage.transformed(by: translateText), forKey: kCIInputImageKey)
+
+        
+        let outputCI = textComposite.outputImage!
 
         let renderSize = CGSize(width: 1024, height: 1024)
         let context = CIContext()
