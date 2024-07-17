@@ -39,8 +39,7 @@ class VideoComposer {
         
         /// Mask Composite with background and masked screen
         let compositeBackColor = CIFilter(name: "CIBlendWithMask")! //CIBlendWithMask //CISourceOverCompositing
-        compositeBackColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-
+        
         print("Video track size \(videoFrameSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
         
         /// Overlay Image
@@ -68,10 +67,21 @@ class VideoComposer {
         roundedRectangleGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
         compositeBackColor.setValue(roundedRectangleGenerator.outputImage, forKey: kCIInputMaskImageKey)
         
+        ///Shadow for video
         let shadowRoundedRectGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
         shadowRoundedRectGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
-        shadowRoundedRectGenerator.setValue(CIColor(color: .white), forKey: kCIInputColorKey)
+        shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(1.0)), forKey: kCIInputColorKey)
         shadowRoundedRectGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
+        
+        let blurFilter = CIFilter(name: "CIGaussianBlur")!
+        blurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
+        blurFilter.setValue(30, forKey: kCIInputRadiusKey)
+
+        let backAndShadowComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+        backAndShadowComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
+        backAndShadowComposite.setValue(blurFilter.outputImage, forKey: kCIInputImageKey)
+
+        compositeBackColor.setValue(backAndShadowComposite.outputImage, forKey: kCIInputBackgroundImageKey)
 
         
         /// Composite background with video

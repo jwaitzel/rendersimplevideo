@@ -41,18 +41,17 @@ struct ComposerTest: View {
         let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
 
         
-        let videoTransformedRect = CGRect(x: 300, y: 90, width: 400, height: 800)
-        let adjustCorners = 55.0
+        let shadowRoundedRectFrame = CGRect(x: 300, y: 90, width: 400, height: 800)
+        let adjustCorners = 105.0
         
         let shadowRoundedRectGenerator = CIFilter(name: "CIRoundedRectangleGenerator")!
-        shadowRoundedRectGenerator.setValue(videoTransformedRect, forKey: kCIInputExtentKey)
-        shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(0.8)), forKey: kCIInputColorKey)
+        shadowRoundedRectGenerator.setValue(shadowRoundedRectFrame, forKey: kCIInputExtentKey)
+        shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(1.0)), forKey: kCIInputColorKey)
         shadowRoundedRectGenerator.setValue(adjustCorners, forKey: kCIInputRadiusKey)
         
         let blurFilter = CIFilter(name: "CIGaussianBlur")!
         blurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
         blurFilter.setValue(80, forKey: kCIInputRadiusKey)
-
 
         let compositeBackColor = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
         compositeBackColor.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
