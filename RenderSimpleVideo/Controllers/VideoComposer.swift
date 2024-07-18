@@ -19,7 +19,8 @@ enum RenderError: Error {
 
 class VideoComposer {
     
-    func compositeFilter(renderOptions: RenderOptions, videoFrameSize: CGSize) -> (CIFilter, CIFilter, CGAffineTransform)? {
+    /// (input filter, output filter, text filter)
+    func compositeFilter(renderOptions: RenderOptions, videoFrameSize: CGSize) -> (CIFilter, CIFilter, CIFilter?, CGAffineTransform)? {
         
         let renderSize = renderOptions.renderSize
 
@@ -92,28 +93,8 @@ class VideoComposer {
         /// Behind Video Text
         var outImageRelative: CIImage? = backColorGenerator.outputImage
         if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .Behind {
-            let fontSize: CGFloat = renderOptions.overlayTextFontSize
-            let text = renderOptions.overlayText
-            let color = UIColor(renderOptions.overlayTextColor)
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: fontSize),
-                .foregroundColor: color
-            ]
-            let attributedString = NSAttributedString(string: text, attributes: attributes)
-            
-            // Create a CIImage from the attributed string
-            let textGenerator = CIFilter(name: "CIAttributedTextImageGenerator")
-            textGenerator?.setValue(attributedString, forKey: "inputText")
-            textGenerator?.setValue(2, forKey: "inputScaleFactor")
-            
-            guard let textImage = textGenerator?.outputImage else { print("error text"); return nil }
-            print("extent text \(textImage.extent)")
-            let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+            guard let textComposite = textCompositeFilter(renderOptions) else { print("error text filt"); return nil }
             textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-            
-            let translateText = CGAffineTransform(translationX: renderOptions.overlayTextOffset.x, y: renderOptions.overlayTextOffset.y)
-            textComposite.setValue(textImage.transformed(by: translateText), forKey: kCIInputImageKey)
-         
             outImageRelative = textComposite.outputImage
         }
         
@@ -129,8 +110,41 @@ class VideoComposer {
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
+        var textCompositeOrNil: CIFilter?
+        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .Infront {
+            guard let textComposite = textCompositeFilter(renderOptions) else { print("error text filt"); return nil }
+            textCompositeOrNil = textComposite
+        }
+
+        //iphoneOverlayComposite
+        return (compositeBackColor, iphoneOverlayComposite, textCompositeOrNil, multVideoTransform)
+    }
+    
+    func textCompositeFilter(_ renderOptions: RenderOptions) -> CIFilter? {
+        let fontSize: CGFloat = renderOptions.overlayTextFontSize
+        let text = renderOptions.overlayText
+        let color = UIColor(renderOptions.overlayTextColor)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: fontSize),
+            .foregroundColor: color
+        ]
+        let attributedString = NSAttributedString(string: text, attributes: attributes)
         
-        return (compositeBackColor, iphoneOverlayComposite, multVideoTransform)
+        // Create a CIImage from the attributed string
+        let textGenerator = CIFilter(name: "CIAttributedTextImageGenerator")
+        textGenerator?.setValue(attributedString, forKey: "inputText")
+        textGenerator?.setValue(2, forKey: "inputScaleFactor")
+        
+        guard let textImage = textGenerator?.outputImage else { print("error text"); return nil }
+        print("extent text \(textImage.extent)")
+        
+        let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+        
+        
+        let translateText = CGAffineTransform(translationX: renderOptions.overlayTextOffset.x, y: renderOptions.overlayTextOffset.y)
+        textComposite.setValue(textImage.transformed(by: translateText), forKey: kCIInputImageKey)
+
+        return textComposite
     }
     
     func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions) -> UIImage? {
@@ -140,14 +154,19 @@ class VideoComposer {
         let sourceVideoImage = CIImage(image: screenImage)!
         print("Video track size \(videoTrackSize)")
 
-        guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
+        guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
 
         let sourceCI = sourceVideoImage.transformed(by: videoTransform)
         compositeBackFilter.setValue(sourceCI, forKey: kCIInputImageKey)
-
         iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
+        
+        var lastFilter: CIFilter? = iphoneOverlayFilter
+        if let textFilter {
+            textFilter.setValue(iphoneOverlayFilter.outputImage, forKey: kCIInputBackgroundImageKey)
+            lastFilter = textFilter
+        }
 
-        let outputCI = iphoneOverlayFilter.outputImage!
+        guard let outputCI = lastFilter?.outputImage else { print("error last filter"); return nil }
 
         let context = CIContext()
         let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
@@ -214,7 +233,7 @@ class VideoComposer {
             videoTrackSize = CGSize(width: videoTrackSize.height, height: videoTrackSize.width)
         }
         
-        guard let (compositeBackFilter, iphoneOverlayFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else {
+        guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else {
             completion(RenderError.failedCreateComposite)
             return
         }
@@ -229,11 +248,17 @@ class VideoComposer {
             
             iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
             
+            var lastFilter: CIFilter? = iphoneOverlayFilter
+            if let textFilter {
+                textFilter.setValue(iphoneOverlayFilter.outputImage, forKey: kCIInputBackgroundImageKey)
+                lastFilter = textFilter
+            }
+
 //            print("sourceImg \(sourceImg.extent)")
             progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
             
             // Provide the filter output to the composition
-            filteringRequest.finish(with: iphoneOverlayFilter.outputImage!, context: nil)
+            filteringRequest.finish(with: lastFilter!.outputImage!, context: nil)
         }
         
         mutableVideoComposition.renderSize = renderOptions.renderSize

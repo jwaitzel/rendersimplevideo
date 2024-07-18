@@ -14,18 +14,14 @@ struct VideoOptionsView: View {
     var screenImage: UIImage
         
     @EnvironmentObject var renderOptions: RenderOptions
-    
-    @State private var timer: Timer?
-    
+        
     enum OptionsGroup: String, CaseIterable {
         case Video
         case Text
         case Shadow
     }
     
-    @AppStorage("optionsGroup") var optionsGroup: OptionsGroup = .Text
-    
-//    @State private var textString: String = ""
+    @AppStorage("optionsGroup") var optionsGroup: OptionsGroup = .Video
     
     var body: some View {
         VStack {
@@ -86,6 +82,9 @@ struct VideoOptionsView: View {
             applyFilters()
         }
         .onChange(of: renderOptions.overlayText, perform: { _ in
+            applyFilters()
+        })
+        .onChange(of: renderOptions.overlayTextZPosition, perform: { _ in
             applyFilters()
         })
 
