@@ -85,16 +85,45 @@ class VideoComposer {
         shadowRoundedRectGenerator.setValue(CIColor(color: .black.withAlphaComponent(shadowOpacityScaled)), forKey: kCIInputColorKey)
         shadowRoundedRectGenerator.setValue(adjustCorners * 1.45, forKey: kCIInputRadiusKey)
         
-        let blurFilter = CIFilter(name: "CIGaussianBlur")!
-        blurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
-        blurFilter.setValue(renderOptions.shadowRadius , forKey: kCIInputRadiusKey)
+        let shadowBlurFilter = CIFilter(name: "CIGaussianBlur")!
+        shadowBlurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
+        shadowBlurFilter.setValue(renderOptions.shadowRadius , forKey: kCIInputRadiusKey)
+        
+        /// Behind Video Text
+        var outImageRelative: CIImage? = backColorGenerator.outputImage
+        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .Behind {
+            let fontSize: CGFloat = renderOptions.overlayTextFontSize
+            let text = renderOptions.overlayText
+            let color = UIColor(renderOptions.overlayTextColor)
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: fontSize),
+                .foregroundColor: color
+            ]
+            let attributedString = NSAttributedString(string: text, attributes: attributes)
+            
+            // Create a CIImage from the attributed string
+            let textGenerator = CIFilter(name: "CIAttributedTextImageGenerator")
+            textGenerator?.setValue(attributedString, forKey: "inputText")
+            textGenerator?.setValue(2, forKey: "inputScaleFactor")
+            
+            guard let textImage = textGenerator?.outputImage else { print("error text"); return nil }
+            print("extent text \(textImage.extent)")
+            let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+            textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
+            
+            let translateText = CGAffineTransform(translationX: renderOptions.overlayTextOffset.x, y: renderOptions.overlayTextOffset.y)
+            textComposite.setValue(textImage.transformed(by: translateText), forKey: kCIInputImageKey)
+         
+            outImageRelative = textComposite.outputImage
+        }
+        
 
+        /// Back Solid color & Shadow
         let backAndShadowComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
-        backAndShadowComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-        backAndShadowComposite.setValue(blurFilter.outputImage, forKey: kCIInputImageKey)
+        backAndShadowComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+        backAndShadowComposite.setValue(shadowBlurFilter.outputImage, forKey: kCIInputImageKey)
 
         compositeBackColor.setValue(backAndShadowComposite.outputImage, forKey: kCIInputBackgroundImageKey)
-
         
         /// Composite background with video
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!

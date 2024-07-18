@@ -15,6 +15,8 @@ struct BlenderStyleInput: View {
     var title: String
     var unitStr: String = "px"
     var unitScale: CGFloat = 1.0
+    var minValue: CGFloat?
+    var maxValue: CGFloat?
 
     var body: some View {
         ZStack {
@@ -29,7 +31,7 @@ struct BlenderStyleInput: View {
                         .foregroundStyle(Color(uiColor: .systemGray6))
                     
                     let opOffX: (CGFloat)->() = {
-                        value += $0
+                        value = applyMinMax(value + $0)
                         startValue = value
                     }
                     HStack {
@@ -64,7 +66,8 @@ struct BlenderStyleInput: View {
                     .simultaneousGesture(
                         DragGesture(minimumDistance: 0)
                             .onChanged({ val in
-                                value = val.translation.width  * unitScale + startValue
+                                let preValue = val.translation.width  * unitScale + startValue
+                                value = applyMinMax(preValue)
                             })
                             .onEnded({ _ in
                                 startValue = value
@@ -73,7 +76,6 @@ struct BlenderStyleInput: View {
                 }
                 .frame(height: 34)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-
                 
             }
         }
@@ -81,13 +83,24 @@ struct BlenderStyleInput: View {
             startValue = value
         }
     }
+    
+    func applyMinMax(_ value: CGFloat) -> CGFloat {
+        var preValue = value
+        if let minValue {
+            preValue = max(minValue, preValue)
+        }
+        if let maxValue {
+            preValue = min(maxValue, preValue)
+        }
+        return preValue
+    }
 }
 
 #Preview {
     struct Prev: View {
         @State private var offX: CGFloat = 100
         var body: some View {
-            BlenderStyleInput(value: $offX, title: "Scale", unitStr: "%", unitScale: 0.1)
+            BlenderStyleInput(value: $offX, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 100, maxValue: 200)
 //            BlenderStyleInput(value: $offX, title: "Position X", unitStr: "px")
 
         }

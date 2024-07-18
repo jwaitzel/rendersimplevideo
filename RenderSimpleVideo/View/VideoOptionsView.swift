@@ -18,13 +18,14 @@ struct VideoOptionsView: View {
     @State private var timer: Timer?
     
     enum OptionsGroup: String, CaseIterable {
-        case Background
         case Video
-        case Shadow
         case Text
+        case Shadow
     }
     
-    @State private var optionsGroup: OptionsGroup = .Text
+    @AppStorage("optionsGroup") var optionsGroup: OptionsGroup = .Text
+    
+//    @State private var textString: String = ""
     
     var body: some View {
         VStack {
@@ -52,8 +53,8 @@ struct VideoOptionsView: View {
             VStack(spacing: 16) {
                 
                 switch self.optionsGroup {
-                case .Background:
-                    BackgroundOptionsView()
+//                case .Background:
+//                    BackgroundOptionsView()
                 case .Video:
                     VideoOptionsView()
                 case .Shadow:
@@ -72,7 +73,7 @@ struct VideoOptionsView: View {
             print("onAppear")
             applyFilters()
         }
-        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask + renderOptions.shadowOffset.x + renderOptions.shadowOffset.y + renderOptions.shadowRadius + renderOptions.shadowOpacity)) { _ in
+        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask + renderOptions.shadowOffset.x + renderOptions.shadowOffset.y + renderOptions.shadowRadius + renderOptions.shadowOpacity + renderOptions.overlayTextOffset.x + renderOptions.overlayTextOffset.y + renderOptions.overlayTextFontSize)) { _ in
             applyFilters()
         }
 //        .onChange(of: renderOptions, perform: { value in
@@ -81,21 +82,18 @@ struct VideoOptionsView: View {
         .onChange(of: renderOptions.backColor) { _ in
             applyFilters()
         }
+        .onChange(of: renderOptions.overlayTextColor) { _ in
+            applyFilters()
+        }
+        .onChange(of: renderOptions.overlayText, perform: { _ in
+            applyFilters()
+        })
 
     }
     
     @ViewBuilder
     func BackgroundOptionsView() -> some View {
         
-        ColorPicker(selection: $renderOptions.backColor, label: {
-            Text("Solid Color")
-                .frame(width: 120, alignment: .trailing)
-        })
-        .background {
-            Rectangle()
-                .foregroundStyle(.clear)
-                .onTapGesture {}
-        }
         
         HStack {
             Text("Gradient")
@@ -139,7 +137,7 @@ struct VideoOptionsView: View {
         
         BlenderStyleInput(value: $renderOptions.offsetY, title: "Y")
         
-        BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale Video", unitStr: "%", unitScale: 0.1)
+        BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale Video", unitStr: "%", unitScale: 0.1, minValue: 0)
                         
         HStack {
             Text("iPhone Color")
@@ -159,51 +157,59 @@ struct VideoOptionsView: View {
             }
         }
         
+        BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1, minValue: 100)
+
         
-        BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1)
-
-
+        ColorPicker(selection: $renderOptions.backColor, label: {
+            Text("Solid Color")
+                .frame(width: 120, alignment: .trailing)
+        })
+        .background {
+            Rectangle()
+                .foregroundStyle(.clear)
+                .onTapGesture {}
+        }
 
     }
     
     @ViewBuilder
     func ShadowOptionsView() -> some View {
+        
         BlenderStyleInput(value: $renderOptions.shadowOffset.x, title: "Shadow X", unitStr: "px")
         
         BlenderStyleInput(value: $renderOptions.shadowOffset.y, title: "Y", unitStr: "px")
         
-        BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Radius", unitStr: "px")
+        BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
         
-        BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1)
+        BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
 
     }
 
     
-    @State private var textString: String = ""
     @ViewBuilder
     func TextOptionsView() -> some View {
         
-        TextField("Enter Text", text: $textString)
+        TextField("Enter Text", text: $renderOptions.overlayText)
             .multilineTextAlignment(.center)
             .padding(.vertical, 10)
             .background {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .foregroundStyle(Color(uiColor: .systemGray5).opacity(0.9))
             }
-            .padding(.vertical, 4)
+            .padding(.bottom, 4)
         
         BlenderStyleInput(value: $renderOptions.overlayTextOffset.x, title: "Text X", unitStr: "px")
         
         BlenderStyleInput(value: $renderOptions.overlayTextOffset.y, title: "Y", unitStr: "px")
         
-        BlenderStyleInput(value: $renderOptions.overlayTextFontSize, title: "Font Size", unitStr: "px")
+        BlenderStyleInput(value: $renderOptions.overlayTextFontSize, title: "Font Size", unitStr: "px", minValue: 0)
         
-        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1)
+//        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
         
-        BlenderStyleInput(value: $renderOptions.overlayTextRotation, title: "Rotation", unitStr: "px")
+        BlenderStyleInput(value: $renderOptions.overlayTextRotation, title: "Rotation", unitStr: "º")
 
         HStack {
-            Text("Position")
+            Text("Z Position")
                 .frame(width: 120, alignment: .trailing)
 
             Picker("", selection: $renderOptions.overlayTextZPosition) {
@@ -216,6 +222,17 @@ struct VideoOptionsView: View {
             .pickerStyle(.segmented)
 
         }
+        
+        ColorPicker(selection: $renderOptions.overlayTextColor, label: {
+            Text("Color")
+                .frame(width: 120, alignment: .trailing)
+        })
+        .background {
+            Rectangle()
+                .foregroundStyle(.clear)
+                .onTapGesture {}
+        }
+
     }
     
     func applyFilters() {

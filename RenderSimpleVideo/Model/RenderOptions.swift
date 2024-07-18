@@ -67,7 +67,7 @@ class RenderOptions: ObservableObject {
     @Published var overlayTextOffset: CGPoint = .zero
     @Published var overlayTextFontSize: CGFloat = 44
     @Published var overlayTextScale: CGFloat = 100
-    @Published var overlayTextColor: UIColor = .black
+    @Published var overlayTextColor: Color = .black
     @Published var overlayTextRotation: CGFloat = 0
     @Published var overlayTextZPosition: TextZPosition = .Behind
 
