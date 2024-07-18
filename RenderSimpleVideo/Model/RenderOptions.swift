@@ -26,7 +26,7 @@ enum iPhoneColorOptions: String, CaseIterable {
             imgName = "iPhone 15 Pro - White Titanium - Portrait"
         }
         
-        var imgURL: URL = Bundle.main.url(forResource: imgName, withExtension: "png")!
+        let imgURL: URL = Bundle.main.url(forResource: imgName, withExtension: "png")!
         let iphoneOverlayImg = UIImage(contentsOfFile: imgURL.path)!
         return iphoneOverlayImg
     }
@@ -42,6 +42,7 @@ class RenderOptions: ObservableObject {
     @Published var selectedVideoURL: URL?
     @Published var selectedVideoThumbnail: UIImage?
     @Published var selectedFiltered: UIImage?
+    @Published var videoDuration: CGFloat?
     
     @Published var renderSize: CGSize = .init(width: 1024, height: 1024)
 

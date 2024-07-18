@@ -29,7 +29,7 @@ struct VideoOptionsView: View {
                 Image(uiImage: appImg)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 300)
+                    .frame(width: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .shadow(color: .black.opacity(0.2), radius: 4.0, x: 0, y: 3)
                     .padding(.bottom, 24)
@@ -157,10 +157,18 @@ struct VideoOptionsView: View {
         }
         
         BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1, minValue: 100)
-
         
+        let durWSpeed = (renderOptions.videoDuration ?? 60.0) / (renderOptions.videoSpeed / 100)
+        let durFloatStr = String(format: "Duration %.1fs", durWSpeed)
+        Text(durFloatStr)
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+            .frame(width: 220, alignment: .trailing)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+
         ColorPicker(selection: $renderOptions.backColor, label: {
-            Text("Solid Color")
+            Text("Background")
                 .frame(width: 120, alignment: .trailing)
         })
         .background {

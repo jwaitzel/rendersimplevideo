@@ -97,7 +97,6 @@ class VideoComposer {
             textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
             outImageRelative = textComposite.outputImage
         }
-        
 
         /// Back Solid color & Shadow
         let backAndShadowComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
@@ -212,18 +211,18 @@ class VideoComposer {
         
         // Define the time range for the entire video
         let timeRange = CMTimeRange(start: .zero, duration: videoAsset.duration)
-//        let timeSpeedMultiplier = 4.0
-//        let multipliedTimeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: videoAsset.duration.seconds / timeSpeedMultiplier, preferredTimescale: timeRange.duration.timescale) )
+        let timeSpeedDivider = renderOptions.videoSpeed / 100 /// 4.0
+        let multipliedTimeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: videoAsset.duration.seconds / timeSpeedDivider, preferredTimescale: timeRange.duration.timescale) )
         
         do {
             // Add the video track to the composition
             compositionVideoTrack.preferredTransform = videoTrack.preferredTransform
             //CMTime(seconds: videoAsset.duration.seconds / timeSpeedMultiplier, preferredTimescale: timeRange.duration.timescale)
             try compositionVideoTrack.insertTimeRange(timeRange, of: videoTrack, at: .zero)
-            compositionVideoTrack.scaleTimeRange(timeRange, toDuration: videoAsset.duration)
+            compositionVideoTrack.scaleTimeRange(timeRange, toDuration: multipliedTimeRange.duration)
             if let audioTrack, let compositionAudioTrack {
                 try compositionAudioTrack.insertTimeRange(timeRange, of: audioTrack, at: .zero)
-                compositionAudioTrack.scaleTimeRange(timeRange, toDuration: videoAsset.duration)
+                compositionAudioTrack.scaleTimeRange(timeRange, toDuration: multipliedTimeRange.duration)
             }
         } catch {
             completion(error)
@@ -244,7 +243,6 @@ class VideoComposer {
             completion(RenderError.failedCreateComposite)
             return
         }
-        
 
         print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
         let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
@@ -262,14 +260,13 @@ class VideoComposer {
             }
 
 //            print("sourceImg \(sourceImg.extent)")
-            progress(filteringRequest.compositionTime.seconds / timeRange.duration.seconds)
+            progress(filteringRequest.compositionTime.seconds / multipliedTimeRange.duration.seconds)
             
             // Provide the filter output to the composition
             filteringRequest.finish(with: lastFilter!.outputImage!, context: nil)
         }
         
         mutableVideoComposition.renderSize = renderOptions.renderSize
-        
         // Set up an AVAssetExportSession to export the composition
         //AVAssetExportPresetMediumQuality
         guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
@@ -277,7 +274,7 @@ class VideoComposer {
             return
         }
 
-//        exportSession.timeRange = CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600)) //multipliedTimeRange //
+        exportSession.timeRange = multipliedTimeRange //CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600)) //multipliedTimeRange //
         exportSession.outputURL = outputURL
         exportSession.outputFileType = .mp4
         exportSession.videoComposition = mutableVideoComposition

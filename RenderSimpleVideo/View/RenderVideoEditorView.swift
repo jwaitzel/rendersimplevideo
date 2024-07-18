@@ -323,6 +323,7 @@ struct RenderVideoEditorView: View {
                 await MainActor.run {
                     self.renderOptions.selectedVideoThumbnail = thumbnail
                     self.renderOptions.selectedVideoURL = itemVideoURL
+                    self.renderOptions.videoDuration = videoAsset.duration.seconds
                     let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
                     self.renderOptions.selectedFiltered = filteredImg
                     print("set thumbnail \(thumbnail)")
@@ -340,6 +341,8 @@ struct RenderVideoEditorView: View {
         
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
         let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
+        self.renderOptions.videoDuration = asset.duration.seconds
         self.renderOptions.selectedVideoThumbnail = defaultThumb
         let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
         self.renderOptions.selectedFiltered = filteredImg
