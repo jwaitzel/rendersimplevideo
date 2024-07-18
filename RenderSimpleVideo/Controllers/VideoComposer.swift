@@ -124,8 +124,9 @@ class VideoComposer {
         let fontSize: CGFloat = renderOptions.overlayTextFontSize
         let text = renderOptions.overlayText
         let color = UIColor(renderOptions.overlayTextColor)
+        let fontWeight = renderOptions.overlayTextFontWeight
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: fontSize),
+            .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
             .foregroundColor: color
         ]
         let attributedString = NSAttributedString(string: text, attributes: attributes)
@@ -141,8 +142,14 @@ class VideoComposer {
         let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
         
         
-        let translateText = CGAffineTransform(translationX: renderOptions.overlayTextOffset.x, y: renderOptions.overlayTextOffset.y)
-        textComposite.setValue(textImage.transformed(by: translateText), forKey: kCIInputImageKey)
+        let translateCenterY = renderOptions.renderSize.height / 2 - textImage.extent.height / 2.0
+        let translateText = CGAffineTransform(translationX: renderOptions.overlayTextOffset.x, y: translateCenterY +  renderOptions.overlayTextOffset.y)
+        
+        let textAutoCenter = CGAffineTransform(translationX: -textImage.extent.width/2.0, y: -textImage.extent.height/2.0)
+        let textAutoPositiveCenter = CGAffineTransform(translationX: textImage.extent.width/2.0, y: textImage.extent.height/2.0)
+        let rotationTransform = textAutoCenter.concatenating(CGAffineTransform(rotationAngle: renderOptions.overlayTextRotation * .pi / 180).concatenating(textAutoPositiveCenter))
+        let allTransform = rotationTransform.concatenating(translateText)
+        textComposite.setValue(textImage.transformed(by: allTransform), forKey: kCIInputImageKey)
 
         return textComposite
     }

@@ -69,7 +69,7 @@ struct VideoOptionsView: View {
             print("onAppear")
             applyFilters()
         }
-        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask + renderOptions.shadowOffset.x + renderOptions.shadowOffset.y + renderOptions.shadowRadius + renderOptions.shadowOpacity + renderOptions.overlayTextOffset.x + renderOptions.overlayTextOffset.y + renderOptions.overlayTextFontSize)) { _ in
+        .onChange(of: (renderOptions.offsetX + renderOptions.offsetY + renderOptions.scaleVideo + renderOptions.maskCorners + renderOptions.scaleMask + renderOptions.shadowOffset.x + renderOptions.shadowOffset.y + renderOptions.shadowRadius + renderOptions.shadowOpacity + renderOptions.overlayTextOffset.x + renderOptions.overlayTextOffset.y + renderOptions.overlayTextFontSize + renderOptions.overlayTextFontWeight.rawValue + renderOptions.overlayTextRotation)) { _ in
             applyFilters()
         }
 //        .onChange(of: renderOptions, perform: { value in
@@ -203,6 +203,26 @@ struct VideoOptionsView: View {
         
         BlenderStyleInput(value: $renderOptions.overlayTextFontSize, title: "Font Size", unitStr: "px", minValue: 0)
         
+        HStack {
+            Text("Weight")
+                .frame(width: 120, alignment: .trailing)
+
+            let weightOptions: [UIFont.Weight] = [.light, .regular, .bold, .black]
+            let weightOptionsSw: [Font.Weight] = [.light, .regular, .bold, .black]
+            let weightOptTitles: [String] = ["Light", "Regular", "Bold", "Black"]
+            Picker("", selection: $renderOptions.overlayTextFontWeight) {
+                ForEach(0..<weightOptions.count, id: \.self) { idx in
+                    let weightTitle = weightOptTitles[idx]
+                    let fontWeight = weightOptions[idx]
+                    let fontUIWeight = weightOptionsSw[idx]
+                    Text(weightTitle)
+                        .tag(fontWeight)
+                }
+            }
+            .pickerStyle(.segmented)
+
+        }
+
 //        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
         
         BlenderStyleInput(value: $renderOptions.overlayTextRotation, title: "Rotation", unitStr: "º")
