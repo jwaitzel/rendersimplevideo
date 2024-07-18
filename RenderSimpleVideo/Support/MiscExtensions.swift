@@ -17,3 +17,43 @@ extension EnvironmentValues {
         set { self[ContainerNavigationPathKey.self] = newValue }
     }
 }
+
+private struct SafeAreaInsetsKey: EnvironmentKey {
+    static var defaultValue: EdgeInsets {
+        (UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.safeAreaInsets ?? .zero).insets
+    }
+}
+
+extension EnvironmentValues {
+    
+    var safeAreaInsets: EdgeInsets {
+        self[SafeAreaInsetsKey.self]
+    }
+}
+
+private extension UIEdgeInsets {
+    
+    var insets: EdgeInsets {
+        EdgeInsets(top: top, leading: left, bottom: bottom, trailing: right)
+    }
+}
+
+extension View {
+    func addGrid(_ colums: Int = 4) -> some View {
+        self
+            .overlay {
+                let spacingHor = 16.0
+                HStack(alignment: .top, spacing: spacingHor) {
+                    ForEach(0..<colums, id: \.self) { idx in
+                        Rectangle()
+                            .foregroundColor(.red.opacity(0.2))
+                            .frame(height: UIScreen.main.bounds.height * 1)
+
+                    }
+                }
+                .ignoresSafeArea()
+                .padding(.horizontal, spacingHor)
+                .allowsHitTesting(false)
+            }
+    }
+}

@@ -64,7 +64,7 @@ class RenderOptions: ObservableObject {
     @Published var shadowRadius: CGFloat = 16
     @Published var shadowOpacity: CGFloat = 80.0
     
-    @Published var overlayText: String = "TEST"
+    @Published var overlayText: String = ""
     @Published var overlayTextOffset: CGPoint = .zero
     @Published var overlayTextFontSize: CGFloat = 44
     @Published var overlayTextFontWeight: UIFont.Weight = .bold

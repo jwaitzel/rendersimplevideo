@@ -77,7 +77,7 @@ struct RenderVideoEditorView: View {
             let iconSize: CGFloat = 34.0
             let btnSquareSize: CGFloat = 64.0
             
-            HStack {
+            HStack(spacing: 16) {
                 Button {
                     showImagePicker.toggle()
                 } label: {
@@ -96,6 +96,7 @@ struct RenderVideoEditorView: View {
                             .foregroundStyle(.secondary.opacity(0.2))
                     }
                 }
+                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
                 .foregroundStyle(.primary)
                 .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
                 /// Load when selected items change
@@ -123,6 +124,8 @@ struct RenderVideoEditorView: View {
                     }
                 }
                 .foregroundStyle(.primary)
+                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
+
             }
             .frame(maxWidth: .infinity)
             .overlay(alignment: .trailing) {
@@ -140,8 +143,9 @@ struct RenderVideoEditorView: View {
                                 .foregroundStyle(.primary)
                         }
                 }
+                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
             .padding(.bottom, 16)
             
         }
@@ -157,7 +161,7 @@ struct RenderVideoEditorView: View {
         VStack {
             Rectangle()
                 .foregroundStyle(renderOptions.backColor)
-                .frame(width: 300, height: 300)
+                .frame(width: 360, height: 360)
                 .overlay {
                     if let thumb = renderOptions.selectedFiltered {
                         Image(uiImage: thumb)
@@ -189,7 +193,7 @@ struct RenderVideoEditorView: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 10)
     }
     
     @ViewBuilder
@@ -223,7 +227,8 @@ struct RenderVideoEditorView: View {
         ZStack {
             Rectangle()
                 .foregroundStyle(Color.black.opacity(0.6))
-            
+                .ignoresSafeArea()
+
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial)
                 .contentShape(.rect)
@@ -232,15 +237,16 @@ struct RenderVideoEditorView: View {
                         showVideoOptions = false
                     }
                 }
+                .ignoresSafeArea()
 
             VideoOptionsView(screenImage: self.renderOptions.selectedVideoThumbnail!)
                 .transition(.scale.combined(with: .opacity))
 
         }
-        .ignoresSafeArea()
     }
     
     
+    //MARK: - Make video
     func makeVideoWithComposition() {
         
         guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
@@ -274,11 +280,10 @@ struct RenderVideoEditorView: View {
                 }
 
             }
-            
         }
-        
     }
-    
+
+    /// Select from Photos
     func processSelectedVideo(_ newSelectedItems: [PhotosPickerItem]) {
         
         Task {
@@ -349,9 +354,8 @@ struct RenderVideoEditorView: View {
                 
     }
     
-    
     func showEditViewAction() {
-        withAnimation(.easeOut(duration: 0.3)) {
+        withAnimation(.easeOut(duration: 0.23)) {
             showVideoOptions = true
         }
     }
@@ -363,4 +367,5 @@ struct RenderVideoEditorView: View {
 #Preview {
 //    RenderVideoEditorView()
     MainView()
+        .addGrid()
 }

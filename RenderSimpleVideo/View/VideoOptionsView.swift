@@ -59,10 +59,14 @@ struct VideoOptionsView: View {
                     TextOptionsView()
                 }
             }
+            .contentShape(.rect)
+            .onTapGesture(perform: {
+                //Catch tap
+            })
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 16)
             .padding(.horizontal, 16)
-            .border(.clear)
+            .border(.red)
             
         }
         .onAppear {
@@ -277,6 +281,7 @@ struct VideoOptionsView: View {
         var body: some View {
             VideoOptionsView(screenImage: img)
                 .environmentObject(renderOptions)
+                .addGrid()
         }
     }
     
