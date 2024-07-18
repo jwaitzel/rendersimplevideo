@@ -32,6 +32,7 @@ struct VideoOptionsView: View {
                     .frame(width: 240)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .shadow(color: .black.opacity(0.2), radius: 4.0, x: 0, y: 3)
+                    .padding(.top, 16)
                     .padding(.bottom, 24)
             }
             
@@ -60,14 +61,13 @@ struct VideoOptionsView: View {
                 }
             }
             .contentShape(.rect)
-            .onTapGesture(perform: {
-                //Catch tap
-            })
+//            .onTapGesture(perform: {
+//                //Catch tap
+//            })
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 16)
             .padding(.horizontal, 16)
-            .border(.red)
-            
+//            .border(.red)
         }
         .onAppear {
             print("onAppear")

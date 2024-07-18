@@ -94,9 +94,10 @@ struct RenderVideoEditorView: View {
                     .background {
                         RoundedRectangle(cornerRadius: 8)
                             .foregroundStyle(.secondary.opacity(0.2))
+                            .shadow(color: .black.opacity(0.5), radius: 2.0, x: 0, y: 2)
                     }
                 }
-                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
+                
                 .foregroundStyle(.primary)
                 .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
                 /// Load when selected items change
@@ -121,10 +122,10 @@ struct RenderVideoEditorView: View {
                     .background {
                         RoundedRectangle(cornerRadius: 8)
                             .foregroundStyle(.secondary.opacity(0.2))
+                            .shadow(color: .black.opacity(0.5), radius: 2.0, x: 0, y: 2)
                     }
                 }
                 .foregroundStyle(.primary)
-                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
 
             }
             .frame(maxWidth: .infinity)
@@ -141,9 +142,9 @@ struct RenderVideoEditorView: View {
                         .background {
                             Circle()
                                 .foregroundStyle(.primary)
+                                .shadow(color: .black.opacity(0.4), radius: 2.0, x: 0, y: 2)
                         }
                 }
-                .shadow(color: .black.opacity(0.2), radius: 2.0, x: 0, y: 2)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
@@ -232,15 +233,29 @@ struct RenderVideoEditorView: View {
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial)
                 .contentShape(.rect)
-                .onTapGesture {
-                    withAnimation(.linear(duration: 0.23)) {
-                        showVideoOptions = false
-                    }
-                }
+//                .onTapGesture {
+//                    withAnimation(.linear(duration: 0.23)) {
+//                        showVideoOptions = false
+//                    }
+//                }
                 .ignoresSafeArea()
 
             VideoOptionsView(screenImage: self.renderOptions.selectedVideoThumbnail!)
                 .transition(.scale.combined(with: .opacity))
+                .overlay(alignment: .topTrailing) {
+                    Button {
+                        withAnimation(.linear(duration: 0.23)) {
+                            showVideoOptions = false
+                        }
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                            .font(.system(size: 32))
+                            .padding(.trailing, 14)
+                    }
+                    .foregroundColor(.secondary)
+                    .offset(y: -12)
+                    
+                }
 
         }
     }

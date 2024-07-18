@@ -15,8 +15,6 @@ struct MainView: View {
 
     @State private var showWelcome: Bool = false
     
-
-    
     var body: some View {
         
         NavigationStack(path: $appState.navPath) {
