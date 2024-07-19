@@ -9,6 +9,8 @@ import SwiftUI
 struct SettingsView: View {
     
     @Environment(\.containerNavPath) var navPath
+    
+    @State private var showRequestFeatureForm: Bool = false
 
     var body: some View {
         List {
@@ -16,6 +18,13 @@ struct SettingsView: View {
                 .onTapGesture {
                     print("Creates link to email")
                     openMail(emailTo: "jrwappdev@gmail.com", subject: "Help", body: "")
+                }
+            
+            
+            
+            Label("Request Feature", systemImage: "star.bubble")
+                .onTapGesture {
+                    showRequestFeatureForm = true
                 }
             
             Label("Terms of Service & Privacy Policy", systemImage: "info.circle")
@@ -27,6 +36,7 @@ struct SettingsView: View {
                 .onTapGesture {
                     navPath.wrappedValue.append(Routes.uelaAgree)
                 }
+
         }
         .navigationTitle("Settings")
         .overlay(alignment: .bottom) {
@@ -45,9 +55,12 @@ struct SettingsView: View {
             .padding(.bottom, 8)
             
         }
+        .sheet(isPresented: $showRequestFeatureForm, content: {
+            SendRequestFormView()
+        })
 
     }
-    
+        
     func openMail(emailTo:String, subject: String, body: String) {
         
         let subject = "Need help with the app"

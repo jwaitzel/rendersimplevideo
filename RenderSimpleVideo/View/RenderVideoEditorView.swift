@@ -38,6 +38,8 @@ struct RenderVideoEditorView: View {
     
     @State private var renderVideoURL: URL?
     
+    @ObservedObject var storeKit: StoreKitManager = .shared
+
     var body: some View {
         
         ZStack {
@@ -158,6 +160,28 @@ struct RenderVideoEditorView: View {
         })
     }
     
+    func buyRequestFeature() {
+        
+        guard let basicRequest = self.storeKit.productBasicRequest else {
+            return
+        }
+        
+        Task {
+            do {
+                let transaction = try await storeKit.pruchaseWithResult(basicRequest)
+                if transaction != nil { /// if != nil bc succedd
+                    self.continuePurchasedProduct()
+                }
+            } catch {
+                print("error \(error)")
+            }
+        }
+    }
+    
+    func continuePurchasedProduct() {
+        print("Send request to email with transaction")
+    }
+    
     var centerContentRender: some View {
         VStack {
             Rectangle()
@@ -259,7 +283,6 @@ struct RenderVideoEditorView: View {
 
         }
     }
-    
     
     //MARK: - Make video
     func makeVideoWithComposition() {

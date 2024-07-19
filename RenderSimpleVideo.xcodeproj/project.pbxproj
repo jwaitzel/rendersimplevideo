@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */; };
+		38137FD72C4B02B900D66D12 /* SendRequestFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */; };
+		38259C562C4A7A66006D52AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38259C552C4A7A66006D52AF /* StoreKit.framework */; };
 		3844A11B2C3FFF9B002FE045 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1182C3FFF9B002FE045 /* SettingsView.swift */; };
 		3844A11C2C3FFF9B002FE045 /* EULAAgreementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1192C3FFF9B002FE045 /* EULAAgreementView.swift */; };
 		3844A11D2C3FFF9B002FE045 /* ToSAndPPView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A11A2C3FFF9B002FE045 /* ToSAndPPView.swift */; };
@@ -36,6 +39,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
+		38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRequestFormView.swift; sourceTree = "<group>"; };
+		38259C552C4A7A66006D52AF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		38259C572C4A7E21006D52AF /* LocalTestProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = LocalTestProducts.storekit; sourceTree = "<group>"; };
 		3844A1182C3FFF9B002FE045 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3844A1192C3FFF9B002FE045 /* EULAAgreementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EULAAgreementView.swift; sourceTree = "<group>"; };
 		3844A11A2C3FFF9B002FE045 /* ToSAndPPView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToSAndPPView.swift; sourceTree = "<group>"; };
@@ -70,12 +77,29 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38259C562C4A7A66006D52AF /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		38137FD82C4B0DAA00D66D12 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		38259C542C4A7A66006D52AF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				38259C552C4A7A66006D52AF /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		3844A11E2C3FFFA3002FE045 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -95,6 +119,7 @@
 				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
 				388D91DA2C46961400ABFC8E /* ResultRenderView.swift */,
 				388D91E52C46A9B900ABFC8E /* WelcomeSimpleModalView.swift */,
+				38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */,
 				3844A11E2C3FFFA3002FE045 /* Settings */,
 			);
 			path = View;
@@ -142,6 +167,7 @@
 			children = (
 				389466F42C3BE15700EA4632 /* RenderSimpleVideo */,
 				389466F32C3BE15700EA4632 /* Products */,
+				38259C542C4A7A66006D52AF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -159,10 +185,12 @@
 				389466F52C3BE15700EA4632 /* RenderSimpleVideoApp.swift */,
 				389466F72C3BE15700EA4632 /* ContentView.swift */,
 				3844A1212C400033002FE045 /* AppState.swift */,
+				38137FD82C4B0DAA00D66D12 /* Store */,
 				3844A12C2C4127B7002FE045 /* Model */,
 				3844A1272C4068E9002FE045 /* View */,
 				3844A1292C406942002FE045 /* Controllers */,
 				3844A1282C406936002FE045 /* Support */,
+				38259C572C4A7E21006D52AF /* LocalTestProducts.storekit */,
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
 				38B56F212C3EF3D10056227B /* screencap1.jpg */,
 				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
@@ -258,6 +286,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */,
 				38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */,
 				389467042C3BE16B00EA4632 /* RenderVideoEditorView.swift in Sources */,
 				389466F82C3BE15700EA4632 /* ContentView.swift in Sources */,
@@ -275,6 +304,7 @@
 				3844A11D2C3FFF9B002FE045 /* ToSAndPPView.swift in Sources */,
 				38B56F272C3F17C30056227B /* BlenderStyleInput.swift in Sources */,
 				3844A1242C400E4E002FE045 /* MiscExtensions.swift in Sources */,
+				38137FD72C4B02B900D66D12 /* SendRequestFormView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
