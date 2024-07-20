@@ -160,16 +160,6 @@ struct SendRequestFormView: View {
     
     func sendPostRequest(priorityTransaction: UInt64? = nil, purchaserID: String? = nil) {
         
-        /*
-         curl -L \
-           -X POST \
-           -H "Accept: application/vnd.github+json" \
-           -H "Authorization: Bearer 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" \
-           -H "X-GitHub-Api-Version: 2022-11-28" \
-           https://api.github.com/repos/jwaitzel/rendersimplevideo/issues \
-           -d '{"title":"Suggestion Title","body":"App suggestion description","labels":["enhancement"]}'
-         */
-        
         DispatchQueue.main.async {
             requestSendState = .sending
         }
@@ -178,7 +168,7 @@ struct SendRequestFormView: View {
             let gitPostURL = URL(string: "https://api.github.com/repos/jwaitzel/rendersimplevideo/issues")!
             var urlRequest = URLRequest(url: gitPostURL)
             urlRequest.httpMethod = "POST"
-            urlRequest.addValue("Bearer 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", forHTTPHeaderField: "Authorization")
+            
 //            urlRequest.addValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
             
             var suggestTitle = requestTitle.isEmpty ? "no title" : requestTitle
