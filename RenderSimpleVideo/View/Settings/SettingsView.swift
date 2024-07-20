@@ -10,7 +10,6 @@ struct SettingsView: View {
     
     @Environment(\.containerNavPath) var navPath
     
-    @State private var showRequestFeatureForm: Bool = false
 
     var body: some View {
         List {
@@ -22,10 +21,10 @@ struct SettingsView: View {
             
             
             
-            Label("Request Feature", systemImage: "star.bubble")
-                .onTapGesture {
-                    showRequestFeatureForm = true
-                }
+//            Label("Request Feature", systemImage: "star.bubble")
+//                .onTapGesture {
+//                    showRequestFeatureForm = true
+//                }
             
             Label("Terms of Service & Privacy Policy", systemImage: "info.circle")
                 .onTapGesture {
@@ -55,9 +54,7 @@ struct SettingsView: View {
             .padding(.bottom, 8)
             
         }
-        .sheet(isPresented: $showRequestFeatureForm, content: {
-            SendRequestFormView()
-        })
+        
 
     }
         

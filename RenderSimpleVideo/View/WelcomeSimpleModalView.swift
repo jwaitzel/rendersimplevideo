@@ -19,7 +19,7 @@ struct WelcomeSimpleModalView: View {
                     .fontWeight(.semibold)
                 
                 
-                Text("Composite your screen recordings with a background and bezels")
+                Text("Enhance screen recordings with custom text and phone bezels")
                     .font(.subheadline)
             }
             .padding(.horizontal, 24)
@@ -50,16 +50,16 @@ struct WelcomeSimpleModalView: View {
                 
                 HStack {
                     
-                    Image(systemName: "person.2")
+                    Image(systemName: "slider.horizontal.2.square")
                         .font(.system(size: 44))
                         .foregroundStyle(.tint)
                         .frame(width: iconSquareSize, height: iconSquareSize)
 
                     VStack(alignment: .leading) {
-                        Text("Save and share your video")
+                        Text("Customize")
                             .fontWeight(.semibold)
                         
-                        Text("Personalize background color and bezels.")
+                        Text("Adjust video speed, add text and select bezels.")
                             .font(.callout)
                             .foregroundStyle(.primary.opacity(0.7))
                     }

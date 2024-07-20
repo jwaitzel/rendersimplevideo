@@ -160,28 +160,6 @@ struct RenderVideoEditorView: View {
         })
     }
     
-    func buyRequestFeature() {
-        
-        guard let basicRequest = self.storeKit.productBasicRequest else {
-            return
-        }
-        
-        Task {
-            do {
-                let transaction = try await storeKit.pruchaseWithResult(basicRequest)
-                if transaction != nil { /// if != nil bc succedd
-                    self.continuePurchasedProduct()
-                }
-            } catch {
-                print("error \(error)")
-            }
-        }
-    }
-    
-    func continuePurchasedProduct() {
-        print("Send request to email with transaction")
-    }
-    
     var centerContentRender: some View {
         VStack {
             Rectangle()
@@ -205,20 +183,37 @@ struct RenderVideoEditorView: View {
         }
     }
     
+    @State private var showRequestFeatureForm: Bool = false
+
     var gearSettingsButton: some View {
-        HStack {
+        HStack(spacing: 0) {
+            Button {
+                showRequestFeatureForm = true
+            } label: {
+                Image(systemName: "star.bubble")
+                    .frame(width: 44, height: 44, alignment: .trailing)
+                    .offset(y: 1)
+            }
+//            .border(Color.black)
+            
             Button {
                 navPath.wrappedValue.append(Routes.settings)
             } label: {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 24))
-                    .foregroundStyle(Color.secondary)
                     .frame(width: 44, height: 44)
+                    .foregroundStyle(Color.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+//            .border(Color.black)
         }
+        .foregroundStyle(Color.secondary)
+        .font(.system(size: 24, weight: .light))
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .frame(maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 10)
+        .sheet(isPresented: $showRequestFeatureForm, content: {
+            SendRequestFormView()
+        })
+
     }
     
     @ViewBuilder
@@ -398,12 +393,11 @@ struct RenderVideoEditorView: View {
         }
     }
     
-    
 }
 
 
 #Preview {
 //    RenderVideoEditorView()
     MainView()
-        .addGrid()
+//        .addGrid()
 }

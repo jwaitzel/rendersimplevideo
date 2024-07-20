@@ -7,26 +7,11 @@
     {
       "displayPrice" : "2.99",
       "familyShareable" : false,
-      "internalID" : "26225CE9",
-      "localizations" : [
-        {
-          "description" : "Send a feature request",
-          "displayName" : "Feature Request",
-          "locale" : "en_US"
-        }
-      ],
-      "productID" : "request.basic.videomockup",
-      "referenceName" : "SendRequestBasic",
-      "type" : "Consumable"
-    },
-    {
-      "displayPrice" : "4.99",
-      "familyShareable" : false,
       "internalID" : "77A7C592",
       "localizations" : [
         {
           "description" : "Send a feature request with high priority",
-          "displayName" : "Feature Request Priority",
+          "displayName" : "Priority Feature Request",
           "locale" : "en_US"
         }
       ],
@@ -37,6 +22,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
     "_storeKitErrors" : [
       {
         "current" : null,

@@ -15,7 +15,7 @@ final class StoreKitManager: ObservableObject {
 
     @Published private(set) var products: [Product] = []
     
-    @Published var productBasicRequest: Product?
+//    @Published var productBasicRequest: Product?
     @Published var productPriorityRequest: Product?
 
     var updateListenerTask: Task<Void, Error>? = nil
@@ -75,15 +75,12 @@ final class StoreKitManager: ObservableObject {
             
             products = try await Product.products(
                 for: [
-                    "request.basic.videomockup", "request.priority.videomockup"
+                    "request.priority.videomockup"
                 ]
             )
             
             for prod in products {
-                if prod.id == "request.basic.videomockup" {
-                    productBasicRequest = prod
-                    print("Found basic request")
-                } else if prod.id == "request.priority.videomockup" {
+                if prod.id == "request.priority.videomockup" {
                     productPriorityRequest = prod
                     print("Found priority request")
                 }
