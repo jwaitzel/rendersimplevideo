@@ -168,7 +168,7 @@ struct SendRequestFormView: View {
             let gitPostURL = URL(string: "https://api.github.com/repos/jwaitzel/rendersimplevideo/issues")!
             var urlRequest = URLRequest(url: gitPostURL)
             urlRequest.httpMethod = "POST"
-            
+            urlRequest.addValue("Bearer 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", forHTTPHeaderField: "Authorization")
 //            urlRequest.addValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
             
             var suggestTitle = requestTitle.isEmpty ? "no title" : requestTitle

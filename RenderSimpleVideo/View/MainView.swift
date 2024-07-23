@@ -18,7 +18,7 @@ struct MainView: View {
     var body: some View {
         
         NavigationStack(path: $appState.navPath) {
-            RenderVideoEditorView()
+            RenderLiveWithOptionsView()
                 .environment(\.containerNavPath, $appState.navPath)
                 .navigationDestination(for: Routes.self) { newRoute in
                     switch newRoute {

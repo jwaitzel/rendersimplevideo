@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		380349C72C500004009ED7F9 /* RenderLiveWithOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */; };
 		38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */; };
 		38137FD72C4B02B900D66D12 /* SendRequestFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */; };
 		38259C562C4A7A66006D52AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38259C552C4A7A66006D52AF /* StoreKit.framework */; };
@@ -39,6 +40,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderLiveWithOptionsView.swift; sourceTree = "<group>"; };
 		38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
 		38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRequestFormView.swift; sourceTree = "<group>"; };
 		38259C552C4A7A66006D52AF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -115,6 +117,7 @@
 			children = (
 				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
 				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
+				380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */,
 				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
 				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
 				388D91DA2C46961400ABFC8E /* ResultRenderView.swift */,
@@ -291,6 +294,7 @@
 				389467042C3BE16B00EA4632 /* RenderVideoEditorView.swift in Sources */,
 				389466F82C3BE15700EA4632 /* ContentView.swift in Sources */,
 				3844A1202C3FFFB7002FE045 /* MainView.swift in Sources */,
+				380349C72C500004009ED7F9 /* RenderLiveWithOptionsView.swift in Sources */,
 				38B56F202C3EF2540056227B /* VideoOptionsView.swift in Sources */,
 				38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */,
 				388D91E62C46A9B900ABFC8E /* WelcomeSimpleModalView.swift in Sources */,
@@ -454,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -491,7 +495,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
