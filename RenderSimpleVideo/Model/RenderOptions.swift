@@ -37,6 +37,16 @@ enum TextZPosition: String, CaseIterable {
     case Infront
 }
 
+enum AspectFormat: String {
+    case portrait
+    case landscape
+}
+
+enum RenderDevice: String {
+    case fifthn
+    case thirtn
+}
+
 class RenderOptions: ObservableObject {
     
     @Published var selectedVideoURL: URL?
@@ -52,7 +62,10 @@ class RenderOptions: ObservableObject {
     @Published var scaleVideo: CGFloat = 90.0
     @Published var scaleMask: CGFloat = 94.0
     @Published var maskCorners: CGFloat = 55.0
-    
+
+    @Published var selectedFormat: AspectFormat = .portrait
+    @Published var selectedDevice: RenderDevice = .fifthn
+
     @Published var videoSpeed: CGFloat = 100.0
 
     @Published var selectediPhoneOverlay: UIImage?

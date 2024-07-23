@@ -124,7 +124,8 @@ struct RenderLiveWithOptionsView: View {
 
         self.frameZeroImage = filteredImg
 
-//        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
+        print("recreate thumbnail")
+//        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
 //            self.reloadPreviewPlayer()
 //        })
     }
@@ -213,9 +214,12 @@ struct RenderLiveWithOptionsView: View {
                         })
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
+                    
                     self.renderOptions.offsetX = valueOffX
                     self.renderOptions.offsetY = valueOffY
                     recreateOnlyThumbnail()
+                    reloadPreviewPlayerWithTimer()
+//                    self.reloadPreviewPlayer()
                 })
                 .gesture(
                     MagnificationGesture(minimumScaleDelta: 0.05)
@@ -233,7 +237,9 @@ struct RenderLiveWithOptionsView: View {
                 .onChange(of: currentZoom, perform: { value in
                     print("new val \(value)")
                     self.renderOptions.scaleVideo += ((value) * (1024 / 300 ) * 0.5)
-                    recreateOnlyThumbnail()
+                    reloadPreviewPlayerWithTimer()
+//                    recreateOnlyThumbnail()
+//                    self.reloadPreviewPlayer()
                 })
 
             
@@ -288,6 +294,14 @@ struct RenderLiveWithOptionsView: View {
         .padding(.top, 16)
     }
     
+    func reloadPreviewPlayerWithTimer() {
+        
+        self.timerForReloadPlayer?.invalidate()
+        self.timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
+            self.reloadPreviewPlayer()
+        }
+    }
+    
     func applyMinMax(_ value: CGFloat) -> CGFloat {
         var preValue = value
         if let minValue {
@@ -317,37 +331,51 @@ struct RenderLiveWithOptionsView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         
-                        ButtonRoundedRectForSize(.init(width: 1024, height: 1024), true) {
-                            
+                        let sqSizeOpt1: CGSize = .init(width: 1024, height: 1024)
+                        let selSize = renderOptions.renderSize
+                        ButtonRoundedRectForSize(sqSizeOpt1, selSize.equalTo(sqSizeOpt1)) {
+                            self.renderOptions.renderSize = sqSizeOpt1
                         }
                         
-                        ButtonRoundedRectForSize(.init(width: 886, height: 1920), false) {
-                            
+                        let sqSizeOpt2: CGSize = .init(width: 886, height: 1920)
+                        ButtonRoundedRectForSize(sqSizeOpt2, selSize.equalTo(sqSizeOpt2)) {
+                            self.renderOptions.renderSize = sqSizeOpt2
+
                         }
                         
-                        ButtonRoundedRectForSize(.init(width: 1920, height: 886), false) {
-                            
+                        let sqSizeOpt3: CGSize = .init(width: 1920, height: 886)
+                        ButtonRoundedRectForSize(sqSizeOpt3, selSize.equalTo(sqSizeOpt3)) {
+                            self.renderOptions.renderSize = sqSizeOpt3
+
                         }
 
-                        
-                        ButtonRoundedRectForSize(.init(width: 1290, height: 2796), false) {
-                            
+                        let sqSizeOpt4: CGSize = .init(width: 1290, height: 2796)
+                        ButtonRoundedRectForSize(sqSizeOpt4, selSize.equalTo(sqSizeOpt4)) {
+                            self.renderOptions.renderSize = sqSizeOpt4
                         }
                         
-                        ButtonRoundedRectForSize(.init(width: 2796, height: 1290), false) {
-                            
+                        let sqSizeOpt5: CGSize = .init(width: 2796, height: 1290)
+                        ButtonRoundedRectForSize(sqSizeOpt5, selSize.equalTo(sqSizeOpt5)) {
+                            self.renderOptions.renderSize = sqSizeOpt5
+
                         }
                         
-                        
-                        ButtonRoundedRectForSize(.init(width: 1242 , height: 2688), false) {
-                            
+                        let sqSizeOpt6: CGSize = .init(width: 1242 , height: 2688)
+
+                        ButtonRoundedRectForSize(sqSizeOpt6, selSize.equalTo(sqSizeOpt6)) {
+                            self.renderOptions.renderSize = sqSizeOpt6
+
                         }
-                        
-                        ButtonRoundedRectForSize(.init(width: 2688 , height: 1242), false) {
-                            
+                        let sqSizeOpt7: CGSize = .init(width: 2688 , height: 1242)
+
+                        ButtonRoundedRectForSize(sqSizeOpt7, selSize.equalTo(sqSizeOpt7)) {
+                            self.renderOptions.renderSize = sqSizeOpt7
                         }
                         
                     }
+                    .onChange(of: self.renderOptions.renderSize, perform: { value in
+                        self.recreateOnlyThumbnail()
+                    })
                     .padding(.horizontal, 12)
                 }
                 
@@ -413,12 +441,12 @@ struct RenderLiveWithOptionsView: View {
                 
                     HStack {
                         
-                        ButtonFormatDevices("iphone", "15", true) {
-                            
+                        ButtonFormatDevices("iphone", "15", renderOptions.selectedDevice == .fifthn) {
+                            renderOptions.selectedDevice = .fifthn
                         }
                         
-                        ButtonFormatDevices("iphone.gen2", "13", false) {
-                            
+                        ButtonFormatDevices("iphone.gen2", "13", renderOptions.selectedDevice == .thirtn) {
+                            renderOptions.selectedDevice = .thirtn
                         }
                         
                     }
@@ -483,12 +511,12 @@ struct RenderLiveWithOptionsView: View {
             .overlay {
                 HStack {
                     
-                    ButtonFormatDevices("iphone", "Portrait", true) {
-                        
+                    ButtonFormatDevices("iphone", "Portrait", renderOptions.selectedFormat == .portrait) {
+                        renderOptions.selectedFormat = .portrait
                     }
                     
-                    ButtonFormatDevices("iphone.landscape", "Landscape", false) {
-                        
+                    ButtonFormatDevices("iphone.landscape", "Landscape", renderOptions.selectedFormat == .landscape) {
+                        renderOptions.selectedFormat = .landscape
                     }
                     
                 }
@@ -699,7 +727,7 @@ struct VideoPlayerView: UIViewControllerRepresentable {
         let playerViewController = AVPlayerViewController()
         playerViewController.player = player
         playerViewController.showsPlaybackControls = true
-       playerViewController.videoGravity = .resizeAspectFill
+       playerViewController.videoGravity = .resizeAspect
         
         player.play()
         return playerViewController
