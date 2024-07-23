@@ -30,6 +30,8 @@ struct RenderLiveWithOptionsView: View {
     
     private var videoComposer: VideoComposer = .init()
     
+    @State private var frameZeroImage: UIImage?
+    
     var body: some View {
         
         ZStack {
@@ -52,8 +54,8 @@ struct RenderLiveWithOptionsView: View {
                                 }
                             }
                             .onAppear {
-                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
-                                self.player = AVPlayer(url: mp4URL)
+//                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
+                                self.player = AVPlayer()
                             }
                             .ignoresSafeArea()
                         
@@ -84,24 +86,35 @@ struct RenderLiveWithOptionsView: View {
         .onAppear {
             if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
-                
-                guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
-                
-                let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
-
-                
-                videoComposer.createCompositionOnlyForPreview(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions) { progressVal in
-                    
-                } completion: { playerItem, errorOrNil in
-                    
-                    guard let playerItem = playerItem else {
-                        return
-                    }
-                    
-                    self.player?.replaceCurrentItem(with: playerItem)
-                }
-
+//                self.reloadPreviewPlayer()
             }
+        }
+        .onChange(of: renderOptions.backColor, perform: { _ in
+            self.reloadPreviewPlayer()
+        })
+    }
+    
+    func reloadPreviewPlayer() {
+        
+        guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
+        
+        let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
+        
+        videoComposer.createCompositionOnlyForPreview(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions) { progressVal in
+            
+        } completion: { playerItem, errorOrNil in
+            
+            guard let playerItem = playerItem else {
+                return
+            }
+            
+            self.player?.replaceCurrentItem(with: playerItem)
+            
+            let defaultThumb = self.renderOptions.selectedVideoThumbnail!
+            let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
+
+            self.frameZeroImage = filteredImg
+            
         }
     }
     
@@ -128,10 +141,6 @@ struct RenderLiveWithOptionsView: View {
                         Circle()
                             .foregroundStyle(.ultraThinMaterial)
                     }
-//                        .background {
-//                            Circle()
-//                                .stroke(.gray.opacity(0.2))
-//                        }
                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
 
             }
@@ -141,7 +150,13 @@ struct RenderLiveWithOptionsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
     }
     
+    @State var value: CGFloat = 0.0 //= 0.0
+    @State var startValue: CGFloat = 0.0
     
+    var minValue: CGFloat?
+    var maxValue: CGFloat?
+
+
     @ViewBuilder
     func VideoLayersOptionsView() -> some View {
         VStack(spacing: 10.0) {
@@ -153,12 +168,48 @@ struct RenderLiveWithOptionsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
             
-            RoundedRectangle(cornerRadius: 8.0, style: .continuous)
+            RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
-                .frame(height: 200)
+                .frame(height: 240)
+                .padding(.horizontal, 0)
+                .overlay {
+                    if let frameZeroImage {
+                        Image(uiImage: frameZeroImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
                 .padding(.bottom, 16)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged({ val in
+                            let preValue = val.translation.width  * 1.0 + startValue
+                            value = applyMinMax(preValue)
+                        })
+                        .onEnded({ _ in
+                            startValue = value
+                        })
+                )
+            
+            Text("Background Color")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
             
+            RoundedRectangle(cornerRadius: 8.0, style: .continuous)
+                .foregroundStyle(.clear)
+                .frame(height: 40)
+                .padding(.bottom, 16)
+                .padding(.horizontal, 12)
+                .overlay {
+                    ColorPicker(selection: $renderOptions.backColor, label: {
+                        EmptyView()
+                    })
+                    .padding(.trailing, 16)
+                }
+
             FormatLayerOptionButtons()
 
             RenderDimensionsOptionButtons()
@@ -170,6 +221,17 @@ struct RenderLiveWithOptionsView: View {
         }
         .padding(.bottom, 120.0)
         .padding(.top, 16)
+    }
+    
+    func applyMinMax(_ value: CGFloat) -> CGFloat {
+        var preValue = value
+        if let minValue {
+            preValue = max(minValue, preValue)
+        }
+        if let maxValue {
+            preValue = min(maxValue, preValue)
+        }
+        return preValue
     }
     
     @ViewBuilder
@@ -522,6 +584,8 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.videoDuration = videoAsset.duration.seconds
                     let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
                     self.renderOptions.selectedFiltered = filteredImg
+                    self.frameZeroImage = filteredImg
+                    self.reloadPreviewPlayer()
                     print("set thumbnail \(thumbnail)")
                 }
             }
@@ -529,8 +593,6 @@ struct RenderLiveWithOptionsView: View {
         }
         
     }
-
-    
     
     @ViewBuilder
     func OptionLabel(_ icon: String, _ title: String) -> some View {
@@ -555,12 +617,13 @@ struct RenderLiveWithOptionsView: View {
         //uiux-black-sound //uiux-black-sound
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
         let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
+        
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
         self.renderOptions.videoDuration = asset.duration.seconds
         self.renderOptions.selectedVideoThumbnail = defaultThumb
         let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
         self.renderOptions.selectedFiltered = filteredImg
-                
+        self.frameZeroImage = filteredImg
     }
 }
 
