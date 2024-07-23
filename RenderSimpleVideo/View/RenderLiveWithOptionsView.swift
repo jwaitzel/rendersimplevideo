@@ -124,9 +124,9 @@ struct RenderLiveWithOptionsView: View {
 
         self.frameZeroImage = filteredImg
 
-        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
-            self.reloadPreviewPlayer()
-        })
+//        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
+//            self.reloadPreviewPlayer()
+//        })
     }
     
     var topSettingsButtonMenu: some View {
@@ -198,7 +198,7 @@ struct RenderLiveWithOptionsView: View {
                 }
                 .padding(.bottom, 16)
                 .gesture(
-                    DragGesture(minimumDistance: 0.01)
+                    DragGesture(minimumDistance: 0.0)
                         .onChanged({ val in
                             let preValue = val.translation.width * (1024 / 300 ) + startValueOffX
                             let preValueY = -1.0 * val.translation.height * (1024 / 300 ) + startValueOffY
@@ -217,7 +217,7 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.offsetY = valueOffY
                     recreateOnlyThumbnail()
                 })
-                .simultaneousGesture(
+                .gesture(
                     MagnificationGesture(minimumScaleDelta: 0.05)
                         .onChanged { value in
                             self.currentZoom = value.magnitude - 1.0

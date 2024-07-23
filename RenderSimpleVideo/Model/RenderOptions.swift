@@ -58,7 +58,7 @@ class RenderOptions: ObservableObject {
     @Published var selectediPhoneOverlay: UIImage?
     @Published var selectediPhoneColor: iPhoneColorOptions = .black
     
-    @Published var backColor: Color = Color(uiColor: .systemGray6)// .pink// .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
+    @Published var backColor: Color = Color(.white)// .pink// .init(hue: 217.0/360.0, saturation: 77.0/100.0, brightness: 97.0/100.0)
 
     @Published var shadowOffset: CGPoint = .zero
     @Published var shadowRadius: CGFloat = 16
