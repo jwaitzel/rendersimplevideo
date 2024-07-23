@@ -150,9 +150,12 @@ struct RenderLiveWithOptionsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
     }
     
-    @State var value: CGFloat = 0.0 //= 0.0
-    @State var startValue: CGFloat = 0.0
+    @State var valueOffX: CGFloat = 0.0 //= 0.0
+    @State var startValueOffX: CGFloat = 0.0
     
+    @State var valueOffY: CGFloat = 0.0 //= 0.0
+    @State var startValueOffY: CGFloat = 0.0
+
     var minValue: CGFloat?
     var maxValue: CGFloat?
 
@@ -183,13 +186,27 @@ struct RenderLiveWithOptionsView: View {
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged({ val in
-                            let preValue = val.translation.width  * 1.0 + startValue
-                            value = applyMinMax(preValue)
+                            let preValue = val.translation.width * (1024 / 240.0 ) + startValueOffX
+                            let preValueY = -1.0 * val.translation.height * (1024 / 240.0 ) + startValueOffY
+
+                            valueOffX = applyMinMax(preValue)
+                            valueOffY = applyMinMax(preValueY)
+                            print("x value \(valueOffX)")
                         })
                         .onEnded({ _ in
-                            startValue = value
+                            startValueOffX = valueOffX
+                            startValueOffY = valueOffY
                         })
                 )
+                .onChange(of: (valueOffX + valueOffY) , perform: { value in
+                    
+                    self.renderOptions.offsetX = valueOffX
+                    self.renderOptions.offsetY = valueOffY
+                    reloadPreviewPlayer()
+                })
+            
+            BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+
             
             Text("Background Color")
                 .font(.subheadline)
@@ -219,6 +236,9 @@ struct RenderLiveWithOptionsView: View {
             DeviceColorLayerOptionButtons()
 
         }
+        .onChange(of: renderOptions.scaleVideo, perform: { _ in
+            reloadPreviewPlayer()
+        })
         .padding(.bottom, 120.0)
         .padding(.top, 16)
     }
