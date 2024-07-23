@@ -179,6 +179,26 @@ struct RenderLiveWithOptionsView: View {
     func VideoLayersOptionsView() -> some View {
         VStack(spacing: 10.0) {
             
+            Text("Background Color")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+            
+            RoundedRectangle(cornerRadius: 8.0, style: .continuous)
+                .foregroundStyle(.clear)
+                .frame(height: 40)
+                .padding(.bottom, 16)
+                .padding(.horizontal, 12)
+                .overlay {
+                    ColorPicker(selection: $renderOptions.backColor, label: {
+                        EmptyView()
+                    })
+                    .padding(.trailing, 16)
+                }
+
+            
             Text("Move And Scale")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -259,24 +279,6 @@ struct RenderLiveWithOptionsView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.bottom, 32)
 
-            Text("Background Color")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-            
-            RoundedRectangle(cornerRadius: 8.0, style: .continuous)
-                .foregroundStyle(.clear)
-                .frame(height: 40)
-                .padding(.bottom, 16)
-                .padding(.horizontal, 12)
-                .overlay {
-                    ColorPicker(selection: $renderOptions.backColor, label: {
-                        EmptyView()
-                    })
-                    .padding(.trailing, 16)
-                }
 
             FormatLayerOptionButtons()
 
