@@ -110,12 +110,23 @@ struct RenderLiveWithOptionsView: View {
             
             self.player?.replaceCurrentItem(with: playerItem)
             
-            let defaultThumb = self.renderOptions.selectedVideoThumbnail!
-            let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
-
-            self.frameZeroImage = filteredImg
-            
+            recreateOnlyThumbnail()
         }
+    }
+    
+    @State private var timerForReloadPlayer: Timer?
+    
+    func recreateOnlyThumbnail() {
+        
+        timerForReloadPlayer?.invalidate()
+        let defaultThumb = self.renderOptions.selectedVideoThumbnail!
+        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
+
+        self.frameZeroImage = filteredImg
+
+        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { _ in
+            self.reloadPreviewPlayer()
+        })
     }
     
     var topSettingsButtonMenu: some View {
@@ -159,6 +170,9 @@ struct RenderLiveWithOptionsView: View {
     var minValue: CGFloat?
     var maxValue: CGFloat?
 
+    @State private var currentZoom = 0.0
+    @State private var totalZoom = 1.0
+
 
     @ViewBuilder
     func VideoLayersOptionsView() -> some View {
@@ -173,7 +187,7 @@ struct RenderLiveWithOptionsView: View {
             
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
-                .frame(height: 240)
+                .frame(height: 300)
                 .padding(.horizontal, 0)
                 .overlay {
                     if let frameZeroImage {
@@ -183,15 +197,15 @@ struct RenderLiveWithOptionsView: View {
                     }
                 }
                 .padding(.bottom, 16)
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 0)
+                .gesture(
+                    DragGesture(minimumDistance: 0.01)
                         .onChanged({ val in
-                            let preValue = val.translation.width * (1024 / 240.0 ) + startValueOffX
-                            let preValueY = -1.0 * val.translation.height * (1024 / 240.0 ) + startValueOffY
+                            let preValue = val.translation.width * (1024 / 300 ) + startValueOffX
+                            let preValueY = -1.0 * val.translation.height * (1024 / 300 ) + startValueOffY
 
                             valueOffX = applyMinMax(preValue)
                             valueOffY = applyMinMax(preValueY)
-                            print("x value \(valueOffX)")
+//                            print("x value \(valueOffX)")
                         })
                         .onEnded({ _ in
                             startValueOffX = valueOffX
@@ -199,15 +213,46 @@ struct RenderLiveWithOptionsView: View {
                         })
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
-                    
                     self.renderOptions.offsetX = valueOffX
                     self.renderOptions.offsetY = valueOffY
-                    reloadPreviewPlayer()
+                    recreateOnlyThumbnail()
                 })
-            
-            BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+                .simultaneousGesture(
+                    MagnificationGesture(minimumScaleDelta: 0.05)
+                        .onChanged { value in
+                            self.currentZoom = value.magnitude - 1.0
+                        }
+//                        .onChanged { value in
+//                            currentZoom = value.magnification - 1
+//                        }
+                        .onEnded { value in
+                            totalZoom += currentZoom
+                            currentZoom = 0
+                        }
+                )
+                .onChange(of: currentZoom, perform: { value in
+                    print("new val \(value)")
+                    self.renderOptions.scaleVideo += ((value) * (1024 / 300 ) * 0.5)
+                    recreateOnlyThumbnail()
+                })
 
             
+            BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+                .padding(.bottom, 32)
+
+            
+            BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1, minValue: 100)
+            
+            let durWSpeed = (renderOptions.videoDuration ?? 60.0) / (renderOptions.videoSpeed / 100)
+            let durFloatStr = String(format: "Duration %.1fs", durWSpeed)
+            Text(durFloatStr)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+                .frame(width: 220, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.bottom, 32)
+
             Text("Background Color")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -237,7 +282,7 @@ struct RenderLiveWithOptionsView: View {
 
         }
         .onChange(of: renderOptions.scaleVideo, perform: { _ in
-            reloadPreviewPlayer()
+            recreateOnlyThumbnail()
         })
         .padding(.bottom, 120.0)
         .padding(.top, 16)

@@ -41,7 +41,7 @@ class VideoComposer {
         /// Mask Composite with background and masked screen
         let compositeBackColor = CIFilter(name: "CIBlendWithMask")! //CIBlendWithMask //CISourceOverCompositing
         
-        print("Video track size \(videoFrameSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
+//        print("Video track size \(videoFrameSize) videoScaleToFit \(videoScaleToFit) videoAddScale \(videoAddScale) newVideoSize \(newVideoSize)")
         
         /// Overlay Image
         guard let iphoneOverlayImg = renderOptions.selectediPhoneOverlay else { print("no overlay"); return nil }
@@ -50,7 +50,7 @@ class VideoComposer {
         /// Overlay Transform
         let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
         let overlayScaleParameter = (renderOptions.scaleVideo * 1.09) / 100.0 //renderOptions.scaleMask / 100 
-        print("overlays scale \(overlayScaleParameter)")
+//        print("overlays scale \(overlayScaleParameter)")
         let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
         let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
         let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
@@ -158,7 +158,7 @@ class VideoComposer {
         let renderSize = renderOptions.renderSize
         let videoTrackSize = screenImage.size
         let sourceVideoImage = CIImage(image: screenImage)!
-        print("Video track size \(videoTrackSize)")
+//        print("Video track size \(videoTrackSize)")
 
         guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
 
@@ -311,7 +311,7 @@ class VideoComposer {
             return
         }
 
-        print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
+//        print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
         let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
             
             let sourceImg = filteringRequest.sourceImage
