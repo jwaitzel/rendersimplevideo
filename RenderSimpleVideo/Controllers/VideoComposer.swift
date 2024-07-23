@@ -181,13 +181,80 @@ class VideoComposer {
 
     }
     
+    func createCompositionOnlyForPreview(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping (AVPlayerItem?, Error?) -> Void) {
+        let startRenderTime = Date()
+        
+        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, progress: progress) { compoPair, errorOrNil in
+            guard let (composition, videoComposition, timeRange) = compoPair else {
+                completion(nil, RenderError.failedCreateComposite)
+                return
+            }
+
+//            let snapshot = composition.copy() as! AVMutableComposition
+            let playerItem = AVPlayerItem(asset: composition)
+            playerItem.videoComposition = videoComposition
+            completion(playerItem, nil)
+        }
+    }
+    
     func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping (Error?) -> Void) {
+        
+        let startRenderTime = Date()
+        
+        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, progress: progress) { compoPair, errorOrNil in
+            
+            guard let (composition, videoComposition, timeRange) = compoPair else {
+                completion(RenderError.failedCreateComposite)
+                return
+            }
+//            guard let composition else {
+//                completion(RenderError.failedCreateComposite)
+//                return
+//            }
+            // Set up an AVAssetExportSession to export the composition
+            //AVAssetExportPresetMediumQuality
+            guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
+                completion(RenderError.failedCreateExportSession)
+                return
+            }
+
+            exportSession.timeRange = timeRange // multipliedTimeRange //CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600)) //multipliedTimeRange //
+            exportSession.outputURL = outputURL
+            exportSession.outputFileType = .mp4
+            exportSession.videoComposition = videoComposition
+            
+    //        let snap = composition.copy()
+    //        let newPlayerItem = AVPlayerItem(asset: snap as! AVMutableComposition)
+            
+            // Perform the export
+            exportSession.exportAsynchronously {
+                switch exportSession.status {
+                case .completed:
+                    let endTiem = Date().timeIntervalSince(startRenderTime)
+                    print("Completed \(outputURL) in time \(endTiem)")
+                    completion(nil)
+                case .failed:
+                    completion(exportSession.error)
+                case .cancelled:
+                    completion(RenderError.exportCancelled)
+                default:
+                    completion(RenderError.unknownError)
+                }
+            }
+        }
+        
+        
+    }
+    
+    func compositionSet(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping ((AVMutableComposition, AVMutableVideoComposition, CMTimeRange)?, Error?) -> Void) -> Void {
+        
+        
         // Create an AVMutableComposition
         let composition = AVMutableComposition()
-        let startRenderTime = Date()
+        
         // Create video and audio tracks in our composition
         guard let compositionVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
-            completion(RenderError.failedCompositionTrack)
+            completion(nil, RenderError.failedCompositionTrack)
             return
         }
 
@@ -199,7 +266,7 @@ class VideoComposer {
         
         // Get the first video and audio tracks from your assets
         guard let videoTrack = videoAsset.tracks(withMediaType: .video).first else {
-            completion(RenderError.failedFetchAssetTrack)
+            completion(nil, RenderError.failedFetchAssetTrack)
             return
         }
         
@@ -225,7 +292,7 @@ class VideoComposer {
                 compositionAudioTrack.scaleTimeRange(timeRange, toDuration: multipliedTimeRange.duration)
             }
         } catch {
-            completion(error)
+            completion(nil, error)
             return
         }
 
@@ -240,7 +307,7 @@ class VideoComposer {
         }
         
         guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else {
-            completion(RenderError.failedCreateComposite)
+            completion(nil, RenderError.failedCreateComposite)
             return
         }
 
@@ -267,33 +334,8 @@ class VideoComposer {
         }
         
         mutableVideoComposition.renderSize = renderOptions.renderSize
-        // Set up an AVAssetExportSession to export the composition
-        //AVAssetExportPresetMediumQuality
-        guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
-            completion(RenderError.failedCreateExportSession)
-            return
-        }
 
-        exportSession.timeRange = multipliedTimeRange //CMTimeRange(start: .zero, duration: CMTime(seconds: 3, preferredTimescale: 600)) //multipliedTimeRange //
-        exportSession.outputURL = outputURL
-        exportSession.outputFileType = .mp4
-        exportSession.videoComposition = mutableVideoComposition
-        
-        // Perform the export
-        exportSession.exportAsynchronously {
-            switch exportSession.status {
-            case .completed:
-                let endTiem = Date().timeIntervalSince(startRenderTime)
-                print("Completed \(outputURL) in time \(endTiem)")
-                completion(nil)
-            case .failed:
-                completion(exportSession.error)
-            case .cancelled:
-                completion(RenderError.exportCancelled)
-            default:
-                completion(RenderError.unknownError)
-            }
-        }
+        completion((composition, mutableVideoComposition, multipliedTimeRange),  nil)
     }
     
 }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		380349C72C500004009ED7F9 /* RenderLiveWithOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */; };
+		380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */; };
 		38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */; };
 		38137FD72C4B02B900D66D12 /* SendRequestFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */; };
 		38259C562C4A7A66006D52AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38259C552C4A7A66006D52AF /* StoreKit.framework */; };
@@ -41,6 +42,7 @@
 
 /* Begin PBXFileReference section */
 		380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderLiveWithOptionsView.swift; sourceTree = "<group>"; };
+		380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "end-result-old1.mp4"; sourceTree = "<group>"; };
 		38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
 		38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRequestFormView.swift; sourceTree = "<group>"; };
 		38259C552C4A7A66006D52AF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -198,6 +200,7 @@
 				38B56F212C3EF3D10056227B /* screencap1.jpg */,
 				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
 				38AE63E42C419400002CE2C6 /* uiux-short.mp4 */,
+				380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */,
 				388D91E02C46A3FA00ABFC8E /* iPhone15Pro-Portrait */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
 			);
@@ -274,6 +277,7 @@
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
 				389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */,
 				38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */,
+				380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */,
 				388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */,
 				388D91E12C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png in Resources */,
 				388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */,
