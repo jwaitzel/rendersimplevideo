@@ -659,6 +659,14 @@ struct RenderLiveWithOptionsView: View {
     func OptionsEditorView() -> some View {
         VStack {
             
+            Text("Mockup")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
+
             HStack(spacing: 0.0) {
                 let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
                 let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
