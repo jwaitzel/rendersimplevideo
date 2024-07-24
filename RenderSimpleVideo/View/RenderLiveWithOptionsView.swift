@@ -19,6 +19,15 @@ struct RenderLiveWithOptionsView: View {
         case Shadow
     }
     
+    enum MockupStyle: CaseIterable {
+        case simple
+        case scene3d
+        case fromVideo
+    }
+    
+    @State private var mockupStyleSelected: MockupStyle = .simple
+    @State private var idxBottomSelected: Int = 0
+    
     @State var optionsGroup: OptionsGroup = .Video
     @AppStorage("optionsGroup") var optionsGroupSaved: OptionsGroup = .Video
 
@@ -47,12 +56,13 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var showRenderResultView: Bool = false
     
+    @ObservedObject var storeKit: StoreKitManager = .shared
+    
     var body: some View {
         
         ZStack {
             
             let playerContainerSize: CGFloat = 396
-            
             GeometryReader {
                 let sSize: CGSize = $0.size
 //                let _ = print("size \(sSize)")
@@ -271,6 +281,7 @@ struct RenderLiveWithOptionsView: View {
     @State private var currentZoom = 0.0
     @State private var totalZoom = 1.0
 
+    @Namespace var animation
 
     @ViewBuilder
     func VideoLayersOptionsView() -> some View {
@@ -647,33 +658,90 @@ struct RenderLiveWithOptionsView: View {
     @ViewBuilder
     func OptionsEditorView() -> some View {
         VStack {
-            Picker("", selection: $optionsGroup) {
-                ForEach(0..<OptionsGroup.allCases.count, id: \.self) { idx in
-                    let iPhoneColor = OptionsGroup.allCases[idx]
-                    Text(iPhoneColor.rawValue)
-                        .tag(iPhoneColor)
+            
+            HStack(spacing: 0.0) {
+                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
+                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
+                
+                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
+                    
+                    let valSel = MockupStyle.allCases[idx]
+                    let isSel = mockupStyleSelected == valSel
+                    Button {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                            idxBottomSelected = idx
+                        }
+                        withAnimation(.linear(duration: 0.23)) {
+                            mockupStyleSelected = valSel
+                        }
+                        
+                    } label: {
+                        let tt = stylesTitles[idx]
+                        let stI = styleIcons[idx]
+                        VStack(spacing: 4) {
+                            Image(systemName: stI)
+                                .font(.largeTitle)
+                                .fontWeight(.ultraLight)
+                            
+                            Text(tt)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                        }
+                        .overlay(alignment: .bottom) {
+                            if idxBottomSelected == idx {
+                                Rectangle()
+                                    .foregroundStyle(.primary.opacity(0.8))
+                                    .frame(height: 1)
+                                    .offset(y: 12)
+                                    .padding(.horizontal, 0)
+                                    .matchedGeometryEffect(id: "styleSel", in: animation)
+                            }
+                        }
+                        
+                    }
+                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
+                    .frame(maxWidth: .infinity)
                 }
             }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 12)
-            .onChange(of: optionsGroup) { new in
-                optionsGroupSaved = new
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .foregroundStyle(.secondary.opacity(0.4))
+                    .frame(height: 1)
+                    .offset(y: 12)
+                    .padding(.horizontal, 12)
             }
+            .padding(.bottom, 32)
+            
+            switch self.mockupStyleSelected {
+            case .simple:
+                Picker("", selection: $optionsGroup) {
+                    ForEach(0..<OptionsGroup.allCases.count, id: \.self) { idx in
+                        let iPhoneColor = OptionsGroup.allCases[idx]
+                        Text(iPhoneColor.rawValue)
+                            .tag(iPhoneColor)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 12)
+                .onChange(of: optionsGroup) { new in
+                    optionsGroupSaved = new
+                }
 
-            switch self.optionsGroup {
-            case .Video:
-                VideoLayersOptionsView()
-                    .padding(.top, 16)
-            case .Text:
-                EmptyView()
-            case .Shadow:
-                EmptyView()
+                switch self.optionsGroup {
+                case .Video:
+                    VideoLayersOptionsView()
+                        .padding(.top, 16)
+                case .Text:
+                    EmptyView()
+                case .Shadow:
+                    EmptyView()
+                default:
+                    EmptyView()
+                }
+
             default:
                 EmptyView()
             }
-//            if optionsGroup == .Video {
-//                
-//            }
         }
     }
     
@@ -727,7 +795,7 @@ struct RenderLiveWithOptionsView: View {
             }
             
         }
-        .offset(y: 10)
+        .offset(y: 6)
         .background {
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial) ////red
@@ -788,7 +856,7 @@ struct RenderLiveWithOptionsView: View {
                     let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
                     self.renderOptions.selectedFiltered = filteredImg
                     self.frameZeroImage = filteredImg
-                    self.reloadPreviewPlayer()
+                    self.reloadPreviewPlayerWithTimer()
                     print("set thumbnail \(thumbnail)")
                 }
             }
