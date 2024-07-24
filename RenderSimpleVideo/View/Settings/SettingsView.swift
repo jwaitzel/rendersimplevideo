@@ -36,6 +36,12 @@ struct SettingsView: View {
                     navPath.wrappedValue.append(Routes.uelaAgree)
                 }
 
+            Text("v1.38")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            
         }
         .navigationTitle("Settings")
         .overlay(alignment: .bottom) {
@@ -46,13 +52,15 @@ struct SettingsView: View {
                 Text("for the ")
                 Text("iOS Community")
                     .fontWeight(.semibold)
-                
             }
             .font(.caption)
             .frame(maxWidth: .infinity, alignment: .center)
             .offset(y: 0)
             .padding(.bottom, 8)
-            
+//            .padding(.bottom, 16)
+//            .overlay {
+//                    .offset(x: -44, y: 16)
+//            }
         }
         
 

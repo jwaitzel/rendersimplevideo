@@ -23,6 +23,9 @@ struct BlenderStyleInput: View {
             HStack {
                 
                 Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
                     .frame(width: 120, alignment: .trailing)
                 
                 ZStack {

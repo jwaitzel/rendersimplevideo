@@ -32,6 +32,21 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var frameZeroImage: UIImage?
     
+    @Environment(\.containerNavPath) var navPath
+    
+    enum RenderState {
+        case none
+        case rendering
+        case finish
+    }
+    
+    @State private var renderState: RenderState = .none
+    @State private var renderProgress: CGFloat = 0.0
+    
+    @State private var renderVideoURL: URL?
+    
+    @State private var showRenderResultView: Bool = false
+    
     var body: some View {
         
         ZStack {
@@ -51,6 +66,7 @@ struct RenderLiveWithOptionsView: View {
                                 if let player {
                                     VideoPlayerView(player: player)
                                         .scaledToFit()
+//                                        .padding(.bottom, 84)
                                 }
                             }
                             .onAppear {
@@ -86,12 +102,19 @@ struct RenderLiveWithOptionsView: View {
         .onAppear {
             if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
+                self.reloadPreviewPlayerWithTimer()
 //                self.reloadPreviewPlayer()
             }
         }
         .onChange(of: renderOptions.backColor, perform: { _ in
             self.reloadPreviewPlayer()
         })
+        .sheet(isPresented: $showRenderResultView, content: {
+            if let renderVideoURL {
+                ResultRenderView(videoURL: renderVideoURL)
+            }
+        })
+
     }
     
     func reloadPreviewPlayer() {
@@ -130,21 +153,91 @@ struct RenderLiveWithOptionsView: View {
 //        })
     }
     
+    @ViewBuilder
+    func RenderStatusOverlay() -> some View {
+        RoundedRectangle(cornerRadius: 4, style: .continuous)
+            .foregroundStyle(.ultraThinMaterial)
+            .overlay {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .stroke(.primary.opacity(0.2), lineWidth: 0.8)
+            }
+            .frame(width: 30, height: 30)
+            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+            .overlay {
+                if renderState == .rendering {
+
+                    ProgressView(value: self.renderProgress, total: 1.0)
+                        .padding(.horizontal, 1)
+                        .progressViewStyle(LinearProgressViewStyle())
+                        .padding(.horizontal, 1)
+                        .tint(.green.opacity(0.9))
+
+                } else if renderState == .finish {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 20))
+                        .fontWeight(.light)
+                        .foregroundStyle(.green)
+                }
+            }
+            .offset(y: -5)
+    }
+
+    
+    func makeVideoWithComposition() {
+        
+        guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
+        let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
+        DispatchQueue.main.async {
+            self.renderState = .rendering
+            self.renderProgress = 0.0
+        }
+        
+        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, progress: { perc in
+            DispatchQueue.main.async {
+                self.renderProgress = perc
+            }
+        }) { err in
+            if let err {
+                print("Error ", err)
+                DispatchQueue.main.async {
+                    self.renderState = .none
+                }
+            } else {
+                print("Completed \(outputURL)")
+                DispatchQueue.main.async {
+                    self.renderVideoURL = outputURL
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        self.showRenderResultView = true
+                        self.renderState = .finish
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            withAnimation(.easeInOut) {
+                                self.renderState = .none
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    
+    @State private var showRequestFeatureForm: Bool = false
     var topSettingsButtonMenu: some View {
         VStack {
             Menu {
                 Button {
-
+                    navPath.wrappedValue.append(Routes.settings)
                 } label: {
                     Label("Settings", systemImage: "gearshape")
                 }
                 
                 Button {
-
+                    showRequestFeatureForm = true
                 } label: {
                     Label("Request Feature", systemImage: "star.bubble")
                 }
-                
+
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 18, weight: .bold))
@@ -160,6 +253,10 @@ struct RenderLiveWithOptionsView: View {
 
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .sheet(isPresented: $showRequestFeatureForm, content: {
+            SendRequestFormView()
+        })
+
     }
     
     @State var valueOffX: CGFloat = 0.0 //= 0.0
@@ -239,27 +336,21 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.offsetY = valueOffY
                     recreateOnlyThumbnail()
                     reloadPreviewPlayerWithTimer()
-//                    self.reloadPreviewPlayer()
                 })
                 .gesture(
                     MagnificationGesture(minimumScaleDelta: 0.05)
                         .onChanged { value in
                             self.currentZoom = value.magnitude - 1.0
                         }
-//                        .onChanged { value in
-//                            currentZoom = value.magnification - 1
-//                        }
                         .onEnded { value in
                             totalZoom += currentZoom
                             currentZoom = 0
                         }
                 )
                 .onChange(of: currentZoom, perform: { value in
-                    print("new val \(value)")
+//                    print("new val \(value)")
                     self.renderOptions.scaleVideo += ((value) * (1024 / 300 ) * 0.5)
                     reloadPreviewPlayerWithTimer()
-//                    recreateOnlyThumbnail()
-//                    self.reloadPreviewPlayer()
                 })
 
             
@@ -291,6 +382,7 @@ struct RenderLiveWithOptionsView: View {
         }
         .onChange(of: renderOptions.scaleVideo, perform: { _ in
             recreateOnlyThumbnail()
+            self.reloadPreviewPlayerWithTimer()
         })
         .padding(.bottom, 120.0)
         .padding(.top, 16)
@@ -611,20 +703,36 @@ struct RenderLiveWithOptionsView: View {
             }
             .frame(maxWidth: .infinity)
             .foregroundStyle(showOptions ? .white : .secondary)
-                        
-            Button {
-                
-            } label: {
-                OptionLabel("square.and.arrow.down", "Save")
+                 
+            
+            if renderState != .none {
+                RenderStatusOverlay()
+                    .overlay{
+                        Text("Rendering")
+                            .frame(width: 60)
+                            .font(.system(size: 11))
+                            .offset(y: 20)
+                    }
+//                    .frame(width: 36, height: 36)
+                    .frame(maxWidth: .infinity)
+            } else {
+                Button {
+                    makeVideoWithComposition()
+                } label: {
+                    OptionLabel("square.and.arrow.down", "Save")
+                }
+                .frame(maxWidth: .infinity)
+                .foregroundStyle(.secondary)
+
             }
-            .frame(maxWidth: .infinity)
-            .foregroundStyle(.secondary)
+            
         }
+        .offset(y: 10)
         .background {
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial) ////red
                 .ignoresSafeArea()
-                .frame(height: 100)
+                .frame(height: 60)
                 
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -695,11 +803,11 @@ struct RenderLiveWithOptionsView: View {
         VStack(spacing: 2) {
             Image(systemName: icon)
                 .font(.system(size: 24))
-                .offset(y: -2)
+//                .offset(y: -2)
                 .frame(width: iconSize, height: iconSize)
             
             Text(title)
-                .font(.caption)
+                .font(.caption2)
                 .fontWeight(.semibold)
         }
         .frame(maxWidth: .infinity)
