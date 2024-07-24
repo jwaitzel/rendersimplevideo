@@ -58,6 +58,15 @@ struct RenderLiveWithOptionsView: View {
     
     @ObservedObject var storeKit: StoreKitManager = .shared
     
+    @State private var timerForStopPlayer: Timer?
+    @State private var frameRenderImg: UIImage?
+    @State private var playerStopMotionIdx: Int = 0
+    @State private var totalStopMotionFrames: Int = 2
+    
+    @State private var isPlaying: Bool = false
+    
+    @State private var showButtonCenterPlay: Bool = false
+
     var body: some View {
         
         ZStack {
@@ -72,13 +81,67 @@ struct RenderLiveWithOptionsView: View {
                         Rectangle()
                             .foregroundStyle(.gray.opacity(0.2))
                             .frame(width: playerContainerSize, height: playerContainerSize)
+//                            .overlay {
+//                                if let player {
+//                                    VideoPlayerView(player: player)
+//                                        .scaledToFit()
+////                                        .padding(.bottom, 84)
+//                                }
+//                            }
                             .overlay {
-                                if let player {
-                                    VideoPlayerView(player: player)
+                                if let rndImg = frameRenderImg {
+                                    Image(uiImage: rndImg)
+                                        .resizable()
                                         .scaledToFit()
-//                                        .padding(.bottom, 84)
+//                                        .frame(width: 140, height: 140)
+                                        .contentShape(.rect)
+                                    
                                 }
                             }
+                            .overlay {
+                                if showButtonCenterPlay {
+                                    ZStack {
+                                        if isPlaying {
+                                            Image(systemName: "play.fill")
+                                                .font(.system(size: 40))
+                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+                                        } else {
+                                            Image(systemName: "pause.fill")
+                                                .font(.system(size: 40))
+                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+                                        }
+                                        
+                                    }
+                                }
+                                
+                            }
+                            .contentShape(.rect)
+                            .onTapGesture {
+                                if isPlaying {
+                                    /// Stop
+                                    self.isPlaying = false
+                                    self.timerForStopPlayer?.invalidate()
+                                } else {
+                                    self.isPlaying = true
+                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+                                        self.playerStopMotionIdx += 1
+                                        self.requestNewTimeThumbForIdx()
+                                    })
+                                }
+                                
+                                withAnimation(.linear(duration: 0.2)) {
+                                    showButtonCenterPlay = true
+                                }
+                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
+                                    withAnimation(.linear(duration: 0.2)) {
+                                        showButtonCenterPlay = false
+                                    }
+
+
+                                }
+                                
+                            }
+                        
                             .onAppear {
 //                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
                                 self.player = AVPlayer()
@@ -113,6 +176,8 @@ struct RenderLiveWithOptionsView: View {
             if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
                 self.reloadPreviewPlayerWithTimer()
+                self.setupStopMotionPlayer()
+                self.isPlaying = true
 //                self.reloadPreviewPlayer()
             }
         }
@@ -125,6 +190,14 @@ struct RenderLiveWithOptionsView: View {
             }
         })
 
+    }
+    
+    func setupStopMotionPlayer() {
+        self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+            self.playerStopMotionIdx += 1
+            self.requestNewTimeThumbForIdx()
+//            print("Timer counter \(timer.timeInterval) self.playerStopMotionIdx \(self.playerStopMotionIdx)")
+        })
     }
     
     func reloadPreviewPlayer() {
@@ -143,16 +216,18 @@ struct RenderLiveWithOptionsView: View {
             
             self.player?.replaceCurrentItem(with: playerItem)
             
-            recreateOnlyThumbnail()
+            reloadOnlyThumbnail()
         }
     }
     
     @State private var timerForReloadPlayer: Timer?
     
-    func recreateOnlyThumbnail() {
+    func reloadOnlyThumbnail() {
         
         timerForReloadPlayer?.invalidate()
+        
         let defaultThumb = self.renderOptions.selectedVideoThumbnail!
+        let selectFrame = defaultThumb
         let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
 
         self.frameZeroImage = filteredImg
@@ -345,7 +420,7 @@ struct RenderLiveWithOptionsView: View {
                     
                     self.renderOptions.offsetX = valueOffX
                     self.renderOptions.offsetY = valueOffY
-                    recreateOnlyThumbnail()
+                    reloadOnlyThumbnail()
                     reloadPreviewPlayerWithTimer()
                 })
                 .gesture(
@@ -392,7 +467,7 @@ struct RenderLiveWithOptionsView: View {
 
         }
         .onChange(of: renderOptions.scaleVideo, perform: { _ in
-            recreateOnlyThumbnail()
+            reloadOnlyThumbnail()
             self.reloadPreviewPlayerWithTimer()
         })
         .padding(.bottom, 120.0)
@@ -479,7 +554,7 @@ struct RenderLiveWithOptionsView: View {
                         
                     }
                     .onChange(of: self.renderOptions.renderSize, perform: { value in
-                        self.recreateOnlyThumbnail()
+                        self.reloadOnlyThumbnail()
                     })
                     .padding(.horizontal, 12)
                 }
@@ -505,7 +580,7 @@ struct RenderLiveWithOptionsView: View {
                 let iconSize: CGSize = portrait ? CGSize(width: iconSquareSide, height: heightC) : isSquare ? CGSize(width: iconSquareSide, height: iconSquareSide) :  CGSize(width: iconSquareSide * aspW, height: iconSquareSide)
                 
                 RoundedRectangle(cornerRadius: 1, style: .continuous)
-                    .stroke(.white, lineWidth: 1.0)
+                    .stroke(Color.primary, lineWidth: 1.0)
                     .frame(width: iconSize.width, height: iconSize.height)
 //                    .border(.green)
                     .frame(width: 80, height: 80)
@@ -778,7 +853,7 @@ struct RenderLiveWithOptionsView: View {
                 OptionLabel("slider.horizontal.3", "Options")
             }
             .frame(maxWidth: .infinity)
-            .foregroundStyle(showOptions ? .white : .secondary)
+            .foregroundStyle(showOptions ? .primary : .secondary)
                  
             
             if renderState != .none {
@@ -799,7 +874,6 @@ struct RenderLiveWithOptionsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .foregroundStyle(.secondary)
-
             }
             
         }
@@ -846,18 +920,22 @@ struct RenderLiveWithOptionsView: View {
            }
            
             if let itemVideoURL {
+                
                 let videoAsset = AVURLAsset(url: itemVideoURL)
                 let videoTrack = videoAsset.tracks(withMediaType: .video).first!
                 let thumbSize: CGSize = .init(width: videoTrack.naturalSize.width, height: videoTrack.naturalSize.height)
+                
                 let asset = AVAsset(url: itemVideoURL)
                 let generator = AVAssetImageGenerator(asset: asset)
                 generator.appliesPreferredTrackTransform = true
                 generator.maximumSize = thumbSize
 
-                let cgImage = try await generator.image(at: .zero).image
+                let imgPrevTime: CMTime = .zero
+                let cgImage = try await generator.image(at: imgPrevTime).image
                 guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
                 let thumbnail = UIImage(cgImage: colorCorrectedImage)
                 await MainActor.run {
+                    
                     self.renderOptions.selectedVideoThumbnail = thumbnail
                     self.renderOptions.selectedVideoURL = itemVideoURL
                     self.renderOptions.videoDuration = videoAsset.duration.seconds
@@ -869,6 +947,38 @@ struct RenderLiveWithOptionsView: View {
                 }
             }
            
+        }
+        
+    }
+    
+    func requestNewTimeThumbForIdx() {
+        
+        let videoDurFrame = (self.renderOptions.videoDuration ?? 0) / CGFloat(totalStopMotionFrames)
+        let groupIdx =  self.playerStopMotionIdx % totalStopMotionFrames
+        let newRenderTime = CMTime(seconds: videoDurFrame * CGFloat(groupIdx), preferredTimescale: 600)
+        
+        print("self.renderOptions.videoDuration \(self.renderOptions.videoDuration) videoDurFrame \(videoDurFrame) req time \(newRenderTime.seconds) \(groupIdx)")
+        let itemVideoURL = self.renderOptions.selectedVideoURL!
+        let videoAsset = AVURLAsset(url: itemVideoURL)
+        let videoTrack = videoAsset.tracks(withMediaType: .video).first!
+        let thumbSize: CGSize = .init(width: videoTrack.naturalSize.width, height: videoTrack.naturalSize.height)
+        
+        let asset = AVAsset(url: itemVideoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = thumbSize
+
+        let imgPrevTime: CMTime = newRenderTime
+        Task {
+            let cgImage = try await generator.image(at: imgPrevTime).image
+            frameRenderImg = UIImage(cgImage: cgImage)
+            
+            if let actRender = frameRenderImg {
+                let filteredImg = videoComposer.createImagePreview(actRender, renderOptions: renderOptions)
+                frameRenderImg = filteredImg
+            }
+            
+
         }
         
     }
@@ -894,11 +1004,15 @@ struct RenderLiveWithOptionsView: View {
     func setDefaultData() {
         //uiux-short
         //uiux-black-sound //uiux-black-sound
-        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
+        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "ui2-show", withExtension: "mov")
+        
+        /// Let find image generator
         let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
         
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
+        
         self.renderOptions.videoDuration = asset.duration.seconds
+        
         self.renderOptions.selectedVideoThumbnail = defaultThumb
         let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
         self.renderOptions.selectedFiltered = filteredImg

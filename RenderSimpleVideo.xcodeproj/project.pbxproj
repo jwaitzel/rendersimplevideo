@@ -38,6 +38,7 @@
 		38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F232C3EF9090056227B /* VideoComposer.swift */; };
 		38B56F272C3F17C30056227B /* BlenderStyleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F262C3F17C30056227B /* BlenderStyleInput.swift */; };
 		38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */; };
+		38DCDCCA2C51847A00F51B9C /* ui2-show.mov in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCC92C51847A00F51B9C /* ui2-show.mov */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 		38B56F232C3EF9090056227B /* VideoComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComposer.swift; sourceTree = "<group>"; };
 		38B56F262C3F17C30056227B /* BlenderStyleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlenderStyleInput.swift; sourceTree = "<group>"; };
 		38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerTest.swift; sourceTree = "<group>"; };
+		38DCDCC92C51847A00F51B9C /* ui2-show.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "ui2-show.mov"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +203,7 @@
 				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
 				38AE63E42C419400002CE2C6 /* uiux-short.mp4 */,
 				380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */,
+				38DCDCC92C51847A00F51B9C /* ui2-show.mov */,
 				388D91E02C46A3FA00ABFC8E /* iPhone15Pro-Portrait */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
 			);
@@ -279,6 +282,7 @@
 				38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */,
 				380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */,
 				388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */,
+				38DCDCCA2C51847A00F51B9C /* ui2-show.mov in Resources */,
 				388D91E12C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png in Resources */,
 				388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */,
 				388D91E32C46A3FA00ABFC8E /* iPhone 15 Pro - Black Titanium - Portrait.png in Resources */,

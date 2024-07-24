@@ -159,7 +159,6 @@ class VideoComposer {
         let videoTrackSize = screenImage.size
         let sourceVideoImage = CIImage(image: screenImage)!
 //        print("Video track size \(videoTrackSize)")
-
         guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
 
         let sourceCI = sourceVideoImage.transformed(by: videoTransform)
