@@ -47,6 +47,11 @@ enum RenderDevice: String {
     case thirtn
 }
 
+class RenderTextLayer: ObservableObject {
+    @Published var textString = ""
+    @Published var coordinates = CGPoint.zero
+}
+
 class RenderOptions: ObservableObject {
     
     @Published var selectedVideoURL: URL?
@@ -85,6 +90,8 @@ class RenderOptions: ObservableObject {
     @Published var overlayTextColor: Color = .black
     @Published var overlayTextRotation: CGFloat = 0
     @Published var overlayTextZPosition: TextZPosition = .Behind
+
+    @Published var textLayers: [RenderTextLayer] = []
 
     init() {
         self.selectediPhoneOverlay = selectediPhoneColor.image()

@@ -72,7 +72,7 @@ struct ComposerTest: View {
         textGenerator?.setValue(1, forKey: "inputScaleFactor")
         
         guard let textImage = textGenerator?.outputImage else { return }
-        print("extent text \(textImage.extent)")
+//        print("extent text \(textImage.extent)")
         let textComposite = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
         textComposite.setValue(compositeBackColor.outputImage, forKey: kCIInputBackgroundImageKey)
         

@@ -9,6 +9,7 @@ import SwiftUI
 import AVKit
 import PhotosUI
 
+
 struct RenderLiveWithOptionsView: View {
     
     @State private var showOptions: Bool = true
@@ -71,7 +72,7 @@ struct RenderLiveWithOptionsView: View {
         
         ZStack {
             
-            let playerContainerSize: CGFloat = 396
+            let playerContainerSize: CGFloat = showOptions ? 120 : 396
             GeometryReader {
                 let sSize: CGSize = $0.size
 //                let _ = print("size \(sSize)")
@@ -89,65 +90,75 @@ struct RenderLiveWithOptionsView: View {
 //                                }
 //                            }
                             .overlay {
-                                if let rndImg = frameRenderImg {
-                                    Image(uiImage: rndImg)
-                                        .resizable()
+//                                TabView {
+//                                    if let rndImg = frameRenderImg {
+//                                        Image(uiImage: rndImg)
+//                                            .resizable()
+//                                            .scaledToFit()
+//    //                                        .frame(width: 140, height: 140)
+//                                            .contentShape(.rect)
+//                                        
+//                                    }
+//                                    
+//                                    
+//                                }
+//                                .tabViewStyle(.page(indexDisplayMode: .always))
+//                                .indexViewStyle(.page(backgroundDisplayMode: .always))
+
+                                if let player {
+                                    VideoPlayerView(player: player)
                                         .scaledToFit()
-//                                        .frame(width: 140, height: 140)
-                                        .contentShape(.rect)
-                                    
-                                }
-                            }
-                            .overlay {
-                                if showButtonCenterPlay {
-                                    ZStack {
-                                        if isPlaying {
-                                            Image(systemName: "play.fill")
-                                                .font(.system(size: 40))
-                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-                                        } else {
-                                            Image(systemName: "pause.fill")
-                                                .font(.system(size: 40))
-                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-                                        }
-                                        
-                                    }
                                 }
                                 
                             }
-                            .contentShape(.rect)
-                            .onTapGesture {
-                                if isPlaying {
-                                    /// Stop
-                                    self.isPlaying = false
-                                    self.timerForStopPlayer?.invalidate()
-                                } else {
-                                    self.isPlaying = true
-                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
-                                        self.playerStopMotionIdx += 1
-                                        self.requestNewTimeThumbForIdx()
-                                    })
-                                }
-                                
-                                withAnimation(.linear(duration: 0.2)) {
-                                    showButtonCenterPlay = true
-                                }
-                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
-                                    withAnimation(.linear(duration: 0.2)) {
-                                        showButtonCenterPlay = false
-                                    }
-
-
-                                }
-                                
-                            }
+//                            .overlay {
+//                                if showButtonCenterPlay {
+//                                    ZStack {
+//                                        if isPlaying {
+//                                            Image(systemName: "play.fill")
+//                                                .font(.system(size: 40))
+//                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+//                                        } else {
+//                                            Image(systemName: "pause.fill")
+//                                                .font(.system(size: 40))
+//                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+//                                        }
+//                                        
+//                                    }
+//                                }
+//                                
+//                            }
+//                            .contentShape(.rect)
+//                            .onTapGesture {
+//                                if isPlaying {
+//                                    /// Stop
+//                                    self.isPlaying = false
+//                                    self.timerForStopPlayer?.invalidate()
+//                                } else {
+//                                    self.isPlaying = true
+//                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+//                                        self.playerStopMotionIdx += 1
+//                                        self.requestNewTimeThumbForIdx()
+//                                    })
+//                                }
+//                                
+//                                withAnimation(.linear(duration: 0.2)) {
+//                                    showButtonCenterPlay = true
+//                                }
+//                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
+//                                    withAnimation(.linear(duration: 0.2)) {
+//                                        showButtonCenterPlay = false
+//                                    }
+//                                }
+//                                
+//                            }
                         
                             .onAppear {
 //                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
                                 self.player = AVPlayer()
                             }
                             .ignoresSafeArea()
-                        
+                            .padding(.top, 64)
 
                         VStack {
                             OptionsEditorView()
@@ -176,8 +187,9 @@ struct RenderLiveWithOptionsView: View {
             if renderOptions.selectedVideoURL == nil {
                 self.setDefaultData()
                 self.reloadPreviewPlayerWithTimer()
-                self.setupStopMotionPlayer()
-                self.isPlaying = true
+                
+//                self.setupStopMotionPlayer()
+//                self.isPlaying = true
 //                self.reloadPreviewPlayer()
             }
         }
@@ -565,6 +577,208 @@ struct RenderLiveWithOptionsView: View {
     }
     
     @ViewBuilder
+    func OptionsEditorView() -> some View {
+        VStack {
+            
+            Text("Mockup")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
+
+            HStack(spacing: 0.0) {
+                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
+                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
+                
+                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
+                    
+                    let valSel = MockupStyle.allCases[idx]
+                    let isSel = mockupStyleSelected == valSel
+                    Button {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                            idxBottomSelected = idx
+                        }
+                        withAnimation(.linear(duration: 0.23)) {
+                            mockupStyleSelected = valSel
+                        }
+                        
+                    } label: {
+                        let tt = stylesTitles[idx]
+                        let stI = styleIcons[idx]
+                        VStack(spacing: 4) {
+                            Image(systemName: stI)
+                                .font(.largeTitle)
+                                .fontWeight(.ultraLight)
+                            
+                            Text(tt)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                        }
+                        .overlay(alignment: .bottom) {
+                            if idxBottomSelected == idx {
+                                Rectangle()
+                                    .foregroundStyle(.primary.opacity(0.8))
+                                    .frame(height: 1)
+                                    .offset(y: 12)
+                                    .padding(.horizontal, 0)
+                                    .matchedGeometryEffect(id: "styleSel", in: animation)
+                            }
+                        }
+                        
+                    }
+                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .foregroundStyle(.secondary.opacity(0.4))
+                    .frame(height: 1)
+                    .offset(y: 12)
+                    .padding(.horizontal, 12)
+            }
+            .padding(.bottom, 32)
+            
+            switch self.mockupStyleSelected {
+            case .simple:
+                Picker("", selection: $optionsGroup) {
+                    ForEach(0..<OptionsGroup.allCases.count, id: \.self) { idx in
+                        let iPhoneColor = OptionsGroup.allCases[idx]
+                        Text(iPhoneColor.rawValue)
+                            .tag(iPhoneColor)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 12)
+                .onChange(of: optionsGroup) { new in
+                    optionsGroupSaved = new
+                }
+
+                switch self.optionsGroup {
+                case .Video:
+                    VideoLayersOptionsView()
+                        .padding(.top, 16)
+                case .Text:
+                    TextLayerOptions()
+                case .Shadow:
+                    EmptyView()
+                default:
+                    EmptyView()
+                }
+
+            default:
+                EmptyView()
+            }
+        }
+    }
+    
+    @State private var startAddTextCoordinate: CGPoint = .zero
+    
+    @ViewBuilder
+    func TextLayerOptions() -> some View {
+        
+        VStack(spacing: 16) {
+            Text("Tap to add text")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.top, 32)
+            
+            let renderAspect = renderOptions.renderSize.width / renderOptions.renderSize.height
+            let minSquareHeight: CGFloat = 300
+            let maxWidth = minSquareHeight * renderAspect
+            RoundedRectangle(cornerRadius: 1.0, style: .continuous)
+                .foregroundStyle(.gray.opacity(0.2))
+                .frame(height: minSquareHeight)
+                .padding(.horizontal, 0)
+                .overlay {
+                    if let frameZeroImage {
+                        Image(uiImage: frameZeroImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
+                .padding(.bottom, 16)
+                .gesture(
+                    DragGesture(minimumDistance: 0.0)
+                        .onChanged({ val in
+                            print("Val \(val)")
+                            startAddTextCoordinate = val.startLocation
+    //                        let preValue = val.translation.width * (1024 / 300 ) + startValueOffX
+    //                        let preValueY = -1.0 * val.translation.height * (1024 / 300 ) + startValueOffY
+    //
+    //                        valueOffX = applyMinMax(preValue)
+    //                        valueOffY = applyMinMax(preValueY)
+    //                            print("x value \(valueOffX)")
+                        })
+                        .onEnded({ val in
+                            var newLayerText = RenderTextLayer()
+                            let xCords = val.location.x / maxWidth
+                            let yCords = val.location.y / minSquareHeight
+                            let coordinatesForRender = CGPoint(x: xCords, y: yCords)
+                            newLayerText.coordinates = coordinatesForRender
+                            newLayerText.textString = String(format: "text %i", Int(val.location.x))
+                            self.renderOptions.textLayers.append(newLayerText)
+                            self.reloadPreviewPlayer()
+                            
+                            print("drag add sticker end \(coordinatesForRender)")
+
+    //                        startValueOffX = valueOffX
+    //                        startValueOffY = valueOffY
+                        })
+                )
+                .onChange(of: (valueOffX + valueOffY) , perform: { value in
+                    
+    //                self.renderOptions.offsetX = valueOffX
+    //                self.renderOptions.offsetY = valueOffY
+    //                reloadOnlyThumbnail()
+    //                reloadPreviewPlayerWithTimer()
+                })
+                .gesture(
+                    MagnificationGesture(minimumScaleDelta: 0.05)
+                        .onChanged { value in
+    //                        self.currentZoom = value.magnitude - 1.0
+                        }
+                        .onEnded { value in
+    //                        totalZoom += currentZoom
+    //                        currentZoom = 0
+                        }
+                )
+                .onChange(of: currentZoom, perform: { value in
+    //                    print("new val \(value)")
+    //                self.renderOptions.scaleVideo += ((value) * (1024 / 300 ) * 0.5)
+    //                reloadPreviewPlayerWithTimer()
+                })
+                .padding(.bottom, 24.0)
+            
+            Text("Layers")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.top, 32)
+
+            ///Layers
+            VStack(spacing: 4) {
+                ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
+                    let layerText = renderOptions.textLayers[idx]
+                    Text(layerText.textString)
+                }
+            }
+            
+            Rectangle()
+                .foregroundStyle(.clear)
+                .frame(height: 400)
+        }
+        
+    }
+    
+    @ViewBuilder
     func ButtonRoundedRectForSize(_ size: CGSize, _ isSel: Bool, _ action: @escaping ()->()) -> some View {
         Button {
             action()
@@ -601,7 +815,6 @@ struct RenderLiveWithOptionsView: View {
         .foregroundColor(isSel ? .primary : .secondary)
 
     }
-
     
     @ViewBuilder
     func DeviceLayerOptionButtons() -> some View {
@@ -727,105 +940,6 @@ struct RenderLiveWithOptionsView: View {
         }
         .foregroundColor(isSel ? .primary : .secondary)
 
-    }
-    
-    
-    @ViewBuilder
-    func OptionsEditorView() -> some View {
-        VStack {
-            
-            Text("Mockup")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.bottom, 12)
-
-            HStack(spacing: 0.0) {
-                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
-                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
-                
-                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
-                    
-                    let valSel = MockupStyle.allCases[idx]
-                    let isSel = mockupStyleSelected == valSel
-                    Button {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                            idxBottomSelected = idx
-                        }
-                        withAnimation(.linear(duration: 0.23)) {
-                            mockupStyleSelected = valSel
-                        }
-                        
-                    } label: {
-                        let tt = stylesTitles[idx]
-                        let stI = styleIcons[idx]
-                        VStack(spacing: 4) {
-                            Image(systemName: stI)
-                                .font(.largeTitle)
-                                .fontWeight(.ultraLight)
-                            
-                            Text(tt)
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                        }
-                        .overlay(alignment: .bottom) {
-                            if idxBottomSelected == idx {
-                                Rectangle()
-                                    .foregroundStyle(.primary.opacity(0.8))
-                                    .frame(height: 1)
-                                    .offset(y: 12)
-                                    .padding(.horizontal, 0)
-                                    .matchedGeometryEffect(id: "styleSel", in: animation)
-                            }
-                        }
-                        
-                    }
-                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .foregroundStyle(.secondary.opacity(0.4))
-                    .frame(height: 1)
-                    .offset(y: 12)
-                    .padding(.horizontal, 12)
-            }
-            .padding(.bottom, 32)
-            
-            switch self.mockupStyleSelected {
-            case .simple:
-                Picker("", selection: $optionsGroup) {
-                    ForEach(0..<OptionsGroup.allCases.count, id: \.self) { idx in
-                        let iPhoneColor = OptionsGroup.allCases[idx]
-                        Text(iPhoneColor.rawValue)
-                            .tag(iPhoneColor)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 12)
-                .onChange(of: optionsGroup) { new in
-                    optionsGroupSaved = new
-                }
-
-                switch self.optionsGroup {
-                case .Video:
-                    VideoLayersOptionsView()
-                        .padding(.top, 16)
-                case .Text:
-                    EmptyView()
-                case .Shadow:
-                    EmptyView()
-                default:
-                    EmptyView()
-                }
-
-            default:
-                EmptyView()
-            }
-        }
     }
     
     var barButtons: some View {
@@ -957,7 +1071,7 @@ struct RenderLiveWithOptionsView: View {
         let groupIdx =  self.playerStopMotionIdx % totalStopMotionFrames
         let newRenderTime = CMTime(seconds: videoDurFrame * CGFloat(groupIdx), preferredTimescale: 600)
         
-        print("self.renderOptions.videoDuration \(self.renderOptions.videoDuration) videoDurFrame \(videoDurFrame) req time \(newRenderTime.seconds) \(groupIdx)")
+//        print("self.renderOptions.videoDuration \(self.renderOptions.videoDuration) videoDurFrame \(videoDurFrame) req time \(newRenderTime.seconds) \(groupIdx)")
         let itemVideoURL = self.renderOptions.selectedVideoURL!
         let videoAsset = AVURLAsset(url: itemVideoURL)
         let videoTrack = videoAsset.tracks(withMediaType: .video).first!
