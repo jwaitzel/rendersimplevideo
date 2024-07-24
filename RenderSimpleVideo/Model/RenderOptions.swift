@@ -33,8 +33,8 @@ enum iPhoneColorOptions: String, CaseIterable {
 }
 
 enum TextZPosition: String, CaseIterable {
-    case Behind
-    case Infront
+    case behind
+    case infront
 }
 
 enum AspectFormat: String {
@@ -50,6 +50,8 @@ enum RenderDevice: String {
 class RenderTextLayer: ObservableObject {
     @Published var textString = ""
     @Published var coordinates = CGPoint.zero
+    @Published var zPosition: TextZPosition = .behind
+
 }
 
 class RenderOptions: ObservableObject {
@@ -89,7 +91,7 @@ class RenderOptions: ObservableObject {
     @Published var overlayTextScale: CGFloat = 100
     @Published var overlayTextColor: Color = .black
     @Published var overlayTextRotation: CGFloat = 0
-    @Published var overlayTextZPosition: TextZPosition = .Behind
+    @Published var overlayTextZPosition: TextZPosition = .behind
 
     @Published var textLayers: [RenderTextLayer] = []
 

@@ -716,12 +716,15 @@ struct RenderLiveWithOptionsView: View {
     //                            print("x value \(valueOffX)")
                         })
                         .onEnded({ val in
+                            /// New Text layer
                             var newLayerText = RenderTextLayer()
                             let xCords = val.location.x / maxWidth
                             let yCords = val.location.y / minSquareHeight
                             let coordinatesForRender = CGPoint(x: xCords, y: yCords)
                             newLayerText.coordinates = coordinatesForRender
-                            newLayerText.textString = String(format: "text %i", Int(val.location.x))
+                            newLayerText.textString = String(format: "hey %i", Int(val.location.x))
+                            newLayerText.zPosition = .infront
+                            
                             self.renderOptions.textLayers.append(newLayerText)
                             self.reloadPreviewPlayer()
                             
