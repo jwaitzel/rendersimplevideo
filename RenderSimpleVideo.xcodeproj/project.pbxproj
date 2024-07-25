@@ -39,6 +39,7 @@
 		38B56F272C3F17C30056227B /* BlenderStyleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F262C3F17C30056227B /* BlenderStyleInput.swift */; };
 		38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */; };
 		38DCDCCA2C51847A00F51B9C /* ui2-show.mov in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCC92C51847A00F51B9C /* ui2-show.mov */; };
+		38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCCB2C51FF1B00F51B9C /* pre4.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +77,7 @@
 		38B56F262C3F17C30056227B /* BlenderStyleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlenderStyleInput.swift; sourceTree = "<group>"; };
 		38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerTest.swift; sourceTree = "<group>"; };
 		38DCDCC92C51847A00F51B9C /* ui2-show.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "ui2-show.mov"; sourceTree = "<group>"; };
+		38DCDCCB2C51FF1B00F51B9C /* pre4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pre4.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,6 +202,7 @@
 				38259C572C4A7E21006D52AF /* LocalTestProducts.storekit */,
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
 				38B56F212C3EF3D10056227B /* screencap1.jpg */,
+				38DCDCCB2C51FF1B00F51B9C /* pre4.png */,
 				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
 				38AE63E42C419400002CE2C6 /* uiux-short.mp4 */,
 				380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */,
@@ -278,6 +281,7 @@
 			files = (
 				38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */,
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
+				38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */,
 				389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */,
 				38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */,
 				380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */,

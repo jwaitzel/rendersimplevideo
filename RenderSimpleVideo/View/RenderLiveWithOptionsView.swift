@@ -831,22 +831,7 @@ struct RenderLiveWithOptionsView: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(currentTxtLayer == nil ? Color.primary : Color.clear)
-                
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .overlay {
-                    if currentTxtLayer != nil {
-                        Button {
-                            currentTxtLayer = nil
-                            AppState.shared.selIdx = nil
-                            self.reloadPreviewPlayer()
-                        } label: {
-                            Text("Done")
-                        }
-                        .foregroundStyle(.primary.opacity(0.8))
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                    }
-                    
-                }
                 .padding(.horizontal, 12)
                 .padding(.top, 32)
                 
@@ -868,6 +853,22 @@ struct RenderLiveWithOptionsView: View {
                 .overlay {
                     RoundedRectangle(cornerRadius: 1, style: .continuous)
                         .stroke(Color.primary.opacity(0.8), lineWidth: 1)
+                }
+                .overlay(alignment: .bottom) {
+                    if currentTxtLayer != nil {
+                        Button {
+                            currentTxtLayer = nil
+                            AppState.shared.selIdx = nil
+                            self.reloadPreviewPlayer()
+                        } label: {
+                            Text("Done")
+                        }
+                        .foregroundStyle(.primary.opacity(0.8))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .offset(y: 24)
+                        .padding(.trailing, 8)
+                    }
+                    
                 }
                 .padding(.bottom, 16)
                 .gesture(

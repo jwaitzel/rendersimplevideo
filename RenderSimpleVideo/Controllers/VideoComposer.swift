@@ -233,16 +233,41 @@ class VideoComposer {
             
             let selIdx: Bool = AppState.shared.selIdx == i
             
-            guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates, color: UIColor(renderOptions.overlayTextColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8))) else { print("error text filt"); continue; }
-            
-            newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
-            outImageRelative = newLayerComposite.outputImage
-            
-            if selIdx {
-                selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
-                offS = off
-                print("Sel size \(ext.size)")
+            let textStr = txtLayerInfo.textString
+            if textStr == "/pa" {
+                print("is code")
+                let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+                let appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
+                let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
+                let preCIImg: CIImage =  CIImage(image: appPreImg)!
+                
+                let layerPos = txtLayerInfo.coordinates
+                let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
+
+                let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*0.5)/2.0, y: -(preCIImg.extent.height*0.5)/2.0)
+                
+                let allTranslation = textCenterBeforeRot.concatenating(.init(translationX: posRelToAbs.x, y: posRelToAbs.y))
+
+                let allTransf = CGAffineTransform(scaleX: 0.5, y: 0.5).concatenating(allTranslation)
+                combineImg.setValue(preCIImg.transformed(by: allTransf), forKey: kCIInputImageKey )
+                combineImg.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+
+                outImageRelative = combineImg.outputImage
+            } else {
+                guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions, text: textStr, layerPos: txtLayerInfo.coordinates, color: UIColor(renderOptions.overlayTextColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8))) else { print("error text filt"); continue; }
+                
+                newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+                
+                outImageRelative = newLayerComposite.outputImage
+                
+                if selIdx {
+                    selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
+                    offS = off
+                    print("Sel size \(ext.size)")
+                }
+
             }
+            
 
         }
         
