@@ -186,13 +186,36 @@ struct RenderLiveWithOptionsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .keyboard) {
-                Button {
-                    self.endEditingTextF()
-                } label: {
-                    Text("Done")
+                HStack {
+                    if didCreateNew {
+                        Button {
+                            let lastIdx = self.renderOptions.textLayers.count-1
+                            didCreateNew = false
+                            self.renderOptions.textLayers.remove(at: lastIdx)
+                            self.reloadPreviewPlayer()
+                            
+                            self.currentTxtLayer = nil
+                            self.selectedEditingTextIdx = nil
+                            self.focusedField = .none
+                            AppState.shared.selIdx = nil
+                            //.append(newLayerText)
+                        } label: {
+                            Text("Cancel")
+                        }
+                        .foregroundColor(.primary.opacity(0.9))
+                    }
+                    
+                    
+                    Spacer()
+                    
+                    Button {
+                        self.endEditingTextF()
+                    } label: {
+                        Text("Done")
+                    }
+                    .foregroundColor(.primary.opacity(0.9))
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .foregroundColor(.primary.opacity(0.9))
+                
             }
         }
         .overlay {
@@ -204,21 +227,21 @@ struct RenderLiveWithOptionsView: View {
                     .padding(.vertical, 16)
                     .textFieldStyle(.roundedBorder)
                     .padding(.vertical, 16)
-                    .background {
-                        Rectangle()
-                            .foregroundStyle(.ultraThinMaterial)
-                    }
-                    .overlay(alignment: .bottomTrailing) {
-                        Button {
-                            self.endEditingTextF()
-                            
-                        } label: {
-                            Text("Done")
-                        }
-                        .foregroundColor(.primary.opacity(0.8))
-                        .padding(.bottom, 4)
-                        .padding(.trailing, 4)
-                    }
+//                    .background {
+//                        Rectangle()
+//                            .foregroundStyle(.ultraThinMaterial)
+//                    }
+//                    .overlay(alignment: .bottomTrailing) {
+//                        Button {
+//                            self.endEditingTextF()
+//                            
+//                        } label: {
+//                            Text("Done")
+//                        }
+//                        .foregroundColor(.primary.opacity(0.8))
+//                        .padding(.bottom, 4)
+//                        .padding(.trailing, 4)
+//                    }
 
             }
         }
@@ -266,6 +289,50 @@ struct RenderLiveWithOptionsView: View {
 //            print("Timer counter \(timer.timeInterval) self.playerStopMotionIdx \(self.playerStopMotionIdx)")
         })
     }
+    
+    @ViewBuilder
+    func ShadowOptionsView() -> some View {
+        VStack {
+            
+            let renderAspect = renderOptions.renderSize.width / renderOptions.renderSize.height
+            let minSquareHeight: CGFloat = UIScreen.main.bounds.width
+            let maxWidth = minSquareHeight * renderAspect
+            RoundedRectangle(cornerRadius: 1.0, style: .continuous)
+                .foregroundStyle(.gray.opacity(0.2))
+                .frame(height: minSquareHeight)
+                .padding(.horizontal, 0)
+                .overlay {
+                    if let frameZeroImage {
+                        Image(uiImage: frameZeroImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    }
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 1, style: .continuous)
+                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
+                }
+                .padding(.bottom, 16)
+
+            
+            BlenderStyleInput(value: $renderOptions.shadowOffset.x, title: "Shadow X", unitStr: "px")
+            
+            BlenderStyleInput(value: $renderOptions.shadowOffset.y, title: "Y", unitStr: "px")
+            
+            BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
+            
+            BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
+        }
+        .onChange(of: (renderOptions.shadowOffset.x +
+                       renderOptions.shadowOffset.y +
+                       renderOptions.shadowRadius +
+                       renderOptions.shadowOpacity), perform: { value in
+            self.reloadPreviewPlayer()
+        })
+        .padding(.top, 16)
+        .padding(.bottom, 120)
+    }
+
     
     func reloadPreviewPlayer() {
         
@@ -466,6 +533,10 @@ struct RenderLiveWithOptionsView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                     }
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 1, style: .continuous)
+                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
                 }
                 .padding(.bottom, 16)
                 .gesture(
@@ -727,7 +798,7 @@ struct RenderLiveWithOptionsView: View {
                 case .Text:
                     TextLayerOptions()
                 case .Shadow:
-                    EmptyView()
+                    ShadowOptionsView()
                 default:
                     EmptyView()
                 }
@@ -742,14 +813,17 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var currentTxtLayer: RenderTextLayer?
     
+    @State private var didCreateNew: Bool = false
+    
     @ViewBuilder
     func TextLayerOptions() -> some View {
         
         VStack(spacing: 16) {
+            
             Text("Tap to add text")
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(.primary)
+                .foregroundStyle(currentTxtLayer == nil ? Color.primary : Color.clear)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay {
                     if currentTxtLayer != nil {
@@ -783,6 +857,10 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 1, style: .continuous)
+                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
+                }
                 .padding(.bottom, 16)
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
@@ -808,24 +886,9 @@ struct RenderLiveWithOptionsView: View {
                                 return
                             }
                             /// New Text layer
-                            let newLayerText = RenderTextLayer()
-                            newLayerText.coordinates = coordinatesForRender
-                            newLayerText.textString = String(format: "hey")
-                            newLayerText.zPosition = .infront
-                            
-                            self.selectedEditingTextIdx = self.renderOptions.textLayers.count
-                            AppState.shared.selIdx = self.selectedEditingTextIdx
-                            self.renderOptions.textLayers.append(newLayerText)
-                            self.reloadPreviewPlayer()
-                            currentTxtLayer = newLayerText
-                            print("drag add sticker end \(coordinatesForRender)")
-                            
-                            
-                            self.currentEditing = newLayerText.textString
-                            self.focusedField = .text
+                            addNewTextLayer(coordinatesForRender)
 
-    //                        startValueOffX = valueOffX
-    //                        startValueOffY = valueOffY
+                            
                         })
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
@@ -900,6 +963,27 @@ struct RenderLiveWithOptionsView: View {
         
     }
     
+    func addNewTextLayer(_ coordinatesForRender: CGPoint) {
+        
+        let newLayerText = RenderTextLayer()
+        newLayerText.coordinates = coordinatesForRender
+        newLayerText.textString = String(format: "")
+        newLayerText.zPosition = .infront
+        
+        self.selectedEditingTextIdx = self.renderOptions.textLayers.count
+        AppState.shared.selIdx = self.selectedEditingTextIdx
+        self.renderOptions.textLayers.append(newLayerText)
+        
+        self.reloadPreviewPlayer()
+        currentTxtLayer = newLayerText
+        print("drag add sticker end \(coordinatesForRender)")
+        
+        self.currentEditing = newLayerText.textString
+        self.focusedField = .text
+
+        didCreateNew = true
+    }
+    
     @ViewBuilder
     func CellLayerView(_ layerText: RenderTextLayer) -> some View {
         HStack {
@@ -940,9 +1024,9 @@ struct RenderLiveWithOptionsView: View {
             .focused($focusedField, equals: .text)
         .lineLimit(1...5)
         .frame(height: 200)
-//        .onSubmit {
-//            self.endEditingTextF()
-//        }
+        .onSubmit {
+            self.endEditingTextF()
+        }
     }
     
     @ViewBuilder
@@ -1322,5 +1406,5 @@ struct VideoPlayerView: UIViewControllerRepresentable {
 
 #Preview {
     RenderLiveWithOptionsView()
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
 }
