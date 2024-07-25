@@ -22,8 +22,8 @@ struct RenderLiveWithOptionsView: View {
     
     enum MockupStyle: CaseIterable {
         case simple
-        case scene3d
-        case fromVideo
+//        case scene3d
+//        case fromVideo
     }
     
     @State private var mockupStyleSelected: MockupStyle = .simple
@@ -198,11 +198,13 @@ struct RenderLiveWithOptionsView: View {
                             self.selectedEditingTextIdx = nil
                             self.focusedField = .none
                             AppState.shared.selIdx = nil
+                            
                             //.append(newLayerText)
                         } label: {
                             Text("Cancel")
                         }
                         .foregroundColor(.primary.opacity(0.9))
+                        .opacity(self.didCreateNew ? 1.0 : 0.0)
                     }
                     
                     
@@ -214,6 +216,7 @@ struct RenderLiveWithOptionsView: View {
                         Text("Done")
                     }
                     .foregroundColor(.primary.opacity(0.9))
+                    .opacity(self.currentEditing.isEmpty ? 0 : 1)
                 }
                 
             }
@@ -360,9 +363,9 @@ struct RenderLiveWithOptionsView: View {
         
         timerForReloadPlayer?.invalidate()
         
-        let defaultThumb = self.renderOptions.selectedVideoThumbnail!
+        guard let defaultThumb = self.renderOptions.selectedVideoThumbnail else { print("no thmb"); return }
         let selectFrame = defaultThumb
-        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
+        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions, selected: optionsGroup == .Video ? RenderSelectionElement.phone : (optionsGroup == .Text && AppState.shared.selIdx != nil) ? RenderSelectionElement.layer : nil )
 
         self.frameZeroImage = filteredImg
 
@@ -530,9 +533,10 @@ struct RenderLiveWithOptionsView: View {
                 .padding(.horizontal, 12)
                 
             
+            let sqSize = UIScreen.main.bounds.width - 8.0
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
-                .frame(height: UIScreen.main.bounds.width)
+                .frame(height: sqSize)
                 .padding(.horizontal, 0)
                 .overlay {
                     if let frameZeroImage {
@@ -541,16 +545,24 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 1, style: .continuous)
-                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
-                }
+//                .overlay {
+//                    RoundedRectangle(cornerRadius: 0, style: .continuous)
+//                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
+//                }
+//                .overlay {
+//                    /// Cover until touch
+//                    Rectangle()
+//                        .foregroundStyle(.black.opacity(0.1))
+//                }
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
+                .padding(.horizontal, 4)
                 .padding(.bottom, 16)
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
                         .onChanged({ val in
-                            let preValue = val.translation.width * (1024 / 300 ) + startValueOffX
-                            let preValueY = -1.0 * val.translation.height * (1024 / 300 ) + startValueOffY
+                            let preValue = val.translation.width * (renderOptions.renderSize.width / sqSize ) + startValueOffX
+                            let preValueY = -1.0 * val.translation.height * (renderOptions.renderSize.height / sqSize ) + startValueOffY
 
                             valueOffX = applyMinMax(preValue)
                             valueOffY = applyMinMax(preValueY)
@@ -580,10 +592,19 @@ struct RenderLiveWithOptionsView: View {
                 )
                 .onChange(of: currentZoom, perform: { value in
 //                    print("new val \(value)")
-                    self.renderOptions.scaleVideo += ((value) * (1024 / 300 ) * 0.5)
+                    self.renderOptions.scaleVideo += ((value) * (renderOptions.renderSize.width / sqSize ) * 0.5)
                     reloadPreviewPlayerWithTimer()
                 })
+                .allowsHitTesting(false)
 
+            /// Handler empty View
+            Image(systemName:"line.3.horizontal")
+                .foregroundColor(.primary.opacity(0.2))
+                .font(.largeTitle)
+                .opacity(0.0)
+                .frame(width: 10, height: 10)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
             
             BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
                 .padding(.bottom, 32)
@@ -796,6 +817,7 @@ struct RenderLiveWithOptionsView: View {
                 .padding(.horizontal, 12)
                 .onChange(of: optionsGroup) { new in
                     optionsGroupSaved = new
+                    self.reloadOnlyThumbnail()
                 }
 
                 switch self.optionsGroup {
@@ -867,6 +889,7 @@ struct RenderLiveWithOptionsView: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                         .offset(y: 24)
                         .padding(.trailing, 8)
+                        .opacity(selectedEditingTextIdx == nil ? 1.0 : 0.0)
                     }
                     
                 }
@@ -939,6 +962,37 @@ struct RenderLiveWithOptionsView: View {
 //                    
 //                }
             
+            /// Handler empty View
+            Image(systemName:"line.3.horizontal")
+                .foregroundColor(.primary.opacity(0.2))
+                .font(.largeTitle)
+                .opacity(0.0)
+                .frame(width: 10, height: 10)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+
+            if let idx = AppState.shared.selIdx {
+
+            Text("Selected Layer")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.top, 32)
+
+                SelectedLayerFontOptionsView(selIdx: idx)
+                    .onChange(of: (self.renderOptions.textLayers[idx].textFontSize + renderOptions.textLayers[idx].textFontWeight.rawValue +
+                                   renderOptions.textLayers[idx].textRotation
+                                  ),  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].textColor,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+            }
+            
+            
             Text("Layers")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -951,15 +1005,19 @@ struct RenderLiveWithOptionsView: View {
             VStack(spacing: 4) {
                 ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
                     let layerText = renderOptions.textLayers[idx]
-                    CellLayerView(layerText)
+                    CellLayerView(layerText, idx)
                         .contentShape(.rect)
                         .onTapGesture {
-                            self.selectedEditingTextIdx = idx
-                            self.currentEditing = layerText.textString
-                            self.focusedField = .text
+                            
+//                            self.currentEditing = layerText.textString
+//                            self.selectedEditingTextIdx = idx
+//                            self.focusedField = .text
                             currentTxtLayer = layerText
                             
+                            // Select frame
                             AppState.shared.selIdx = idx
+                            
+                            self.reloadOnlyThumbnail()
                         }
 
                 }
@@ -970,6 +1028,63 @@ struct RenderLiveWithOptionsView: View {
                 .frame(height: 400)
         }
         
+    }
+    
+    @ViewBuilder
+    func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
+        
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+        
+        HStack {
+            Text("Weight")
+                .frame(width: 120, alignment: .trailing)
+
+            let weightOptions: [UIFont.Weight] = [.light, .regular, .bold, .black]
+            let weightOptionsSw: [Font.Weight] = [.light, .regular, .bold, .black]
+            let weightOptTitles: [String] = ["Light", "Regular", "Bold", "Black"]
+            
+            Picker("", selection: $renderOptions.textLayers[selIdx].textFontWeight) {
+                ForEach(0..<weightOptions.count, id: \.self) { idx in
+                    let weightTitle = weightOptTitles[idx]
+                    let fontWeight = weightOptions[idx]
+                    let fontUIWeight = weightOptionsSw[idx]
+                    Text(weightTitle)
+                        .tag(fontWeight)
+                }
+            }
+            .pickerStyle(.segmented)
+
+        }
+
+//        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+
+        HStack {
+            Text("Z Position")
+                .frame(width: 120, alignment: .trailing)
+
+            Picker("", selection: $renderOptions.textLayers[selIdx].textZPosition) {
+                ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
+                    let iPhoneColor = TextZPosition.allCases[idx]
+                    Text(iPhoneColor.rawValue)
+                        .tag(iPhoneColor)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+        
+        ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
+            Text("Color")
+                .frame(width: 120, alignment: .trailing)
+        })
+        .background {
+            Rectangle()
+                .foregroundStyle(.clear)
+                .onTapGesture {}
+        }
+
     }
     
     func addNewTextLayer(_ coordinatesForRender: CGPoint) {
@@ -994,8 +1109,9 @@ struct RenderLiveWithOptionsView: View {
     }
     
     @ViewBuilder
-    func CellLayerView(_ layerText: RenderTextLayer) -> some View {
+    func CellLayerView(_ layerText: RenderTextLayer, _ idx: Int) -> some View {
         HStack {
+            
             VStack {
                 Text(layerText.textString)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1005,11 +1121,71 @@ struct RenderLiveWithOptionsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 10)
             .padding(.vertical, 16)
-            .background {
+            
+            
+            Button {
+                self.currentEditing = layerText.textString
+                self.selectedEditingTextIdx = idx
+                self.focusedField = .text
+            } label: {
+                Image(systemName: "character.cursor.ibeam")
+                    .font(.system(size: 18, weight: .bold))
+                    .padding(13)
+                    .background {
+                        Circle()
+                            .foregroundStyle(.ultraThinMaterial)
+                    }
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+            }
+            
+            Menu {
+                Button {
+                    self.currentEditing = layerText.textString
+                    self.selectedEditingTextIdx = idx
+                    self.focusedField = .text
+
+                } label: {
+                    Label("Edit", systemImage: "character.cursor.ibeam")
+                }
+                
+//                Button {
+////                    showRequestFeatureForm = true
+//                } label: {
+//                    Label("Request Feature", systemImage: "star.bubble")
+//                }
+
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 18, weight: .bold))
+                    .padding(13)
+                    .background {
+                        Circle()
+                            .foregroundStyle(.ultraThinMaterial)
+                    }
+                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+
+            }
+            .foregroundStyle(Color.primary.opacity(0.6))
+            .padding(.trailing, 16)
+
+            
+//            Button {
+//                
+//            } label: {
+//                Image(systemName: "ellipsis")
+//            }
+//            .foregroundStyle(.primary.opacity(0.8))
+
+        }
+        .background {
+            if idx == AppState.shared.selIdx {
                 RoundedRectangle(cornerRadius: 4, style: .continuous)
                     .foregroundStyle(.primary.opacity(0.1))
+            } else {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .stroke(.primary.opacity(0.1))
             }
             
         }

@@ -48,10 +48,21 @@ enum RenderDevice: String {
 }
 
 class RenderTextLayer: ObservableObject {
+    
     @Published var textString = ""
     @Published var coordinates = CGPoint.zero
     @Published var zPosition: TextZPosition = .behind
 
+    @Published var textScale: CGFloat = 100
+    @Published var textColor: Color = .black
+    @Published var textRotation: CGFloat = 0
+    @Published var textZPosition: TextZPosition = .behind
+    @Published var textFontSize: CGFloat = 44
+    @Published var textFontWeight: UIFont.Weight = .bold
+
+    
+//    overlayTextFontSize
+//    overlayTextFontWeight
 }
 
 class RenderOptions: ObservableObject {
