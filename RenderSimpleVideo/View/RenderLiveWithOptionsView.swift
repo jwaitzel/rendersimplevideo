@@ -520,8 +520,15 @@ struct RenderLiveWithOptionsView: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
+//                .overlay(alignment: .trailing) {
+//                    Image(systemName: "arrow.up.and.down.and.arrow.left.and.right")
+//                        .font(.caption2)
+//                        .offset(x: 18, y: 1)
+//                        .foregroundStyle(.green)
+//                }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
+                
             
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
@@ -824,6 +831,7 @@ struct RenderLiveWithOptionsView: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(currentTxtLayer == nil ? Color.primary : Color.clear)
+                
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay {
                     if currentTxtLayer != nil {
@@ -1371,17 +1379,31 @@ struct RenderLiveWithOptionsView: View {
         //uiux-black-sound //uiux-black-sound
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "ui2-show", withExtension: "mov")
         
-        /// Let find image generator
-        let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
-        
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
-        
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+//        generator.maximumSize = thumbSize
+
         self.renderOptions.videoDuration = asset.duration.seconds
         
-        self.renderOptions.selectedVideoThumbnail = defaultThumb
-        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
-        self.renderOptions.selectedFiltered = filteredImg
-        self.frameZeroImage = filteredImg
+        Task {
+            
+            let imgPrevTime: CMTime = .zero
+            let cgImage = try await generator.image(at: imgPrevTime).image
+            guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
+            let thumbnail = UIImage(cgImage: colorCorrectedImage)
+
+            await MainActor.run {
+                self.renderOptions.selectedVideoThumbnail = thumbnail
+                let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
+                self.renderOptions.selectedFiltered = filteredImg
+                self.frameZeroImage = filteredImg
+
+            }
+            
+        }
+
+        
     }
 }
 
