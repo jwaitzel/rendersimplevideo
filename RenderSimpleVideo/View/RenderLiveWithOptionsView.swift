@@ -1260,6 +1260,7 @@ struct RenderLiveWithOptionsView: View {
                 
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .ignoresSafeArea(.keyboard)
 
     }
     

@@ -244,11 +244,12 @@ class VideoComposer {
                 let layerPos = txtLayerInfo.coordinates
                 let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
 
-                let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*0.5)/2.0, y: -(preCIImg.extent.height*0.5)/2.0)
+                let scaledImgToFit = 0.3
+                let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
                 
                 let allTranslation = textCenterBeforeRot.concatenating(.init(translationX: posRelToAbs.x, y: posRelToAbs.y))
 
-                let allTransf = CGAffineTransform(scaleX: 0.5, y: 0.5).concatenating(allTranslation)
+                let allTransf = CGAffineTransform(scaleX: scaledImgToFit, y: scaledImgToFit).concatenating(allTranslation)
                 combineImg.setValue(preCIImg.transformed(by: allTransf), forKey: kCIInputImageKey )
                 combineImg.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
 
