@@ -93,7 +93,7 @@ class VideoComposer {
         /// Behind Video Text old way
         var outImageRelative: CIImage? = backColorGenerator.outputImage
         if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .behind {
-            guard let textComposite = textCompositeFilter(renderOptions, text: renderOptions.overlayText, layerPos: renderOptions.overlayTextOffset) else { print("error text filt"); return nil }
+            guard let (textComposite, _, _) = textCompositeFilter(renderOptions, text: renderOptions.overlayText, layerPos: renderOptions.overlayTextOffset, color: UIColor(renderOptions.overlayTextColor)) else { print("error text filt"); return nil }
             textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
             outImageRelative = textComposite.outputImage
         }
@@ -103,7 +103,7 @@ class VideoComposer {
             let txtLayerInfo = renderOptions.textLayers[i]
             if txtLayerInfo.zPosition == .infront { continue }
             
-            guard let newLayerComposite = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates) else { print("error text filt"); continue; }
+            guard let (newLayerComposite, _, _) = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates, color: UIColor(renderOptions.overlayTextColor)) else { print("error text filt"); continue; }
             
             newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
             outImageRelative = newLayerComposite.outputImage
@@ -136,46 +136,47 @@ class VideoComposer {
         
 //        let allLayersCombined = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
 
-        for i in 0..<renderOptions.textLayers.count {
-            
-            let txtLayerInfo = renderOptions.textLayers[i]
-            if txtLayerInfo.zPosition == .behind { continue }
-            
-            guard let newLayerComposite = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates) else { print("error text filt"); continue; }
-            
-//            if lastToRender == nil {
-//                newLayerComposite.setValue(lastToRender?.outputImage, forKey: kCIInputBackgroundImageKey)
+//        for i in 0..<renderOptions.textLayers.count {
+//            
+//            let txtLayerInfo = renderOptions.textLayers[i]
+//            if txtLayerInfo.zPosition == .behind { continue }
+//            
+//            guard let newLayerComposite = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates) else { print("error text filt"); continue; }
+//            
+////            if lastToRender == nil {
+////                newLayerComposite.setValue(lastToRender?.outputImage, forKey: kCIInputBackgroundImageKey)
+////            }
+//            
+////            allLayersCombined.setValue(newLayerComposite.outputImage, forKey: kCIInputBackgroundImageKey)
+//
+////            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
+////            outImageRelative = newLayerComposite.outputImage
+//
+////            lastToRender = newLayerComposite
+////            allLayersCombine.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
+////            newLayerComposite.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
+////            currentOutImage = newLayerComposite.outputImage
+//            
+////            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
+////            outImageRelative = newLayerComposite.outputImage
+//            if i == 0 {
+//                //First
+//                textCompositeOrNil = newLayerComposite
 //            }
-            
-//            allLayersCombined.setValue(newLayerComposite.outputImage, forKey: kCIInputBackgroundImageKey)
-
-//            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
-//            outImageRelative = newLayerComposite.outputImage
-
-//            lastToRender = newLayerComposite
-//            allLayersCombine.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
-//            newLayerComposite.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
-//            currentOutImage = newLayerComposite.outputImage
-            
-//            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
-//            outImageRelative = newLayerComposite.outputImage
-            if i == 0 {
-                //First
-                textCompositeOrNil = newLayerComposite
-            }
-//            print("Composite \(outImageRelative?.extent)")
-        }
+////            print("Composite \(outImageRelative?.extent)")
+//        }
 
 
         //iphoneOverlayComposite
         return (compositeBackColor, iphoneOverlayComposite, textCompositeOrNil, lastToRender, multVideoTransform)
     }
     
-    func textCompositeFilter(_ renderOptions: RenderOptions, text: String, layerPos: CGPoint) -> CIFilter? {
+    func textCompositeFilter(_ renderOptions: RenderOptions, text: String, layerPos: CGPoint, color: UIColor) -> (CIFilter, CGRect, CGPoint)? {
         
         let fontSize: CGFloat = renderOptions.overlayTextFontSize
 //        let text = renderOptions.overlayText
-        let color = UIColor(renderOptions.overlayTextColor)
+//        let color = UIColor(renderOptions.overlayTextColor)
+        
         let fontWeight = renderOptions.overlayTextFontWeight
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
@@ -195,7 +196,7 @@ class VideoComposer {
         let translateCenterX = renderOptions.renderSize.width / 2 - textImage.extent.width / 2.0
         let translateCenterY = renderOptions.renderSize.height / 2 - textImage.extent.height / 2.0
         let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
-        print("Layer pos \(layerPos.x) \(layerPos.y) posRelToAbs \(posRelToAbs)")
+//        print("Layer pos \(layerPos.x) \(layerPos.y) posRelToAbs \(posRelToAbs)")
 
         let translateText = CGAffineTransform(translationX: posRelToAbs.x, y: posRelToAbs.y )
         let textCenterBeforeRot = CGAffineTransform(translationX: -textImage.extent.width/2.0, y: -textImage.extent.height/2.0)
@@ -206,7 +207,7 @@ class VideoComposer {
         // Set as Input
         textComposite.setValue(textImage.transformed(by: allTransform), forKey: kCIInputImageKey)
 
-        return textComposite
+        return (textComposite,  CGRect(origin: .init(x: posRelToAbs.x, y: posRelToAbs.y), size: textImage.extent.size), posRelToAbs)
     }
     
     func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions) -> UIImage? {
@@ -215,43 +216,58 @@ class VideoComposer {
         let videoTrackSize = screenImage.size
         let sourceVideoImage = CIImage(image: screenImage)!
 //        print("Video track size \(videoTrackSize)")
-        guard let (compositeBackFilter, iphoneOverlayFilter, textFilter, lastTextFilter, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
+        guard let (compositeBackFilter, iphoneOverlayFilter, _, _, videoTransform) = self.compositeFilter(renderOptions: renderOptions, videoFrameSize: videoTrackSize) else { return nil }
         
         let sourceCI = sourceVideoImage.transformed(by: videoTransform)
         compositeBackFilter.setValue(sourceCI, forKey: kCIInputImageKey)
         iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
         
-        // The CIColorMatrix filter, will contain the requested filter and control its opacity
-//        guard let overlayFilter: CIFilter = CIFilter(name: "CIColorMatrix") else { fatalError() }
-//        let overlayRgba: [CGFloat] = [0, 0, 0, 0.1]
-//        let alphaVector: CIVector = CIVector(values: overlayRgba, count: 4)
-//        overlayFilter.setValue(iphoneOverlayFilter.outputImage, forKey: kCIInputImageKey)
-//        overlayFilter.setValue(alphaVector, forKey: "inputAVector")
-
-        
-        var lastFilter: CIFilter? = iphoneOverlayFilter
-//        if let textFilter {
-//            textFilter.setValue(lastFilter?.outputImage, forKey: kCIInputBackgroundImageKey)
-//            lastFilter = textFilter
-//        }
-        ///Set image as input of first text layer
-        ///U
-
+        let lastFilter: CIFilter? = iphoneOverlayFilter
         var outImageRelative = lastFilter?.outputImage
+        var selExtent: CGRect?
+        var offS: CGPoint?
         for i in 0..<renderOptions.textLayers.count {
             
             let txtLayerInfo = renderOptions.textLayers[i]
             if txtLayerInfo.zPosition == .behind { continue }
             
-            guard let newLayerComposite = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates) else { print("error text filt"); continue; }
+            let selIdx: Bool = AppState.shared.selIdx == i
             
+            guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates, color: UIColor(renderOptions.overlayTextColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8))) else { print("error text filt"); continue; }
             
             newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
             outImageRelative = newLayerComposite.outputImage
+            
+            if selIdx {
+                selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
+                offS = off
+                print("Sel size \(ext.size)")
+            }
 
         }
         
-        guard let outputCI = outImageRelative else { print("error last filter"); return nil }
+        print("selExtent \(selExtent)")
+        
+        let addRectForSelComposite = CIFilter(name: "CISourceOverCompositing")!
+        
+        let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleStrokeGenerator")!
+//        roundedRectangleGenerator.setDefaults()
+        
+//        let videoTransformedRect = CGRectApplyAffineTransform(CGRect(origin: .zero, size: .init(width: 200, height: 200)), multVideoTransform)
+        roundedRectangleGenerator.setValue(selExtent ?? .zero, forKey: kCIInputExtentKey)
+        roundedRectangleGenerator.setValue(CIColor(color: .blue), forKey: kCIInputColorKey)
+        roundedRectangleGenerator.setValue(8.0, forKey: kCIInputRadiusKey)
+        roundedRectangleGenerator.setValue(2.0, forKey: kCIInputWidthKey)
+        
+        addRectForSelComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+        addRectForSelComposite.setValue(
+            roundedRectangleGenerator.outputImage?.transformed(by:
+                    .init(translationX: (offS?.x ?? 0) - (selExtent?.width ?? 0.0) / 2.0,
+                              y: (offS?.y ?? 0) - (selExtent?.height ?? 0.0) / 2.0
+                )),
+            forKey: kCIInputImageKey)
+        
+        guard let outputCI = addRectForSelComposite.outputImage else { print("error last filter"); return nil }
 
         let context = CIContext()
         let cgOutputImage = context.createCGImage(outputCI, from: .init(origin: .zero, size: renderSize))!
@@ -400,21 +416,25 @@ class VideoComposer {
             iphoneOverlayFilter.setValue(compositeBackFilter.outputImage, forKey: kCIInputBackgroundImageKey)
             
             var lastFilter: CIFilter? = iphoneOverlayFilter
-            if let textFilter {
-                textFilter.setValue(iphoneOverlayFilter.outputImage, forKey: kCIInputBackgroundImageKey)
-                lastFilter = textFilter
-            }
             
-            if let lastTextF {
-                lastTextF.setValue(lastFilter?.outputImage, forKey: kCIInputImageKey)
-                lastFilter = lastTextF
+            /// Overlay layers
+            var outImageRelative = lastFilter?.outputImage
+            for i in 0..<renderOptions.textLayers.count {
+                
+                let txtLayerInfo = renderOptions.textLayers[i]
+                if txtLayerInfo.zPosition == .behind { continue }
+                
+                guard let (newLayerComposite, _, _) = self.textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates, color: UIColor(renderOptions.overlayTextColor)) else { print("error text filt"); continue; }
+                
+                newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+                outImageRelative = newLayerComposite.outputImage
             }
 
 //            print("sourceImg \(sourceImg.extent)")
             progress(filteringRequest.compositionTime.seconds / multipliedTimeRange.duration.seconds)
             
             // Provide the filter output to the composition
-            filteringRequest.finish(with: lastFilter!.outputImage!, context: nil)
+            filteringRequest.finish(with: outImageRelative ?? sourceImg, context: nil)
         }
         
         mutableVideoComposition.renderSize = renderOptions.renderSize

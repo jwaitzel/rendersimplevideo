@@ -68,117 +68,159 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var showButtonCenterPlay: Bool = false
 
+    @State private var selectedEditingTextIdx: Int?
+    
     var body: some View {
         
-        ZStack {
-            
-            let playerContainerSize: CGFloat = showOptions ? 120 : 396
-            GeometryReader {
-                let sSize: CGSize = $0.size
-//                let _ = print("size \(sSize)")
-                let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        Rectangle()
-                            .foregroundStyle(.gray.opacity(0.2))
-                            .frame(width: playerContainerSize, height: playerContainerSize)
-//                            .overlay {
-//                                if let player {
-//                                    VideoPlayerView(player: player)
-//                                        .scaledToFit()
-////                                        .padding(.bottom, 84)
-//                                }
-//                            }
-                            .overlay {
-//                                TabView {
-//                                    if let rndImg = frameRenderImg {
-//                                        Image(uiImage: rndImg)
-//                                            .resizable()
-//                                            .scaledToFit()
-//    //                                        .frame(width: 140, height: 140)
-//                                            .contentShape(.rect)
-//                                        
-//                                    }
-//                                    
-//                                    
-//                                }
-//                                .tabViewStyle(.page(indexDisplayMode: .always))
-//                                .indexViewStyle(.page(backgroundDisplayMode: .always))
+        NavigationStack {
+            ZStack {
+                
+                let playerContainerSize: CGFloat = showOptions ? 120 : 396
+                GeometryReader {
+                    let sSize: CGSize = $0.size
+    //                let _ = print("size \(sSize)")
+                    let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            Rectangle()
+                                .foregroundStyle(.gray.opacity(0.2))
+                                .frame(width: playerContainerSize, height: playerContainerSize)
+    //                            .overlay {
+    //                                if let player {
+    //                                    VideoPlayerView(player: player)
+    //                                        .scaledToFit()
+    ////                                        .padding(.bottom, 84)
+    //                                }
+    //                            }
+                                .overlay {
+    //                                TabView {
+    //                                    if let rndImg = frameRenderImg {
+    //                                        Image(uiImage: rndImg)
+    //                                            .resizable()
+    //                                            .scaledToFit()
+    //    //                                        .frame(width: 140, height: 140)
+    //                                            .contentShape(.rect)
+    //
+    //                                    }
+    //
+    //
+    //                                }
+    //                                .tabViewStyle(.page(indexDisplayMode: .always))
+    //                                .indexViewStyle(.page(backgroundDisplayMode: .always))
 
-                                if let player {
-                                    VideoPlayerView(player: player)
-                                        .scaledToFit()
+                                    if let player {
+                                        VideoPlayerView(player: player)
+                                            .scaledToFit()
+                                    }
+                                    
                                 }
-                                
-                            }
-//                            .overlay {
-//                                if showButtonCenterPlay {
-//                                    ZStack {
-//                                        if isPlaying {
-//                                            Image(systemName: "play.fill")
-//                                                .font(.system(size: 40))
-//                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-//                                        } else {
-//                                            Image(systemName: "pause.fill")
-//                                                .font(.system(size: 40))
-//                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-//                                        }
-//                                        
-//                                    }
-//                                }
-//                                
-//                            }
-//                            .contentShape(.rect)
-//                            .onTapGesture {
-//                                if isPlaying {
-//                                    /// Stop
-//                                    self.isPlaying = false
-//                                    self.timerForStopPlayer?.invalidate()
-//                                } else {
-//                                    self.isPlaying = true
-//                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
-//                                        self.playerStopMotionIdx += 1
-//                                        self.requestNewTimeThumbForIdx()
-//                                    })
-//                                }
-//                                
-//                                withAnimation(.linear(duration: 0.2)) {
-//                                    showButtonCenterPlay = true
-//                                }
-//                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
-//                                    withAnimation(.linear(duration: 0.2)) {
-//                                        showButtonCenterPlay = false
-//                                    }
-//                                }
-//                                
-//                            }
-                        
-                            .onAppear {
-//                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
-                                self.player = AVPlayer()
-                            }
-                            .ignoresSafeArea()
-                            .padding(.top, 64)
+    //                            .overlay {
+    //                                if showButtonCenterPlay {
+    //                                    ZStack {
+    //                                        if isPlaying {
+    //                                            Image(systemName: "play.fill")
+    //                                                .font(.system(size: 40))
+    //                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+    //                                        } else {
+    //                                            Image(systemName: "pause.fill")
+    //                                                .font(.system(size: 40))
+    //                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+    //                                        }
+    //
+    //                                    }
+    //                                }
+    //
+    //                            }
+    //                            .contentShape(.rect)
+    //                            .onTapGesture {
+    //                                if isPlaying {
+    //                                    /// Stop
+    //                                    self.isPlaying = false
+    //                                    self.timerForStopPlayer?.invalidate()
+    //                                } else {
+    //                                    self.isPlaying = true
+    //                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+    //                                        self.playerStopMotionIdx += 1
+    //                                        self.requestNewTimeThumbForIdx()
+    //                                    })
+    //                                }
+    //
+    //                                withAnimation(.linear(duration: 0.2)) {
+    //                                    showButtonCenterPlay = true
+    //                                }
+    //                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
+    //                                    withAnimation(.linear(duration: 0.2)) {
+    //                                        showButtonCenterPlay = false
+    //                                    }
+    //                                }
+    //
+    //                            }
+                            
+                                .onAppear {
+    //                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
+                                    self.player = AVPlayer()
+                                }
+                                .ignoresSafeArea()
+                                .padding(.top, 64)
 
-                        VStack {
-                            OptionsEditorView()
-                                .opacity(showOptions ? 1 : 0)
+                            VStack {
+                                OptionsEditorView()
+                                    .opacity(showOptions ? 1 : 0)
+                            }
+                            .padding(.top, 32)
+                            
                         }
-                        .padding(.top, 32)
-                        
+                        .offset(y: showOptions ? 0 : centerY)
+
                     }
-                    .offset(y: showOptions ? 0 : centerY)
+                    .ignoresSafeArea()
+                    .frame(height: sSize.height)
 
                 }
-                .ignoresSafeArea()
-                .frame(height: sSize.height)
+
+                barButtons
+                
+                topSettingsButtonMenu
+                
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                Button {
+                    self.endEditingTextF()
+                } label: {
+                    Text("Done")
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .foregroundColor(.primary.opacity(0.9))
+            }
+        }
+        .overlay {
+            if selectedEditingTextIdx != nil {
+                CenterTextField()
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .font(.largeTitle)
+                    .padding(.vertical, 16)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.vertical, 16)
+                    .background {
+                        Rectangle()
+                            .foregroundStyle(.ultraThinMaterial)
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        Button {
+                            self.endEditingTextF()
+                            
+                        } label: {
+                            Text("Done")
+                        }
+                        .foregroundColor(.primary.opacity(0.8))
+                        .padding(.bottom, 4)
+                        .padding(.trailing, 4)
+                    }
 
             }
-
-            barButtons
-            
-            topSettingsButtonMenu
-            
         }
         .onAppear {
             optionsGroup = optionsGroupSaved
@@ -202,6 +244,19 @@ struct RenderLiveWithOptionsView: View {
             }
         })
 
+    }
+    
+    func endEditingTextF() {
+        
+        UIApplication.shared.endEditing()
+        //Change text
+        if let edIdx = selectedEditingTextIdx {
+            self.renderOptions.textLayers[edIdx].textString = currentEditing
+            selectedEditingTextIdx = nil
+            self.currentEditing = ""
+            self.reloadPreviewPlayer()
+        }
+        
     }
     
     func setupStopMotionPlayer() {
@@ -403,7 +458,7 @@ struct RenderLiveWithOptionsView: View {
             
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
-                .frame(height: 300)
+                .frame(height: UIScreen.main.bounds.width)
                 .padding(.horizontal, 0)
                 .overlay {
                     if let frameZeroImage {
@@ -476,6 +531,15 @@ struct RenderLiveWithOptionsView: View {
             DeviceLayerOptionButtons()
             
             DeviceColorLayerOptionButtons()
+            
+            Text("Custom Record Overlay")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.top, 16)
+                .padding(.bottom, 32)
 
         }
         .onChange(of: renderOptions.scaleVideo, perform: { _ in
@@ -676,6 +740,8 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var startAddTextCoordinate: CGPoint = .zero
     
+    @State private var currentTxtLayer: RenderTextLayer?
+    
     @ViewBuilder
     func TextLayerOptions() -> some View {
         
@@ -685,11 +751,26 @@ struct RenderLiveWithOptionsView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .overlay {
+                    if currentTxtLayer != nil {
+                        Button {
+                            currentTxtLayer = nil
+                            AppState.shared.selIdx = nil
+                            self.reloadPreviewPlayer()
+                        } label: {
+                            Text("Done")
+                        }
+                        .foregroundStyle(.primary.opacity(0.8))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                    
+                }
                 .padding(.horizontal, 12)
                 .padding(.top, 32)
+                
             
             let renderAspect = renderOptions.renderSize.width / renderOptions.renderSize.height
-            let minSquareHeight: CGFloat = 300
+            let minSquareHeight: CGFloat = UIScreen.main.bounds.width
             let maxWidth = minSquareHeight * renderAspect
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
@@ -716,19 +797,32 @@ struct RenderLiveWithOptionsView: View {
     //                            print("x value \(valueOffX)")
                         })
                         .onEnded({ val in
-                            /// New Text layer
-                            var newLayerText = RenderTextLayer()
+                            
                             let xCords = val.location.x / maxWidth
                             let yCords = val.location.y / minSquareHeight
                             let coordinatesForRender = CGPoint(x: xCords, y: yCords)
+
+                            if currentTxtLayer != nil {
+                                currentTxtLayer?.coordinates = coordinatesForRender
+                                self.reloadPreviewPlayer()
+                                return
+                            }
+                            /// New Text layer
+                            let newLayerText = RenderTextLayer()
                             newLayerText.coordinates = coordinatesForRender
-                            newLayerText.textString = String(format: "hey %i", Int(val.location.x))
+                            newLayerText.textString = String(format: "hey")
                             newLayerText.zPosition = .infront
                             
+                            self.selectedEditingTextIdx = self.renderOptions.textLayers.count
+                            AppState.shared.selIdx = self.selectedEditingTextIdx
                             self.renderOptions.textLayers.append(newLayerText)
                             self.reloadPreviewPlayer()
-                            
+                            currentTxtLayer = newLayerText
                             print("drag add sticker end \(coordinatesForRender)")
+                            
+                            
+                            self.currentEditing = newLayerText.textString
+                            self.focusedField = .text
 
     //                        startValueOffX = valueOffX
     //                        startValueOffY = valueOffY
@@ -757,6 +851,21 @@ struct RenderLiveWithOptionsView: View {
     //                reloadPreviewPlayerWithTimer()
                 })
                 .padding(.bottom, 24.0)
+//                .overlay(alignment: .bottom) {
+//                    if selectedEditingTextIdx != nil {
+//                        Button {
+//                            
+//                        } label: {
+//                            Text("Done")
+//                        }
+//                        .foregroundColor(.primary)
+//                        .background {
+//                            foregroundStyle(.ultraThinMaterial)
+//                        }
+//                        .frame(maxWidth: .infinity, alignment: .trailing)
+//                    }
+//                    
+//                }
             
             Text("Layers")
                 .font(.subheadline)
@@ -770,7 +879,15 @@ struct RenderLiveWithOptionsView: View {
             VStack(spacing: 4) {
                 ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
                     let layerText = renderOptions.textLayers[idx]
-                    Text(layerText.textString)
+                    CellLayerView(layerText)
+                        .contentShape(.rect)
+                        .onTapGesture {
+                            self.selectedEditingTextIdx = idx
+                            self.currentEditing = layerText.textString
+                            self.focusedField = .text
+                            currentTxtLayer = layerText
+                        }
+
                 }
             }
             
@@ -779,6 +896,51 @@ struct RenderLiveWithOptionsView: View {
                 .frame(height: 400)
         }
         
+    }
+    
+    @ViewBuilder
+    func CellLayerView(_ layerText: RenderTextLayer) -> some View {
+        HStack {
+            VStack {
+                Text(layerText.textString)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                let formPosStr = String(format: "x%.2f y%.2f", CGFloat(layerText.coordinates.x), CGFloat(layerText.coordinates.y))
+                Text(formPosStr)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 16)
+            .background {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .foregroundStyle(.primary.opacity(0.1))
+            }
+            
+        }
+        .frame(maxWidth: .infinity)
+
+    }
+    
+    enum FocusedField {
+        case text
+    }
+
+    @FocusState private var focusedField: FocusedField?
+
+    
+    @State private var currentEditing: String = ""
+    @ViewBuilder
+    func CenterTextField() -> some View {
+//        TextField("", text: $currentEditing)
+//        TextEditor(text: $currentEditing)
+        TextField("", text: $currentEditing,  axis: .vertical)
+            .focused($focusedField, equals: .text)
+        .lineLimit(1...5)
+        .frame(height: 200)
+//        .onSubmit {
+//            self.endEditingTextF()
+//        }
     }
     
     @ViewBuilder

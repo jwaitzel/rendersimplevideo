@@ -18,4 +18,6 @@ class AppState: ObservableObject {
     
     @Published var navPath: NavigationPath = .init()
 
+    @Published var selIdx: Int?
+    
 }
