@@ -886,6 +886,8 @@ struct RenderLiveWithOptionsView: View {
                             self.currentEditing = layerText.textString
                             self.focusedField = .text
                             currentTxtLayer = layerText
+                            
+                            AppState.shared.selIdx = idx
                         }
 
                 }
