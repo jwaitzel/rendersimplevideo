@@ -35,7 +35,15 @@ class VideoComposer {
         let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
 
         /// Video transform
-        let videoScaleToFit = renderSize.height / videoFrameSize.height
+        print("Native size \(videoFrameSize)")
+        var videoScaleToFit = renderSize.height / videoFrameSize.height
+        if renderOptions.selectedFormat == .landscape {
+            videoScaleToFit = renderSize.width / videoFrameSize.width
+//            if videoFrameSize.height > videoFrameSize.width {
+//                videoScaleToFit = renderSize.height / videoFrameSize.height
+//            }
+        }
+        
         let scaleParameter = renderOptions.scaleVideo / 100.0
         let videoAddScale = videoScaleToFit * scaleParameter
         let newVideoSize = CGSize(width: videoFrameSize.width * videoAddScale, height: videoFrameSize.height * videoAddScale)
@@ -55,15 +63,29 @@ class VideoComposer {
 
         /// Overlay Transform
         let overlayResizeFit = renderSize.height / iphoneOverlay.extent.height
-        let overlayScaleParameter = (renderOptions.scaleVideo * 1.09) / 100.0 //renderOptions.scaleMask / 100 
+        let overlayScaleParameter = (renderOptions.scaleVideo * 1.09) / 100.0 //renderOptions.scaleMask / 100
+        
 //        print("overlays scale \(overlayScaleParameter)")
         let ovlerlayAddedScale = overlayResizeFit * overlayScaleParameter
         let iphoneOverlayResize = CGSize(width: iphoneOverlay.extent.width * ovlerlayAddedScale, height: iphoneOverlay.extent.height * ovlerlayAddedScale)
+        
         let iphoneOverlayTransformSize = CGAffineTransform(scaleX: ovlerlayAddedScale, y: ovlerlayAddedScale)
         let iphoneOverlayTranslationX = renderSize.width / 2.0 - iphoneOverlayResize.width / 2.0 + renderOptions.offsetX
         let iphoneOverlayTranslationY = renderSize.height / 2.0 - iphoneOverlayResize.height / 2.0 + renderOptions.offsetY
+        
+        let befRot = CGAffineTransform(translationX: -iphoneOverlayResize.width / 2.0, y: -iphoneOverlayResize.height / 2.0)
+        let aftRot = CGAffineTransform(translationX: iphoneOverlayResize.width / 2.0, y: iphoneOverlayResize.height / 2.0)
+
+        
+        let selAnglePhone = renderOptions.selectedFormat == .landscape ? (.pi / 2.0) : 0.0
+        let rotationTranf = CGAffineTransformMakeRotation(selAnglePhone)
+        
+        let allRot = befRot.concatenating(rotationTranf).concatenating(aftRot)
+        
         let iphoneOverlayTranslation = CGAffineTransform(translationX: iphoneOverlayTranslationX, y: iphoneOverlayTranslationY)
-        let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(iphoneOverlayTranslation)
+        let iphoneOverlayTransform = iphoneOverlayTransformSize.concatenating(allRot).concatenating(iphoneOverlayTranslation)
+        
+        /// Add rotation for scale???
 
         /// Mask Rounded Rectangle Genrator
         let adjustCorners = 55.0 * overlayScaleParameter
@@ -83,7 +105,9 @@ class VideoComposer {
         let shadowTranslationX = renderSize.width / 2.0 - shadowResize.width / 2.0 + renderOptions.shadowOffset.x + renderOptions.offsetX
         let shadowTranslationY = renderSize.height / 2.0 - shadowResize.height / 2.0 + renderOptions.shadowOffset.y + renderOptions.offsetY
         let shadowTranslationTransform = CGAffineTransform(translationX: shadowTranslationX, y: shadowTranslationY)
-        let shadowAllTransform = shadowTranformScale.concatenating(shadowTranslationTransform)
+        
+        let shadowRotationTranf = befRot.concatenating(rotationTranf).concatenating(aftRot)
+        let shadowAllTransform = shadowTranformScale.concatenating(shadowRotationTranf).concatenating(shadowTranslationTransform)
 
 //        let shadowTranslation = CGAffineTransform(translationX: renderOptions.shadowOffset.x, y: renderOptions.shadowOffset.y)
         let shadowRect = CGRectApplyAffineTransform(iphoneOverlay.extent, shadowAllTransform)

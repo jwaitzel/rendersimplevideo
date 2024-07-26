@@ -32,10 +32,6 @@ enum iPhoneColorOptions: String, CaseIterable {
     }
 }
 
-enum TextZPosition: String, CaseIterable {
-    case behind
-    case infront
-}
 
 enum AspectFormat: String {
     case portrait
@@ -45,24 +41,6 @@ enum AspectFormat: String {
 enum RenderDevice: String {
     case fifthn
     case thirtn
-}
-
-class RenderTextLayer: ObservableObject {
-    
-    @Published var textString = ""
-    @Published var coordinates = CGPoint.zero
-    @Published var zPosition: TextZPosition = .behind
-
-    @Published var textScale: CGFloat = 100
-    @Published var textColor: Color = .black
-    @Published var textRotation: CGFloat = 0
-    @Published var textZPosition: TextZPosition = .behind
-    @Published var textFontSize: CGFloat = 44
-    @Published var textFontWeight: UIFont.Weight = .bold
-
-    
-//    overlayTextFontSize
-//    overlayTextFontWeight
 }
 
 class RenderOptions: ObservableObject {
@@ -81,7 +59,7 @@ class RenderOptions: ObservableObject {
     @Published var scaleMask: CGFloat = 94.0
     @Published var maskCorners: CGFloat = 55.0
 
-    @Published var selectedFormat: AspectFormat = .portrait
+    @Published var selectedFormat: AspectFormat = .landscape
     @Published var selectedDevice: RenderDevice = .fifthn
 
     @Published var videoSpeed: CGFloat = 100.0

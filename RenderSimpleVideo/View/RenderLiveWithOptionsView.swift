@@ -201,8 +201,8 @@ struct RenderLiveWithOptionsView: View {
 
                             VStack {
                                 
-//                                VideoInfo()
-//                                    .opacity(showOptions ? 1 : 0)
+                                VideoInfo()
+                                    .opacity(showOptions ? 1 : 0)
                                 
                                 OptionsEditorView()
                                     .opacity(showOptions ? 1 : 0)
@@ -230,15 +230,22 @@ struct RenderLiveWithOptionsView: View {
                     if didCreateNew {
                         Button {
 
-                            let lastIdx = self.renderOptions.textLayers.count-1
-                            didCreateNew = false
-                            self.renderOptions.textLayers.remove(at: lastIdx)
-                            self.reloadPreviewPlayer()
+                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.01) {
+                                
+                                AppState.shared.selIdx = nil
+                                let lastIdx = self.renderOptions.textLayers.count-1
+                                self.renderOptions.textLayers.remove(at: lastIdx)
+                            }
+                            
+                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
+                                self.reloadPreviewPlayer()
+                                self.didCreateNew = false
+                                
+                            }
                             
                             self.currentTxtLayer = nil
                             self.selectedEditingTextIdx = nil
                             self.focusedField = .none
-                            AppState.shared.selIdx = nil
                             
                             //.append(newLayerText)
                         } label: {
@@ -271,21 +278,7 @@ struct RenderLiveWithOptionsView: View {
                     .padding(.vertical, 16)
                     .textFieldStyle(.roundedBorder)
                     .padding(.vertical, 16)
-//                    .background {
-//                        Rectangle()
-//                            .foregroundStyle(.ultraThinMaterial)
-//                    }
-//                    .overlay(alignment: .bottomTrailing) {
-//                        Button {
-//                            self.endEditingTextF()
-//                            
-//                        } label: {
-//                            Text("Done")
-//                        }
-//                        .foregroundColor(.primary.opacity(0.8))
-//                        .padding(.bottom, 4)
-//                        .padding(.trailing, 4)
-//                    }
+
 
             }
         }
@@ -369,6 +362,12 @@ struct RenderLiveWithOptionsView: View {
         .padding(.top, 8)
     }
     
+    
+    @State private var nativeVideoSize: CGSize = .zero
+    @State private var videoSizeMB: CGFloat = 0.0
+    @State private var videoInfoFPS: CGFloat = 0.0
+    
+
     @ViewBuilder
     func VideoInfo() -> some View {
         
@@ -422,11 +421,12 @@ struct RenderLiveWithOptionsView: View {
                         .foregroundStyle(.secondary.opacity(0.3))
                 }
 
+                let natSizeStr = String(format:"%ix%i", Int(nativeVideoSize.width), Int(nativeVideoSize.height) )
                 ///Size info
                 VStack(spacing: 4) {
                     Text("No information")
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("888x1920 • 15 MB")
+                    Text("\(natSizeStr) • 15 MB")
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                 }
@@ -444,7 +444,8 @@ struct RenderLiveWithOptionsView: View {
                     
                     Divider()
                     
-                    Text("00:07")
+                    let durString = String(format: "%.2fs", renderOptions.videoDuration ?? 0.0)
+                    Text(durString) //"00:07"
                         .frame(maxWidth: .infinity )
                 }
                 .foregroundStyle(.primary.opacity(0.6))
@@ -562,8 +563,14 @@ struct RenderLiveWithOptionsView: View {
         guard let defaultThumb = self.renderOptions.selectedVideoThumbnail else { print("no thmb"); return }
         let selectFrame = defaultThumb
         
+        let isSelForVide = optionsGroup == .Video && selectedToolbarItem != nil
+        let isSelForLayer = optionsGroup == .Text && AppState.shared.selIdx != nil
+        print("is sel one \(isSelForVide) isSelForLayer \(isSelForLayer)")
         //selectedEditingTextIdx
-        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions, selected: optionsGroup == .Video ? selectedToolbarItem == nil ? nil : RenderSelectionElement.phone : (optionsGroup == .Text && AppState.shared.selIdx != nil) ? RenderSelectionElement.layer : nil )
+        let filteredImg = videoComposer
+            .createImagePreview(defaultThumb,
+                               renderOptions: renderOptions,
+                               selected: isSelForVide ? RenderSelectionElement.phone : isSelForLayer ? RenderSelectionElement.layer : nil )
 
         self.frameZeroImage = filteredImg
 
@@ -1074,7 +1081,11 @@ struct RenderLiveWithOptionsView: View {
                         Button {
                             currentTxtLayer = nil
                             AppState.shared.selIdx = nil
-                            self.reloadPreviewPlayer()
+                            
+                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1, execute: {
+                                self.reloadPreviewPlayer()
+                                self.reloadOnlyThumbnail()
+                            })
                         } label: {
                             Text("Done")
                         }
@@ -1147,10 +1158,7 @@ struct RenderLiveWithOptionsView: View {
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
                     
-    //                self.renderOptions.offsetX = valueOffX
-    //                self.renderOptions.offsetY = valueOffY
-    //                reloadOnlyThumbnail()
-    //                reloadPreviewPlayerWithTimer()
+    
                 })
                 .gesture(
                     MagnificationGesture(minimumScaleDelta: 0.05)
@@ -1358,7 +1366,7 @@ struct RenderLiveWithOptionsView: View {
         
         let newLayerText = RenderTextLayer()
         newLayerText.coordinates = coordinatesForRender
-        newLayerText.textString = String(format: "hey")
+        newLayerText.textString = String(format: "")
         newLayerText.zPosition = .infront
         
         self.selectedEditingTextIdx = self.renderOptions.textLayers.count
@@ -1475,6 +1483,7 @@ struct RenderLiveWithOptionsView: View {
         TextField("", text: $currentEditing,  axis: .vertical)
             .focused($focusedField, equals: .text)
         .lineLimit(1...5)
+        .textInputAutocapitalization(.never)
         .frame(height: 200)
         .onSubmit {
             self.endEditingTextF()
@@ -1609,10 +1618,12 @@ struct RenderLiveWithOptionsView: View {
                     
                     ButtonFormatDevices("iphone", "Portrait", renderOptions.selectedFormat == .portrait) {
                         renderOptions.selectedFormat = .portrait
+                        self.reloadOnlyThumbnail()
                     }
                     
                     ButtonFormatDevices("iphone.landscape", "Landscape", renderOptions.selectedFormat == .landscape) {
                         renderOptions.selectedFormat = .landscape
+                        self.reloadOnlyThumbnail()
                     }
                     
                 }
@@ -1825,6 +1836,10 @@ struct RenderLiveWithOptionsView: View {
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-test2", withExtension: "mov")
         
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
+        if let loadedNativeVideoSize = asset.tracks(withMediaType: .video).first?.naturalSize {
+            self.nativeVideoSize = loadedNativeVideoSize
+        }
+        
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
 //        generator.maximumSize = thumbSize
