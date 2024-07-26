@@ -46,8 +46,9 @@ struct BlenderStyleInput: View {
                                 .background {
                                     Color(uiColor: .systemGray5)
                                 }
+                                .opacity(0.08)
                         }
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.primary.opacity(0.07))
                         
                         Text("\(Int(value)) \(unitStr)")
                             .font(.subheadline)
@@ -62,8 +63,10 @@ struct BlenderStyleInput: View {
                                 .background {
                                     Color(uiColor: .systemGray5)
                                 }
+                                .opacity(0.08)
                         }
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.primary.opacity(0.07))
+                        
                     }
                     .contentShape(.rect)
                     .simultaneousGesture(
@@ -76,6 +79,7 @@ struct BlenderStyleInput: View {
                                 startValue = value
                             })
                     )
+
                 }
                 .frame(height: 34)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))

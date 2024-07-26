@@ -191,6 +191,7 @@ class VideoComposer {
         return (compositeBackColor, iphoneOverlayComposite, textCompositeOrNil, lastToRender, multVideoTransform)
     }
     
+    
     func textCompositeFilter(_ renderOptions: RenderOptions, text: String, layerPos: CGPoint, color: UIColor, fontSize: CGFloat, fontWeight: UIFont.Weight, textRotation: CGFloat) -> (CIFilter, CGRect, CGPoint)? {
         
 //        let fontSize: CGFloat = renderOptions.overlayTextFontSize
@@ -299,7 +300,8 @@ class VideoComposer {
                     if selIdx {
                         selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
                         offS = off
-                        print("Sel size \(ext.size)")
+                        print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
+                        AppState.shared.selTextExt = selExtent
                     }
                 }
                 
@@ -311,7 +313,6 @@ class VideoComposer {
         if selected == .phone {
             selExtent = sourceCI.extent
         }
-        
         
         print("selExtent \(selExtent)")
         
@@ -328,9 +329,9 @@ class VideoComposer {
             
             let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? -30 : 0.0, dy: selected == .phone ? -30 : 0)
             roundedRectangleGenerator.setValue( centeredInsetRect ?? .zero, forKey: kCIInputExtentKey)
-            roundedRectangleGenerator.setValue(CIColor(color: .blue), forKey: kCIInputColorKey)
+            roundedRectangleGenerator.setValue(CIColor(color: .orange), forKey: kCIInputColorKey)
             roundedRectangleGenerator.setValue(8.0, forKey: kCIInputRadiusKey)
-            roundedRectangleGenerator.setValue(2.0, forKey: kCIInputWidthKey)
+            roundedRectangleGenerator.setValue(4.0, forKey: kCIInputWidthKey)
             
             /// Back
             addRectForSelComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
