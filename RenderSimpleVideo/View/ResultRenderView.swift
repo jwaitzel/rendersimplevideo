@@ -152,7 +152,7 @@ struct ResultRenderView: View {
 
 #Preview {
     struct PreviewData: View {
-        @State private var videoURL: URL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")!
+        @State private var videoURL: URL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mp4")!
         var body: some View {
             ResultRenderView(videoURL: videoURL)
         }

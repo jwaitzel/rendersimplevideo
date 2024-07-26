@@ -378,7 +378,7 @@ struct RenderVideoEditorView: View {
         //uiux-black-sound //uiux-black-sound
         
         
-        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-short", withExtension: "mp4")
+        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mp4")
         let defaultThumb = UIImage(contentsOfFile: Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!.path)!
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
         self.renderOptions.videoDuration = asset.duration.seconds
