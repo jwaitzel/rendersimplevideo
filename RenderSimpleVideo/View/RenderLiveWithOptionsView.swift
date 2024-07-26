@@ -201,8 +201,8 @@ struct RenderLiveWithOptionsView: View {
 
                             VStack {
                                 
-                                VideoInfo()
-                                    .opacity(showOptions ? 1 : 0)
+//                                VideoInfo()
+//                                    .opacity(showOptions ? 1 : 0)
                                 
                                 OptionsEditorView()
                                     .opacity(showOptions ? 1 : 0)
@@ -227,6 +227,7 @@ struct RenderLiveWithOptionsView: View {
         .toolbar {
             ToolbarItem(placement: .keyboard) {
                 HStack {
+                    /// Remove just created (bad code) - needs redo :jw
                     if didCreateNew {
                         Button {
 
@@ -235,6 +236,7 @@ struct RenderLiveWithOptionsView: View {
                                 AppState.shared.selIdx = nil
                                 let lastIdx = self.renderOptions.textLayers.count-1
                                 self.renderOptions.textLayers.remove(at: lastIdx)
+                                
                             }
                             
                             DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
@@ -307,25 +309,25 @@ struct RenderLiveWithOptionsView: View {
     }
     
     
-    @State private var selectedToolbarItem: Int?
+    @State private var selectedToolbarItemIdx: Int? = 0
+    
     @ViewBuilder
     func BlenderStyleToolbar() -> some View {
-        let toolBarOptionsItemsTitles = ["arrow.up.and.down.and.arrow.left.and.right",
+        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text",                     "arrow.up.and.down.and.arrow.left.and.right",
                                          "arrow.up.backward.and.arrow.down.forward"
         ]
         VStack(spacing: 0.0) {
             
             
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
-                var isSel = idx == selectedToolbarItem
+                var isSel = idx == selectedToolbarItemIdx
                 Button {
-
                     if isSel {
-                        selectedToolbarItem = nil
+                        selectedToolbarItemIdx = nil
                         self.reloadOnlyThumbnail()
                         return
                     }
-                    selectedToolbarItem = idx
+                    selectedToolbarItemIdx = idx
                     self.reloadOnlyThumbnail()
                 } label: {
                     Image(systemName: toolBarOptionsItemsTitles[idx])
@@ -344,18 +346,6 @@ struct RenderLiveWithOptionsView: View {
                 
 
             }
-//            Button {
-//                
-//            } label: {
-//                Image(systemName: "arrow.up.backward.and.arrow.down.forward")
-//                    
-//            }
-//            .foregroundStyle(.primary)
-//            .frame(width: 44, height: 44)
-//            .background {
-//                Rectangle()
-//                    .foregroundStyle(.black.opacity(0.2))
-//            }
         }
         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
         .padding(.trailing, 8)
@@ -563,7 +553,7 @@ struct RenderLiveWithOptionsView: View {
         guard let defaultThumb = self.renderOptions.selectedVideoThumbnail else { print("no thmb"); return }
         let selectFrame = defaultThumb
         
-        let isSelForVide = optionsGroup == .Video && selectedToolbarItem != nil
+        let isSelForVide = optionsGroup == .Video && selectedToolbarItemIdx != nil
         let isSelForLayer = optionsGroup == .Text && AppState.shared.selIdx != nil
         print("is sel one \(isSelForVide) isSelForLayer \(isSelForLayer)")
         //selectedEditingTextIdx
@@ -732,20 +722,11 @@ struct RenderLiveWithOptionsView: View {
                     }
                 }
                 .overlay {
-                    if selectedToolbarItem == nil {
+                    if selectedToolbarItemIdx == nil {
                         Rectangle()
                             .foregroundStyle(.black.opacity(0.2))
                     }
                 }
-//                .overlay {
-//                    RoundedRectangle(cornerRadius: 0, style: .continuous)
-//                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
-//                }
-//                .overlay {
-//                    /// Cover until touch
-//                    Rectangle()
-//                        .foregroundStyle(.black.opacity(0.1))
-//                }
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .padding(.horizontal, 4)
@@ -788,20 +769,12 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.scaleVideo += ((value) * (renderOptions.renderSize.width / sqSize ) * 0.5)
                     reloadPreviewPlayerWithTimer()
                 })
-                .allowsHitTesting(selectedToolbarItem != nil)
+                .allowsHitTesting(selectedToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleToolbar()
                 })
 
 
-            /// Handler empty View
-            Image(systemName:"line.3.horizontal")
-                .foregroundColor(.primary.opacity(0.2))
-                .font(.largeTitle)
-                .opacity(0.0)
-                .frame(width: 10, height: 10)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 32)
             
             BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
                 .padding(.bottom, 32)
@@ -943,7 +916,6 @@ struct RenderLiveWithOptionsView: View {
             .padding(.bottom, 32)
     }
     
-  
     
     @ViewBuilder
     func OptionsEditorView() -> some View {
@@ -1076,6 +1048,12 @@ struct RenderLiveWithOptionsView: View {
                     RoundedRectangle(cornerRadius: 1, style: .continuous)
                         .stroke(Color.primary.opacity(0.8), lineWidth: 1)
                 }
+                .overlay {
+                    if selectedToolbarItemIdx == nil {
+                        Rectangle()
+                            .foregroundStyle(.black.opacity(0.2))
+                    }
+                }
                 .overlay(alignment: .bottom) {
                     if currentTxtLayer != nil {
                         Button {
@@ -1152,6 +1130,7 @@ struct RenderLiveWithOptionsView: View {
                                 return
                             }
                             /// New Text layer
+                            
                             addNewTextLayer(coordinatesForRender)
                             
                         })
@@ -1192,9 +1171,14 @@ struct RenderLiveWithOptionsView: View {
                         .stroke(.blue, lineWidth: 4.0)
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+                        .opacity(isDraggingIcon ? 1 : 0)
 //                        .offset(x: relAbs.x, y: relAbs.y)
 
                 }
+                .allowsHitTesting(selectedToolbarItemIdx != nil)
+                .overlay(alignment: .topTrailing, content: {
+                    BlenderStyleToolbar()
+                })
 //                .padding(.bottom, 24.0)
 //                .overlay(alignment: .bottom) {
 //                    if selectedEditingTextIdx != nil {
@@ -1211,15 +1195,7 @@ struct RenderLiveWithOptionsView: View {
 //                    }
 //                    
 //                }
-            
-            /// Handler empty View
-            Image(systemName:"line.3.horizontal")
-                .foregroundColor(.primary.opacity(0.2))
-                .font(.largeTitle)
-                .opacity(0.0)
-                .frame(width: 10, height: 10)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 32)
+        
 
             if let idx = AppState.shared.selIdx {
 
@@ -1231,13 +1207,25 @@ struct RenderLiveWithOptionsView: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 32)
 
+                //+ renderOptions.textLayers[idx].textStrikeStyle.rawValue
                 SelectedLayerFontOptionsView(selIdx: idx)
+                /// Update on change values
                     .onChange(of: (self.renderOptions.textLayers[idx].textFontSize + renderOptions.textLayers[idx].textFontWeight.rawValue +
-                                   renderOptions.textLayers[idx].textRotation
+                                   renderOptions.textLayers[idx].textRotation + renderOptions.textLayers[idx].textKerning + renderOptions.textLayers[idx].textLineSpacing +
+                                   renderOptions.textLayers[idx].textTrackingStyle
                                   ),  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
                     .onChange(of: self.renderOptions.textLayers[idx].textColor,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].textStrikeStyle,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].textUnderlineStyle,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    }) 
+                    .onChange(of: self.renderOptions.textLayers[idx].textTrackingEffect,  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
             }
@@ -1287,13 +1275,12 @@ struct RenderLiveWithOptionsView: View {
     }
     
     @ViewBuilder
-    func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
-        
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
-        
+    func WeightTextOptions(_ selIdx: Int) -> some View {
         HStack {
             Text("Weight")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
                 .frame(width: 120, alignment: .trailing)
 
             let weightOptions: [UIFont.Weight] = [.ultraLight, .thin, .light, .regular]
@@ -1331,10 +1318,99 @@ struct RenderLiveWithOptionsView: View {
             
 
         }
+    }
+    
+    
+    @ViewBuilder
+    func WeightStrikeTextOptions(_ selIdx: Int) -> some View {
+        HStack {
+            Text("Strike")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(width: 120, alignment: .trailing)
 
+            let strikeOptions: [NSUnderlineStyle?] = [nil, .single, .double, .thick, .byWord]
+            let strikeOptTitle: [String] = ["no", "single", "double", "thick", "word"]
+                        
+            Picker("", selection: $renderOptions.textLayers[selIdx].textStrikeStyle) {
+                ForEach(0..<strikeOptions.count, id: \.self) { idx in
+                    let weightTitle = strikeOptTitle[idx]
+                    let strikeOpt = strikeOptions[idx]
+                    Text(weightTitle)
+                        .tag(strikeOpt)
+                }
+            }
+            .pickerStyle(.segmented)
+
+        }
+    }
+    
+    @ViewBuilder
+    func UnderlineTextOptions(_ selIdx: Int) -> some View {
+        HStack {
+            Text("Under")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(width: 120, alignment: .trailing)
+
+            let strikeOptions: [NSUnderlineStyle?] = [nil, .single, .double, .thick]
+            let strikeOptTitle: [String] = ["no", "single", "double", "thick"]
+                        
+            Picker("", selection: $renderOptions.textLayers[selIdx].textUnderlineStyle) {
+                ForEach(0..<strikeOptions.count, id: \.self) { idx in
+                    let weightTitle = strikeOptTitle[idx]
+                    let strikeOpt = strikeOptions[idx]
+                    Text(weightTitle)
+                        .tag(strikeOpt)
+                }
+            }
+            .pickerStyle(.segmented)
+
+        }
+    }
+
+
+    @ViewBuilder
+    func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
+        
+
+//        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textTrackingStyle, title: "Tracking", unitStr: "px", minValue: 0)
+        
+        UnderlineTextOptions(selIdx)
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+      
+
+        WeightTextOptions(selIdx)
+        
+        WeightStrikeTextOptions(selIdx)
+        
 //        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
         
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
+        
         BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+        
+        HStack {
+            Text("Text Effect")
+                .frame(width: 120, alignment: .trailing)
+
+            let txtFxtsTitles: [String] = ["none", "letter pressed"]
+            let effxtOptns: [NSAttributedString.TextEffectStyle?] = [nil, .letterpressStyle]
+            Picker("", selection: $renderOptions.textLayers[selIdx].textTrackingEffect) {
+                ForEach(0..<effxtOptns.count, id: \.self) { idx in
+                    let iPhoneColor = effxtOptns[idx]
+                    let fxTitle = txtFxtsTitles[idx]
+                    Text(fxTitle)
+                        .tag(iPhoneColor)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
 
         HStack {
             Text("Z Position")
@@ -1362,6 +1438,7 @@ struct RenderLiveWithOptionsView: View {
 
     }
     
+    
     func addNewTextLayer(_ coordinatesForRender: CGPoint) {
         
         let newLayerText = RenderTextLayer()
@@ -1369,11 +1446,17 @@ struct RenderLiveWithOptionsView: View {
         newLayerText.textString = String(format: "")
         newLayerText.zPosition = .infront
         
-        self.selectedEditingTextIdx = self.renderOptions.textLayers.count
-        AppState.shared.selIdx = self.selectedEditingTextIdx
-        self.renderOptions.textLayers.append(newLayerText)
         
-        self.reloadPreviewPlayer()
+        
+        DispatchQueue.main.asyncAfter(wallDeadline: .now()) {
+            self.selectedEditingTextIdx = self.renderOptions.textLayers.count
+            AppState.shared.selIdx = self.selectedEditingTextIdx
+            self.renderOptions.textLayers.append(newLayerText)
+            
+            self.reloadPreviewPlayer()
+        }
+        
+        
         currentTxtLayer = newLayerText
         print("drag add sticker end \(coordinatesForRender)")
         

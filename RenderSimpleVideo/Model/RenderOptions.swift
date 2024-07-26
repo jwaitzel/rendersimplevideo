@@ -59,7 +59,7 @@ class RenderOptions: ObservableObject {
     @Published var scaleMask: CGFloat = 94.0
     @Published var maskCorners: CGFloat = 55.0
 
-    @Published var selectedFormat: AspectFormat = .landscape
+    @Published var selectedFormat: AspectFormat = .portrait
     @Published var selectedDevice: RenderDevice = .fifthn
 
     @Published var videoSpeed: CGFloat = 100.0

@@ -122,17 +122,17 @@ class VideoComposer {
         
         /// Behind Video Text old way
         var outImageRelative: CIImage? = backColorGenerator.outputImage
-        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .behind {
-            guard let (textComposite, _, _) = textCompositeFilter(renderOptions, text: renderOptions.overlayText,
-                                                                  layerPos: renderOptions.overlayTextOffset,
-                                                                  color: UIColor(renderOptions.overlayTextColor),
-                                                                  fontSize: renderOptions.overlayTextFontSize,
-                                                                  fontWeight: renderOptions.overlayTextFontWeight,
-                                                                  textRotation: renderOptions.overlayTextRotation
-            ) else { print("error text filt"); return nil }
-            textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-            outImageRelative = textComposite.outputImage
-        }
+//        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .behind {
+//            guard let (textComposite, _, _) = textCompositeFilter(renderOptions, text: renderOptions.overlayText,
+//                                                                  layerPos: renderOptions.overlayTextOffset,
+//                                                                  color: UIColor(renderOptions.overlayTextColor),
+//                                                                  fontSize: renderOptions.overlayTextFontSize,
+//                                                                  fontWeight: renderOptions.overlayTextFontWeight,
+//                                                                  textRotation: renderOptions.overlayTextRotation
+//            ) else { print("error text filt"); return nil }
+//            textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
+//            outImageRelative = textComposite.outputImage
+//        }
         
         /// Text layers behind
         for i in 0..<renderOptions.textLayers.count {
@@ -140,12 +140,13 @@ class VideoComposer {
             if txtLayerInfo.zPosition == .infront { continue }
             
             guard let (newLayerComposite, _, _) = textCompositeFilter(renderOptions,
-                                                                      text: txtLayerInfo.textString,
-                                                                      layerPos: txtLayerInfo.coordinates,
-                                                                      color: UIColor(txtLayerInfo.textColor),
-                                                                      fontSize: txtLayerInfo.textFontSize,
-                                                                      fontWeight: txtLayerInfo.textFontWeight,
-                                                                      textRotation: txtLayerInfo.textRotation
+                                                                      txtLayerInfo: txtLayerInfo
+//                                                                      text: txtLayerInfo.textString,
+//                                                                      layerPos: txtLayerInfo.coordinates,
+//                                                                      color: UIColor(txtLayerInfo.textColor),
+//                                                                      fontSize: txtLayerInfo.textFontSize,
+//                                                                      fontWeight: txtLayerInfo.textFontWeight,
+//                                                                      textRotation: txtLayerInfo.textRotation
 
             ) else { print("error text filt"); continue; }
             
@@ -165,68 +166,54 @@ class VideoComposer {
         let iphoneOverlayComposite = CIFilter(name: "CISourceOverCompositing")!
         iphoneOverlayComposite.setValue(iphoneOverlay.transformed(by: iphoneOverlayTransform), forKey: kCIInputImageKey)
 
-        
-//        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .infront {
-//            guard let textComposite = textCompositeFilter(renderOptions, text: renderOptions.overlayText, layerPos: renderOptions.overlayTextOffset) else { print("error text filt"); return nil }
-//            textCompositeOrNil = textComposite
-//        }
-        
-
-//        let allLayersCombine = CIFilter(name: "CISourceOverCompositing")!
-//        var currentOutImage: CIImage? = backColorGenerator.outputImage
-
-        var textCompositeOrNil: CIFilter?
-        var lastToRender:CIFilter?
-        
-//        let allLayersCombined = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
-
-//        for i in 0..<renderOptions.textLayers.count {
-//            
-//            let txtLayerInfo = renderOptions.textLayers[i]
-//            if txtLayerInfo.zPosition == .behind { continue }
-//            
-//            guard let newLayerComposite = textCompositeFilter(renderOptions, text: txtLayerInfo.textString, layerPos: txtLayerInfo.coordinates) else { print("error text filt"); continue; }
-//            
-////            if lastToRender == nil {
-////                newLayerComposite.setValue(lastToRender?.outputImage, forKey: kCIInputBackgroundImageKey)
-////            }
-//            
-////            allLayersCombined.setValue(newLayerComposite.outputImage, forKey: kCIInputBackgroundImageKey)
-//
-////            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
-////            outImageRelative = newLayerComposite.outputImage
-//
-////            lastToRender = newLayerComposite
-////            allLayersCombine.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
-////            newLayerComposite.setValue(currentOutImage, forKey: kCIInputBackgroundImageKey)
-////            currentOutImage = newLayerComposite.outputImage
-//            
-////            newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
-////            outImageRelative = newLayerComposite.outputImage
-//            if i == 0 {
-//                //First
-//                textCompositeOrNil = newLayerComposite
-//            }
-////            print("Composite \(outImageRelative?.extent)")
-//        }
-
 
         //iphoneOverlayComposite
-        return (compositeBackColor, iphoneOverlayComposite, textCompositeOrNil, lastToRender, multVideoTransform)
+        return (compositeBackColor, iphoneOverlayComposite, nil, nil, multVideoTransform)
     }
     
     
-    func textCompositeFilter(_ renderOptions: RenderOptions, text: String, layerPos: CGPoint, color: UIColor, fontSize: CGFloat, fontWeight: UIFont.Weight, textRotation: CGFloat) -> (CIFilter, CGRect, CGPoint)? {
+    func textCompositeFilter(_ renderOptions: RenderOptions, txtLayerInfo: RenderTextLayer) -> (CIFilter, CGRect, CGPoint)? {
         
+        //, layerPos: CGPoint, color: UIColor, fontSize: CGFloat, fontWeight: UIFont.Weight, textRotation: CGFloat
+    let text = txtLayerInfo.textString
+    let layerPos = txtLayerInfo.coordinates
+//    color: UIColor(txtLayerInfo.textColor),
+    let fontSize = txtLayerInfo.textFontSize
+    let fontWeight = txtLayerInfo.textFontWeight
+    let textRotation = txtLayerInfo.textRotation
 //        let fontSize: CGFloat = renderOptions.overlayTextFontSize
 //        let text = renderOptions.overlayText
-//        let color = UIColor(renderOptions.overlayTextColor)
-        
+        let color = UIColor(txtLayerInfo.textColor)
+        let fontKern = txtLayerInfo.textKerning
+        let tracking = txtLayerInfo.textTrackingStyle
 //        let fontWeight = renderOptions.overlayTextFontWeight
+        let paraphStyle = NSMutableParagraphStyle()
+        let txtShadowFx = NSShadow()
+        txtShadowFx.shadowColor = UIColor.black
+        txtShadowFx.shadowBlurRadius = renderOptions.shadowRadius
+        txtShadowFx.shadowOffset = CGSize(width: renderOptions.shadowOffset.x, height: renderOptions.shadowOffset.y)
+//        txtShadowFx.fullscree  = true
+        paraphStyle.lineSpacing = txtLayerInfo.textLineSpacing
+        
+    
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
-            .foregroundColor: color
+            .foregroundColor: color,
+//            .tracking : tracking,
+            .kern : fontKern,
+            .paragraphStyle : paraphStyle,
+            .ligature : 2,
+            .strikethroughColor : UIColor.orange,
+//            .strokeWidth: 0.59,
+//            .strokeColor: UIColor.orange,
+                .underlineColor: UIColor.blue,
+            .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
+            .strikethroughStyle : txtLayerInfo.textStrikeStyle?.rawValue ?? .none, // txtLayerInfo.textStrikeStyle?.rawValue ?? 0,
+            .shadow : txtShadowFx,
+            .baselineOffset: 0
+//            .textEffect : txtLayerInfo.textTrackingEffect?.rawValue ?? []
         ]
+        
         let attributedString = NSAttributedString(string: text, attributes: attributes)
         
         // Create a CIImage from the attributed string
@@ -273,6 +260,7 @@ class VideoComposer {
         var selExtent: CGRect?
         var offS: CGPoint?
         
+        /// After device layers
         for i in 0..<renderOptions.textLayers.count {
             
             let txtLayerInfo = renderOptions.textLayers[i]
@@ -305,15 +293,17 @@ class VideoComposer {
                 combineImg.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
 
                 outImageRelative = combineImg.outputImage
+                
             } else {
                 
                 guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions,
-                                                                              text: textStr,
-                                                                              layerPos: txtLayerInfo.coordinates,
-                                                                              color: UIColor(txtLayerInfo.textColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8)),
-                                                                              fontSize: txtLayerInfo.textFontSize,
-                                                                              fontWeight: txtLayerInfo.textFontWeight,
-                                                                              textRotation: txtLayerInfo.textRotation
+                                                                              txtLayerInfo: txtLayerInfo
+//                                                                              text: textStr,
+//                                                                              layerPos: txtLayerInfo.coordinates,
+//                                                                              color: UIColor(txtLayerInfo.textColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8)),
+//                                                                              fontSize: txtLayerInfo.textFontSize,
+//                                                                              fontWeight: txtLayerInfo.textFontWeight,
+//                                                                              textRotation: txtLayerInfo.textRotation
                 ) else { print("error text filt"); continue; }
                 
                 newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
@@ -535,12 +525,13 @@ class VideoComposer {
                 if txtLayerInfo.zPosition == .behind { continue }
                 
                 guard let (newLayerComposite, _, _) = self.textCompositeFilter(renderOptions,
-                                                                               text: txtLayerInfo.textString,
-                                                                               layerPos: txtLayerInfo.coordinates,
-                                                                               color: UIColor(txtLayerInfo.textColor),
-                                                                               fontSize: txtLayerInfo.textFontSize,
-                                                                               fontWeight: txtLayerInfo.textFontWeight,
-                                                                               textRotation: txtLayerInfo.textRotation
+                                                                               txtLayerInfo: txtLayerInfo
+//                                                                               text: txtLayerInfo.textString,
+//                                                                               layerPos: txtLayerInfo.coordinates,
+//                                                                               color: UIColor(txtLayerInfo.textColor),
+//                                                                               fontSize: txtLayerInfo.textFontSize,
+//                                                                               fontWeight: txtLayerInfo.textFontWeight,
+//                                                                               textRotation: txtLayerInfo.textRotation
                 ) else { print("error text filt"); continue; }
                 
                 newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
