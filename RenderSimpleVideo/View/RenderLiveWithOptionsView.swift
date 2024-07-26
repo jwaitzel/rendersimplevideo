@@ -12,7 +12,7 @@ import PhotosUI
 
 struct RenderLiveWithOptionsView: View {
     
-    @State private var showOptions: Bool = true
+    @State private var showOptions: Bool = false
     
     enum OptionsGroup: String, CaseIterable {
         case Video
@@ -201,8 +201,8 @@ struct RenderLiveWithOptionsView: View {
 
                             VStack {
                                 
-//                                VideoInfo()
-//                                    .opacity(showOptions ? 1 : 0)
+                                VideoInfo()
+                                    .opacity(showOptions ? 1 : 0)
                                 
                                 OptionsEditorView()
                                     .opacity(showOptions ? 1 : 0)
@@ -309,26 +309,78 @@ struct RenderLiveWithOptionsView: View {
     }
     
     
-    @State private var selectedToolbarItemIdx: Int? = 0
-    
+    @State private var selectedVideoToolbarItemIdx: Int? = 0
+    @State private var selectedTextToolbarItemIdx: Int? = 0
+
+    @ViewBuilder
+    func BlenderStyleTextToolbar() -> some View {
+        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text",                     "arrow.up.and.down.and.arrow.left.and.right"
+        ]
+        VStack(spacing: 0.0) {
+            
+            
+            ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
+                var isSel = idx == selectedTextToolbarItemIdx
+                    
+                Button {
+                    if isSel {
+                        selectedTextToolbarItemIdx = nil
+                        self.reloadOnlyThumbnail()
+                        return
+                    }
+                    selectedTextToolbarItemIdx = idx
+                    self.reloadOnlyThumbnail()
+                } label: {
+                    Image(systemName: toolBarOptionsItemsTitles[idx])
+                }
+                .foregroundStyle(.primary)
+                .frame(width: 44, height: 44)
+                .background {
+                    Rectangle()
+                        .foregroundStyle(Color.black.opacity(0.2))
+                        .overlay {
+                            if isSel {
+                                Color.accentColor.opacity(0.5)
+                            }
+                        }
+                }
+                
+
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+        .padding(.trailing, 8)
+        .padding(.top, 8)
+        .onChange(of: selectedTextToolbarItemIdx, perform: { value in
+            if let newValue = value {
+                if  newValue == 0 {
+                    deselectLayer()
+                }
+            }
+            if value == nil {
+                deselectLayer()
+            }
+        })
+    }
+
     @ViewBuilder
     func BlenderStyleToolbar() -> some View {
-        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text",                     "arrow.up.and.down.and.arrow.left.and.right",
+        let toolBarOptionsItemsTitles = [                     "arrow.up.and.down.and.arrow.left.and.right",
                                          "arrow.up.backward.and.arrow.down.forward"
         ]
         VStack(spacing: 0.0) {
             
             
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
-                var isSel = idx == selectedToolbarItemIdx
+                var isSel = idx == selectedVideoToolbarItemIdx
                     
                 Button {
                     if isSel {
-                        selectedToolbarItemIdx = nil
+                        selectedVideoToolbarItemIdx = nil
                         self.reloadOnlyThumbnail()
                         return
                     }
-                    selectedToolbarItemIdx = idx
+                    selectedVideoToolbarItemIdx = idx
                     self.reloadOnlyThumbnail()
                 } label: {
                     Image(systemName: toolBarOptionsItemsTitles[idx])
@@ -357,7 +409,7 @@ struct RenderLiveWithOptionsView: View {
     @State private var nativeVideoSize: CGSize = .zero
     @State private var videoSizeMB: CGFloat = 0.0
     @State private var videoInfoFPS: CGFloat = 0.0
-    
+    @State private var videoInfoName: String = "" //"REPPlay_Final17123128"
 
     @ViewBuilder
     func VideoInfo() -> some View {
@@ -367,18 +419,10 @@ struct RenderLiveWithOptionsView: View {
                 Text("Tuesday • 23 Jul 2024 • 21:59")
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Button {
-                    
-                } label: {
-                    Text("Adjust")
-                        
-                }
-                .foregroundStyle(.primary.opacity(0.8))
-                .opacity(0)
             }
             .padding(.horizontal, 12)
-            
-            Text("REPPlay_Final17123128")
+                        
+            Text(videoInfoName)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
@@ -417,7 +461,9 @@ struct RenderLiveWithOptionsView: View {
                 VStack(spacing: 4) {
                     Text("No information")
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("\(natSizeStr) • 15 MB")
+                    
+                    let totMbSize = String(format: "%i MB", Int(videoSizeMB))
+                    Text("\(natSizeStr) • \(totMbSize)")
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
                 }
@@ -554,7 +600,7 @@ struct RenderLiveWithOptionsView: View {
         guard let defaultThumb = self.renderOptions.selectedVideoThumbnail else { print("no thmb"); return }
         let selectFrame = defaultThumb
         
-        let isSelForVide = optionsGroup == .Video && selectedToolbarItemIdx != nil
+        let isSelForVide = optionsGroup == .Video && selectedVideoToolbarItemIdx != nil
         let isSelForLayer = optionsGroup == .Text && AppState.shared.selIdx != nil
         print("is sel one \(isSelForVide) isSelForLayer \(isSelForLayer)")
         //selectedEditingTextIdx
@@ -723,7 +769,7 @@ struct RenderLiveWithOptionsView: View {
                     }
                 }
                 .overlay {
-                    if selectedToolbarItemIdx == nil {
+                    if selectedVideoToolbarItemIdx == nil {
                         Rectangle()
                             .foregroundStyle(.black.opacity(0.2))
                     }
@@ -770,7 +816,7 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.scaleVideo += ((value) * (renderOptions.renderSize.width / sqSize ) * 0.5)
                     reloadPreviewPlayerWithTimer()
                 })
-                .allowsHitTesting(selectedToolbarItemIdx != nil)
+                .allowsHitTesting(selectedVideoToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleToolbar()
                 })
@@ -816,6 +862,10 @@ struct RenderLiveWithOptionsView: View {
             reloadOnlyThumbnail()
             self.reloadPreviewPlayerWithTimer()
         })
+        .onChange(of: renderOptions.selectediPhoneColor) { newVal in
+            renderOptions.selectediPhoneOverlay = newVal.image()
+            self.reloadOnlyThumbnail()
+        }
         .padding(.bottom, 120.0)
         .padding(.top, 16)
     }
@@ -921,67 +971,67 @@ struct RenderLiveWithOptionsView: View {
     @ViewBuilder
     func OptionsEditorView() -> some View {
         VStack {
-//
-//            Text("Mockup")
-//                .font(.subheadline)
-//                .fontWeight(.semibold)
-//                .foregroundStyle(.primary)
-//                .frame(maxWidth: .infinity, alignment: .leading)
-//                .padding(.horizontal, 12)
-//                .padding(.bottom, 12)
-//
-//            HStack(spacing: 0.0) {
-//                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
-//                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
-//
-//                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
-//
-//                    let valSel = MockupStyle.allCases[idx]
-//                    let isSel = mockupStyleSelected == valSel
-//                    Button {
-//                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-//                            idxBottomSelected = idx
-//                        }
-//                        withAnimation(.linear(duration: 0.23)) {
-//                            mockupStyleSelected = valSel
-//                        }
-//
-//                    } label: {
-//                        let tt = stylesTitles[idx]
-//                        let stI = styleIcons[idx]
-//                        VStack(spacing: 4) {
-//                            Image(systemName: stI)
-//                                .font(.largeTitle)
-//                                .fontWeight(.ultraLight)
-//
-//                            Text(tt)
-//                                .font(.caption2)
-//                                .fontWeight(.semibold)
-//                        }
-//                        .overlay(alignment: .bottom) {
-//                            if idxBottomSelected == idx {
-//                                Rectangle()
-//                                    .foregroundStyle(.primary.opacity(0.8))
-//                                    .frame(height: 1)
-//                                    .offset(y: 12)
-//                                    .padding(.horizontal, 0)
-//                                    .matchedGeometryEffect(id: "styleSel", in: animation)
-//                            }
-//                        }
-//
-//                    }
-//                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
-//                    .frame(maxWidth: .infinity)
-//                }
-//            }
-//            .overlay(alignment: .bottom) {
-//                Rectangle()
-//                    .foregroundStyle(.secondary.opacity(0.4))
-//                    .frame(height: 1)
-//                    .offset(y: 12)
-//                    .padding(.horizontal, 12)
-//            }
-//            .padding(.bottom, 32)
+
+            Text("Mockup")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
+
+            HStack(spacing: 0.0) {
+                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
+                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
+
+                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
+
+                    let valSel = MockupStyle.allCases[idx]
+                    let isSel = mockupStyleSelected == valSel
+                    Button {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                            idxBottomSelected = idx
+                        }
+                        withAnimation(.linear(duration: 0.23)) {
+                            mockupStyleSelected = valSel
+                        }
+
+                    } label: {
+                        let tt = stylesTitles[idx]
+                        let stI = styleIcons[idx]
+                        VStack(spacing: 4) {
+                            Image(systemName: stI)
+                                .font(.largeTitle)
+                                .fontWeight(.ultraLight)
+
+                            Text(tt)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                        }
+                        .overlay(alignment: .bottom) {
+                            if idxBottomSelected == idx {
+                                Rectangle()
+                                    .foregroundStyle(.primary.opacity(0.8))
+                                    .frame(height: 1)
+                                    .offset(y: 12)
+                                    .padding(.horizontal, 0)
+                                    .matchedGeometryEffect(id: "styleSel", in: animation)
+                            }
+                        }
+
+                    }
+                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .foregroundStyle(.secondary.opacity(0.4))
+                    .frame(height: 1)
+                    .offset(y: 12)
+                    .padding(.horizontal, 12)
+            }
+            .padding(.bottom, 32)
             
             switch self.mockupStyleSelected {
             case .simple:
@@ -1050,7 +1100,7 @@ struct RenderLiveWithOptionsView: View {
                         .stroke(Color.primary.opacity(0.8), lineWidth: 1)
                 }
                 .overlay {
-                    if selectedToolbarItemIdx == nil {
+                    if selectedTextToolbarItemIdx == nil {
                         Rectangle()
                             .foregroundStyle(.black.opacity(0.2))
                     }
@@ -1058,13 +1108,7 @@ struct RenderLiveWithOptionsView: View {
                 .overlay(alignment: .bottom) {
                     if currentTxtLayer != nil {
                         Button {
-                            currentTxtLayer = nil
-                            AppState.shared.selIdx = nil
-                            
-                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1, execute: {
-                                self.reloadPreviewPlayer()
-                                self.reloadOnlyThumbnail()
-                            })
+                            deselectLayer()
                         } label: {
                             Text("Done")
                         }
@@ -1169,16 +1213,16 @@ struct RenderLiveWithOptionsView: View {
 //                    let relAbs = CGPointMake(onDragTextLayerPos.x * minSquareHeight - minSquareHeight / 2.0, onDragTextLayerPos.y * minSquareHeight - minSquareHeight / 2.0)
                     // 3
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .stroke(.blue, lineWidth: 2.0)
+                        .stroke(.orange.opacity(0.8), lineWidth: 2.0)
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
                         .opacity(isDraggingIcon ? 1 : 0)
 //                        .offset(x: relAbs.x, y: relAbs.y)
 
                 }
-                .allowsHitTesting(selectedToolbarItemIdx != nil)
+                .allowsHitTesting(selectedTextToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
-                    BlenderStyleToolbar()
+                    BlenderStyleTextToolbar()
                 })
 
             if let idx = AppState.shared.selIdx {
@@ -1209,7 +1253,6 @@ struct RenderLiveWithOptionsView: View {
                                         .foregroundStyle(Color.gray)
                                         .opacity(0.5)
                                 }
-//                                .clipShape(Capsule(style: .continuous))
                         }
                         .alignmentGuide(.bottom) { d in
                             d[.top]
@@ -1283,13 +1326,11 @@ struct RenderLiveWithOptionsView: View {
 //                            self.selectedEditingTextIdx = idx
 //                            self.focusedField = .text
                             if isSel {
-                                AppState.shared.selIdx = nil
-                                currentTxtLayer = nil
-                                reloadOnlyThumbnail()
+                                deselectLayer()
                                 return
                             }
-                            currentTxtLayer = layerText
                             
+                            currentTxtLayer = layerText
                             didCreateNew = false
                             
                             // Select frame
@@ -1306,6 +1347,17 @@ struct RenderLiveWithOptionsView: View {
                 .frame(height: 400)
         }
         
+    }
+    
+    func deselectLayer() {
+        
+        currentTxtLayer = nil
+        AppState.shared.selIdx = nil
+        
+        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1, execute: {
+//            self.reloadPreviewPlayer()
+            self.reloadOnlyThumbnail()
+        })
     }
     
     func createDraggingIconTextOverlay() {
@@ -1429,6 +1481,33 @@ struct RenderLiveWithOptionsView: View {
                     .onTapGesture {}
             }
             
+            HStack {
+                Text("Edit")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .frame(width: 120, alignment: .trailing)
+
+                Spacer()
+                Button {
+                    self.currentEditing = renderOptions.textLayers[selIdx].textString
+                    self.selectedEditingTextIdx = selIdx
+                    self.focusedField = .text
+                } label: {
+                    Image(systemName: "character.cursor.ibeam")
+                        .font(.system(size: 13, weight: .bold))
+                        .padding(8)
+                        .background {
+                            Circle()
+                                .foregroundStyle(.ultraThinMaterial)
+                        }
+                        .offset(x: 2)
+                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                }
+                .foregroundStyle(Color.primary.opacity(0.6))
+
+            }
+            .frame(maxWidth: .infinity)
             
             BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
           
@@ -1523,10 +1602,9 @@ struct RenderLiveWithOptionsView: View {
             self.selectedEditingTextIdx = self.renderOptions.textLayers.count
             AppState.shared.selIdx = self.selectedEditingTextIdx
             self.renderOptions.textLayers.append(newLayerText)
-            
+            self.selectedTextToolbarItemIdx = 1
             self.reloadPreviewPlayer()
         }
-        
         
         currentTxtLayer = newLayerText
         print("drag add sticker end \(coordinatesForRender)")
@@ -1580,12 +1658,17 @@ struct RenderLiveWithOptionsView: View {
                     Label("Edit", systemImage: "character.cursor.ibeam")
                 }
                 
-//                Button {
-////                    showRequestFeatureForm = true
-//                } label: {
-//                    Label("Request Feature", systemImage: "star.bubble")
-//                }
+                Button {
+                    
+                    if idx == AppState.shared.selIdx {
+                        self.deselectLayer()
+                    }
+                    renderOptions.textLayers.remove(at: idx)
 
+                } label: {
+                    Label("Delete", systemImage: "xmark")
+                }
+                
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 18, weight: .bold))
@@ -1731,20 +1814,25 @@ struct RenderLiveWithOptionsView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         
-                        ButtonFormatDevices("iphone", "Black", true) {
-                            
+                        let selColOptn = renderOptions.selectediPhoneColor
+                        let isSelB = renderOptions.selectediPhoneColor == .black
+                        ButtonFormatDevices("iphone", "Black", isSelB) {
+                            renderOptions.selectediPhoneColor = .black
                         }
                         
-                        ButtonFormatDevices("iphone", "Blue", false) {
-                            
+                        let isSelBl = renderOptions.selectediPhoneColor == .blue
+                        ButtonFormatDevices("iphone", "Blue", isSelBl) {
+                            renderOptions.selectediPhoneColor = .blue
                         }
                         
-                        ButtonFormatDevices("iphone", "Natural", false) {
-                            
+                        let isSelNa = renderOptions.selectediPhoneColor == .natural
+                        ButtonFormatDevices("iphone", "Natural", isSelNa) {
+                            renderOptions.selectediPhoneColor = .natural
                         }
                         
-                        ButtonFormatDevices("iphone", "White", false) {
-                            
+                        let isSelW = renderOptions.selectediPhoneColor == .white
+                        ButtonFormatDevices("iphone", "White", isSelW) {
+                            renderOptions.selectediPhoneColor = .white
                         }
                         
                     }
@@ -1912,15 +2000,18 @@ struct RenderLiveWithOptionsView: View {
                 generator.appliesPreferredTrackTransform = true
                 generator.maximumSize = thumbSize
 
+                
                 let imgPrevTime: CMTime = .zero
                 let cgImage = try await generator.image(at: imgPrevTime).image
                 guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
                 let thumbnail = UIImage(cgImage: colorCorrectedImage)
                 await MainActor.run {
                     
+                    updateVideoInfo(videoAsset)
+
                     self.renderOptions.selectedVideoThumbnail = thumbnail
                     self.renderOptions.selectedVideoURL = itemVideoURL
-                    self.renderOptions.videoDuration = videoAsset.duration.seconds
+
                     let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
                     self.renderOptions.selectedFiltered = filteredImg
                     self.frameZeroImage = filteredImg
@@ -1983,21 +2074,39 @@ struct RenderLiveWithOptionsView: View {
 
     }
     
+    func updateVideoInfo(_ asset: AVURLAsset) {
+        
+        if let videoTrack = asset.tracks(withMediaType: .video).first {
+            self.nativeVideoSize = videoTrack.naturalSize
+            self.videoInfoFPS = CGFloat(videoTrack.nominalFrameRate)
+        }
+
+        let result = try? asset.url.resourceValues(forKeys: [URLResourceKey.fileSizeKey])
+
+        if let result = result as? URLResourceValues {
+            let resValues = (result.allValues[URLResourceKey.fileSizeKey] as? NSNumber)?.intValue ?? 0
+            print("resValues \(resValues)")
+            videoSizeMB = CGFloat(resValues) / 1024.0 / 1024.0
+        }
+        videoInfoName = asset.url.lastPathComponent
+
+        self.renderOptions.videoDuration = asset.duration.seconds
+
+    }
+    
     func setDefaultData() {
         //uiux-short
         //uiux-black-sound //uiux-black-sound
         self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-test2", withExtension: "mov")
         
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
-        if let loadedNativeVideoSize = asset.tracks(withMediaType: .video).first?.naturalSize {
-            self.nativeVideoSize = loadedNativeVideoSize
-        }
+        
+        updateVideoInfo(asset)
+//        var result: AnyObject?
+        
         
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
-//        generator.maximumSize = thumbSize
-
-        self.renderOptions.videoDuration = asset.duration.seconds
         
         Task {
             
@@ -2005,7 +2114,6 @@ struct RenderLiveWithOptionsView: View {
             let cgImage = try await generator.image(at: imgPrevTime).image
             guard let colorCorrectedImage = cgImage.copy(colorSpace: CGColorSpaceCreateDeviceRGB()) else { return }
             let thumbnail = UIImage(cgImage: colorCorrectedImage)
-            
 
             await MainActor.run {
                 self.renderOptions.selectedVideoThumbnail = thumbnail
@@ -2014,33 +2122,35 @@ struct RenderLiveWithOptionsView: View {
                 self.frameZeroImage = filteredImg
             }
             
-            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
-                
-                let coordinatesForRender = CGPointMake(0.5, 0.5)
-
-                let newLayerText = RenderTextLayer()
-                newLayerText.coordinates = coordinatesForRender
-                newLayerText.textString = String(format: "hey")
-                newLayerText.zPosition = .infront
-                
-//                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
-                AppState.shared.selIdx = 0
-                
-                self.currentTxtLayer = newLayerText
-                
-                /// New Text layer
-    //            addNewTextLayer(coordinatesForRender)
-
-                self.renderOptions.textLayers.append(newLayerText)
-
+            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1) {
                 self.reloadPreviewPlayer()
-
             }
         }
 
         
     }
 }
+/// debug layer
+//
+//                let coordinatesForRender = CGPointMake(0.5, 0.5)
+//
+//                let newLayerText = RenderTextLayer()
+//                newLayerText.coordinates = coordinatesForRender
+//                newLayerText.textString = String(format: "hey")
+//                newLayerText.zPosition = .infront
+//
+////                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
+//                AppState.shared.selIdx = 0
+//
+//                self.currentTxtLayer = newLayerText
+//
+//                /// New Text layer
+//    //            addNewTextLayer(coordinatesForRender)
+//
+//                self.renderOptions.textLayers.append(newLayerText)
+//
+//                self.reloadPreviewPlayer()
+//
 
 struct VideoPlayerView: UIViewControllerRepresentable {
     var player: AVPlayer

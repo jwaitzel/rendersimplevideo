@@ -276,12 +276,22 @@ class VideoComposer {
             let textStr = txtLayerInfo.textString
             
             /// Replace with image pre-order
-            if textStr == "/pa" {
+            if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" {
                 
-                print("is code")
+//                print("is code")
                 
                 let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
-                let appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
+                var appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
+                if textStr == "/pab" {
+                    appPreImgURL = Bundle.main.url(forResource: "preb", withExtension: "png")!
+                }
+                else if textStr == "/app" {
+                    appPreImgURL = Bundle.main.url(forResource: "appdwnld", withExtension: "png")!
+                }
+                else if textStr == "/apb" {
+                    appPreImgURL = Bundle.main.url(forResource: "appb", withExtension: "png")!
+                }
+                
                 let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
                 let preCIImg: CIImage =  CIImage(image: appPreImg)!
                 
@@ -291,6 +301,7 @@ class VideoComposer {
                 let scaledImgToFit = 0.3
                 let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
                 
+                let transfSize = CGSize(width: preCIImg.extent.width * scaledImgToFit, height: preCIImg.extent.height * scaledImgToFit)
                 let allTranslation = textCenterBeforeRot.concatenating(.init(translationX: posRelToAbs.x, y: posRelToAbs.y))
 
                 let allTransf = CGAffineTransform(scaleX: scaledImgToFit, y: scaledImgToFit).concatenating(allTranslation)
@@ -299,16 +310,18 @@ class VideoComposer {
 
                 outImageRelative = combineImg.outputImage
                 
+                if selected == .layer {
+                    if selIdx {
+                        selExtent = CGRect(origin: .init(x: layerPos.x, y: layerPos.y), size: transfSize)
+                        offS = posRelToAbs
+                        AppState.shared.selTextExt = selExtent
+                    }
+                }
+                
             } else {
                 
                 guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions,
                                                                               txtLayerInfo: txtLayerInfo
-//                                                                              text: textStr,
-//                                                                              layerPos: txtLayerInfo.coordinates,
-//                                                                              color: UIColor(txtLayerInfo.textColor.opacity(selIdx ? 1 : AppState.shared.selIdx == nil ? 1.0 : 0.8)),
-//                                                                              fontSize: txtLayerInfo.textFontSize,
-//                                                                              fontWeight: txtLayerInfo.textFontWeight,
-//                                                                              textRotation: txtLayerInfo.textRotation
                 ) else { print("error text filt"); continue; }
                 
                 newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
