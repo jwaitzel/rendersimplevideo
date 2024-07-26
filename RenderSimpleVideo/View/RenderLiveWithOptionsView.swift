@@ -528,7 +528,7 @@ struct RenderLiveWithOptionsView: View {
     
     @ViewBuilder
     func ShadowOptionsView() -> some View {
-        VStack {
+        VStack(spacing: 12) {
             
             let renderAspect = renderOptions.renderSize.width / renderOptions.renderSize.height
             let minSquareHeight: CGFloat = UIScreen.main.bounds.width
@@ -544,20 +544,22 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 1, style: .continuous)
-                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
-                }
-                .padding(.bottom, 16)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
+                .padding(.bottom, 24)
 
+
+            VStack(spacing: 12) {
+                BlenderStyleInput(value: $renderOptions.shadowOffset.x, title: "Shadow X", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.shadowOffset.y, title: "Y", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
+                
+                BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
+            }
+            .padding(.trailing, 12)
             
-            BlenderStyleInput(value: $renderOptions.shadowOffset.x, title: "Shadow X", unitStr: "px")
-            
-            BlenderStyleInput(value: $renderOptions.shadowOffset.y, title: "Y", unitStr: "px")
-            
-            BlenderStyleInput(value: $renderOptions.shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
-            
-            BlenderStyleInput(value: $renderOptions.shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
         }
         .onChange(of: (renderOptions.shadowOffset.x +
                        renderOptions.shadowOffset.y +
@@ -726,7 +728,7 @@ struct RenderLiveWithOptionsView: View {
 
     @ViewBuilder
     func VideoLayersOptionsView() -> some View {
-        VStack(spacing: 10.0) {
+        VStack(spacing: 12.0) {
             
             Text("Background Color")
                 .font(.subheadline)
@@ -756,7 +758,7 @@ struct RenderLiveWithOptionsView: View {
                 .padding(.horizontal, 12)
                 
             
-            let sqSize = UIScreen.main.bounds.width - 8.0
+            let sqSize = UIScreen.main.bounds.width - 0.0
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
                 .frame(height: sqSize)
@@ -768,15 +770,15 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-                .overlay {
-                    if selectedVideoToolbarItemIdx == nil {
-                        Rectangle()
-                            .foregroundStyle(.black.opacity(0.2))
-                    }
-                }
+//                .overlay {
+//                    if selectedVideoToolbarItemIdx == nil {
+//                        Rectangle()
+//                            .foregroundStyle(.black.opacity(0.2))
+//                    }
+//                }
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
-                .padding(.horizontal, 4)
+//                .padding(.horizontal, 0)
                 .padding(.bottom, 16)
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
@@ -822,40 +824,43 @@ struct RenderLiveWithOptionsView: View {
                 })
 
 
-            
-            BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
-                .padding(.bottom, 32)
+            VStack(spacing: 12) {
+                BlenderStyleInput(value: $renderOptions.scaleVideo, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+                    .padding(.bottom, 32)
+                
+                BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1, minValue: 100)
+                
+                let durWSpeed = (renderOptions.videoDuration ?? 60.0) / (renderOptions.videoSpeed / 100)
+                let durFloatStr = String(format: "Duration %.1fs", durWSpeed)
+                Text(durFloatStr)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 240, alignment: .trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.bottom, 32)
 
-            
-            BlenderStyleInput(value: $renderOptions.videoSpeed, title: "Video Speed", unitStr: "%", unitScale: 0.1, minValue: 100)
-            
-            let durWSpeed = (renderOptions.videoDuration ?? 60.0) / (renderOptions.videoSpeed / 100)
-            let durFloatStr = String(format: "Duration %.1fs", durWSpeed)
-            Text(durFloatStr)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
-                .frame(width: 220, alignment: .trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.bottom, 32)
 
+                FormatLayerOptionButtons()
 
-            FormatLayerOptionButtons()
+                RenderDimensionsOptionButtons()
+                
+                DeviceLayerOptionButtons()
+                
+                DeviceColorLayerOptionButtons()
+                
+                Text("Custom Record Indicator Overlay")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 16)
+                    .padding(.bottom, 32)
 
-            RenderDimensionsOptionButtons()
-            
-            DeviceLayerOptionButtons()
-            
-            DeviceColorLayerOptionButtons()
-            
-            Text("Custom Record Indicator Overlay")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.top, 16)
-                .padding(.bottom, 32)
+            }
+            .padding(.trailing, 12)
+
 
         }
         .onChange(of: renderOptions.scaleVideo, perform: { _ in
@@ -1055,8 +1060,10 @@ struct RenderLiveWithOptionsView: View {
                         .padding(.top, 16)
                 case .Text:
                     TextLayerOptions()
+                        .padding(.top, 16)
                 case .Shadow:
                     ShadowOptionsView()
+                        .padding(.top, 16)
                 default:
                     EmptyView()
                 }
@@ -1070,7 +1077,7 @@ struct RenderLiveWithOptionsView: View {
     @ViewBuilder
     func TextLayerOptions() -> some View {
         
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             
             Text("Tap to add text")
                 .font(.subheadline)
@@ -1095,16 +1102,7 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 1, style: .continuous)
-                        .stroke(Color.primary.opacity(0.8), lineWidth: 1)
-                }
-                .overlay {
-                    if selectedTextToolbarItemIdx == nil {
-                        Rectangle()
-                            .foregroundStyle(.black.opacity(0.2))
-                    }
-                }
+
                 .overlay(alignment: .bottom) {
                     if currentTxtLayer != nil {
                         Button {
@@ -1120,6 +1118,8 @@ struct RenderLiveWithOptionsView: View {
                     }
                     
                 }
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .padding(.bottom, 16)
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
@@ -2097,7 +2097,7 @@ struct RenderLiveWithOptionsView: View {
     func setDefaultData() {
         //uiux-short
         //uiux-black-sound //uiux-black-sound
-        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-test2", withExtension: "mov")
+        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mov")
         
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
         
@@ -2170,6 +2170,11 @@ struct VideoPlayerView: UIViewControllerRepresentable {
     }
 }
 
+
+#Preview {
+    RenderLiveWithOptionsView()
+        .preferredColorScheme(.light)
+}
 
 #Preview {
     RenderLiveWithOptionsView()

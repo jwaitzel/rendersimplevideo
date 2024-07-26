@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		380349C72C500004009ED7F9 /* RenderLiveWithOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */; };
-		380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */; };
 		38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */; };
 		38137FD72C4B02B900D66D12 /* SendRequestFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */; };
 		38259C562C4A7A66006D52AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 38259C552C4A7A66006D52AF /* StoreKit.framework */; };
@@ -20,12 +19,11 @@
 		3844A1242C400E4E002FE045 /* MiscExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1232C400E4E002FE045 /* MiscExtensions.swift */; };
 		3844A1262C40559A002FE045 /* VideoTransferable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A1252C40559A002FE045 /* VideoTransferable.swift */; };
 		3844A12B2C4127A7002FE045 /* RenderOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3844A12A2C4127A7002FE045 /* RenderOptions.swift */; };
-		3858B11E2C53986D00D3AFB2 /* uiux-test2.mov in Resources */ = {isa = PBXBuildFile; fileRef = 3858B11D2C53986D00D3AFB2 /* uiux-test2.mov */; };
 		3858B1202C53C24F00D3AFB2 /* RenderTextLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3858B11F2C53C24F00D3AFB2 /* RenderTextLayer.swift */; };
 		3858B1282C54466900D3AFB2 /* appb.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B1272C54466900D3AFB2 /* appb.png */; };
 		3858B12A2C54468900D3AFB2 /* appdwnld.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B1292C54468900D3AFB2 /* appdwnld.png */; };
 		3858B12C2C5446AA00D3AFB2 /* preb.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B12B2C5446AA00D3AFB2 /* preb.png */; };
-		388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */ = {isa = PBXBuildFile; fileRef = 388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */; };
+		3858B12E2C54505300D3AFB2 /* uiux-show3.mov in Resources */ = {isa = PBXBuildFile; fileRef = 3858B12D2C54505300D3AFB2 /* uiux-show3.mov */; };
 		388D91DB2C46961400ABFC8E /* ResultRenderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 388D91DA2C46961400ABFC8E /* ResultRenderView.swift */; };
 		388D91E12C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DF2C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png */; };
 		388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DE2C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png */; };
@@ -37,19 +35,16 @@
 		389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 389466F92C3BE15900EA4632 /* Assets.xcassets */; };
 		389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 389466FC2C3BE15900EA4632 /* Preview Assets.xcassets */; };
 		389467042C3BE16B00EA4632 /* RenderVideoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */; };
-		38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 38AE63E42C419400002CE2C6 /* uiux-short.mp4 */; };
 		38B56F202C3EF2540056227B /* VideoOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */; };
 		38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 38B56F212C3EF3D10056227B /* screencap1.jpg */; };
 		38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F232C3EF9090056227B /* VideoComposer.swift */; };
 		38B56F272C3F17C30056227B /* BlenderStyleInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38B56F262C3F17C30056227B /* BlenderStyleInput.swift */; };
 		38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */; };
-		38DCDCCA2C51847A00F51B9C /* ui2-show.mov in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCC92C51847A00F51B9C /* ui2-show.mov */; };
 		38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCCB2C51FF1B00F51B9C /* pre4.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderLiveWithOptionsView.swift; sourceTree = "<group>"; };
-		380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "end-result-old1.mp4"; sourceTree = "<group>"; };
 		38137FD42C4AE33D00D66D12 /* StoreKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitManager.swift; sourceTree = "<group>"; };
 		38137FD62C4B02B900D66D12 /* SendRequestFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRequestFormView.swift; sourceTree = "<group>"; };
 		38259C552C4A7A66006D52AF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -62,12 +57,11 @@
 		3844A1232C400E4E002FE045 /* MiscExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscExtensions.swift; sourceTree = "<group>"; };
 		3844A1252C40559A002FE045 /* VideoTransferable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTransferable.swift; sourceTree = "<group>"; };
 		3844A12A2C4127A7002FE045 /* RenderOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderOptions.swift; sourceTree = "<group>"; };
-		3858B11D2C53986D00D3AFB2 /* uiux-test2.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "uiux-test2.mov"; sourceTree = "<group>"; };
 		3858B11F2C53C24F00D3AFB2 /* RenderTextLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderTextLayer.swift; sourceTree = "<group>"; };
 		3858B1272C54466900D3AFB2 /* appb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appb.png; sourceTree = "<group>"; };
 		3858B1292C54468900D3AFB2 /* appdwnld.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appdwnld.png; sourceTree = "<group>"; };
 		3858B12B2C5446AA00D3AFB2 /* preb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = preb.png; sourceTree = "<group>"; };
-		388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "uiux-black-sound.mov"; sourceTree = "<group>"; };
+		3858B12D2C54505300D3AFB2 /* uiux-show3.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "uiux-show3.mov"; sourceTree = "<group>"; };
 		388D91DA2C46961400ABFC8E /* ResultRenderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultRenderView.swift; sourceTree = "<group>"; };
 		388D91DC2C46A3FA00ABFC8E /* iPhone 15 Pro - Black Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Black Titanium - Portrait.png"; sourceTree = "<group>"; };
 		388D91DD2C46A3FA00ABFC8E /* iPhone 15 Pro - Blue Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Blue Titanium - Portrait.png"; sourceTree = "<group>"; };
@@ -80,13 +74,11 @@
 		389466F92C3BE15900EA4632 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		389466FC2C3BE15900EA4632 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderVideoEditorView.swift; sourceTree = "<group>"; };
-		38AE63E42C419400002CE2C6 /* uiux-short.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "uiux-short.mp4"; sourceTree = "<group>"; };
 		38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoOptionsView.swift; sourceTree = "<group>"; };
 		38B56F212C3EF3D10056227B /* screencap1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = screencap1.jpg; sourceTree = "<group>"; };
 		38B56F232C3EF9090056227B /* VideoComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComposer.swift; sourceTree = "<group>"; };
 		38B56F262C3F17C30056227B /* BlenderStyleInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlenderStyleInput.swift; sourceTree = "<group>"; };
 		38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerTest.swift; sourceTree = "<group>"; };
-		38DCDCC92C51847A00F51B9C /* ui2-show.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "ui2-show.mov"; sourceTree = "<group>"; };
 		38DCDCCB2C51FF1B00F51B9C /* pre4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pre4.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -217,11 +209,7 @@
 				3858B12B2C5446AA00D3AFB2 /* preb.png */,
 				3858B1292C54468900D3AFB2 /* appdwnld.png */,
 				3858B1272C54466900D3AFB2 /* appb.png */,
-				388D91D82C43DE2A00ABFC8E /* uiux-black-sound.mov */,
-				38AE63E42C419400002CE2C6 /* uiux-short.mp4 */,
-				380349C82C5022FF009ED7F9 /* end-result-old1.mp4 */,
-				38DCDCC92C51847A00F51B9C /* ui2-show.mov */,
-				3858B11D2C53986D00D3AFB2 /* uiux-test2.mov */,
+				3858B12D2C54505300D3AFB2 /* uiux-show3.mov */,
 				388D91E02C46A3FA00ABFC8E /* iPhone15Pro-Portrait */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
 			);
@@ -294,16 +282,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3858B11E2C53986D00D3AFB2 /* uiux-test2.mov in Resources */,
 				38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */,
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
+				3858B12E2C54505300D3AFB2 /* uiux-show3.mov in Resources */,
 				38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */,
 				389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */,
-				38AE63E52C419400002CE2C6 /* uiux-short.mp4 in Resources */,
-				380349C92C5022FF009ED7F9 /* end-result-old1.mp4 in Resources */,
-				388D91D92C43DE2A00ABFC8E /* uiux-black-sound.mov in Resources */,
 				3858B12A2C54468900D3AFB2 /* appdwnld.png in Resources */,
-				38DCDCCA2C51847A00F51B9C /* ui2-show.mov in Resources */,
 				388D91E12C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png in Resources */,
 				3858B1282C54466900D3AFB2 /* appb.png in Resources */,
 				388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */,
@@ -490,7 +474,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.05;
+				MARKETING_VERSION = 1.38;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -527,7 +511,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.05;
+				MARKETING_VERSION = 1.38;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

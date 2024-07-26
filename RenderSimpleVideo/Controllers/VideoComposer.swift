@@ -278,8 +278,6 @@ class VideoComposer {
             /// Replace with image pre-order
             if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" {
                 
-//                print("is code")
-                
                 let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
                 var appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
                 if textStr == "/pab" {
@@ -537,23 +535,53 @@ class VideoComposer {
             
             /// Overlay layers
             var outImageRelative = lastFilter?.outputImage
+            
             for i in 0..<renderOptions.textLayers.count {
                 
                 let txtLayerInfo = renderOptions.textLayers[i]
                 if txtLayerInfo.zPosition == .behind { continue }
                 
-                guard let (newLayerComposite, _, _) = self.textCompositeFilter(renderOptions,
-                                                                               txtLayerInfo: txtLayerInfo
-//                                                                               text: txtLayerInfo.textString,
-//                                                                               layerPos: txtLayerInfo.coordinates,
-//                                                                               color: UIColor(txtLayerInfo.textColor),
-//                                                                               fontSize: txtLayerInfo.textFontSize,
-//                                                                               fontWeight: txtLayerInfo.textFontWeight,
-//                                                                               textRotation: txtLayerInfo.textRotation
-                ) else { print("error text filt"); continue; }
-                
-                newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
-                outImageRelative = newLayerComposite.outputImage
+                let textStr = txtLayerInfo.textString
+                if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" {
+                    
+                    let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
+                    var appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
+                    if textStr == "/pab" {
+                        appPreImgURL = Bundle.main.url(forResource: "preb", withExtension: "png")!
+                    }
+                    else if textStr == "/app" {
+                        appPreImgURL = Bundle.main.url(forResource: "appdwnld", withExtension: "png")!
+                    }
+                    else if textStr == "/apb" {
+                        appPreImgURL = Bundle.main.url(forResource: "appb", withExtension: "png")!
+                    }
+                    
+                    let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
+                    let preCIImg: CIImage =  CIImage(image: appPreImg)!
+                    
+                    let layerPos = txtLayerInfo.coordinates
+                    let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
+
+                    let scaledImgToFit = 0.3
+                    let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
+                    
+                    let transfSize = CGSize(width: preCIImg.extent.width * scaledImgToFit, height: preCIImg.extent.height * scaledImgToFit)
+                    let allTranslation = textCenterBeforeRot.concatenating(.init(translationX: posRelToAbs.x, y: posRelToAbs.y))
+
+                    let allTransf = CGAffineTransform(scaleX: scaledImgToFit, y: scaledImgToFit).concatenating(allTranslation)
+                    combineImg.setValue(preCIImg.transformed(by: allTransf), forKey: kCIInputImageKey )
+                    combineImg.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+
+                    outImageRelative = combineImg.outputImage
+                    
+                } else {
+                    guard let (newLayerComposite, _, _) = self.textCompositeFilter(renderOptions,
+                                                                                   txtLayerInfo: txtLayerInfo
+                    ) else { print("error text filt"); continue; }
+                    
+                    newLayerComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+                    outImageRelative = newLayerComposite.outputImage
+                }
             }
 
 //            print("sourceImg \(sourceImg.extent)")
