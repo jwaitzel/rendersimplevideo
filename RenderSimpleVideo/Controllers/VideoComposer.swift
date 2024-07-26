@@ -177,14 +177,15 @@ class VideoComposer {
 //        let fontWeight = renderOptions.overlayTextFontWeight
         let paraphStyle = NSMutableParagraphStyle()
         let txtShadowFx = NSShadow()
-        txtShadowFx.shadowColor = UIColor.black
-        txtShadowFx.shadowBlurRadius = renderOptions.shadowRadius
-        txtShadowFx.shadowOffset = CGSize(width: renderOptions.shadowOffset.x, height: renderOptions.shadowOffset.y)
+        txtShadowFx.shadowColor = UIColor(txtLayerInfo.shadowColor).withAlphaComponent(txtLayerInfo.shadowOpacity)
+        txtShadowFx.shadowBlurRadius = txtLayerInfo.shadowRadius
+        txtShadowFx.shadowOffset = CGSize(width: txtLayerInfo.shadowOffset.x, height: txtLayerInfo.shadowOffset.y)
 //        txtShadowFx.fullscree  = true
         paraphStyle.lineSpacing = txtLayerInfo.textLineSpacing
         
-        let imgAttach = UIImage(systemName: "xmark")!
-        let itemAttach = NSTextAttachment(image: imgAttach)
+//        let imgAttach = UIImage(systemName: "xmark")!
+//        let itemAttach = NSTextAttachment(image: imgAttach)
+        
         let strkWidth: CGFloat = (txtLayerInfo.textStrokeWidth / 100)
         let strokeColor: UIColor = UIColor(txtLayerInfo.textStrokeColor)
         let attributes: [NSAttributedString.Key: Any] = [
@@ -202,7 +203,7 @@ class VideoComposer {
             .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
             .shadow : txtShadowFx,
             .baselineOffset: tracking,
-            .attachment : itemAttach
+//            .attachment : itemAttach
 //            .textEffect : txtLayerInfo.textTrackingEffect?.rawValue ?? []
         ]
         
@@ -256,10 +257,18 @@ class VideoComposer {
         for i in 0..<renderOptions.textLayers.count {
             
             let selIdx: Bool = AppState.shared.selIdx == i
-
             let txtLayerInfo = renderOptions.textLayers[i]
+            
             if txtLayerInfo.zPosition == .behind {
-                print("Step continue")
+                print("Step continue but select if selected")
+                if selIdx {
+                    guard let (_, ext, off) = textCompositeFilter(renderOptions, txtLayerInfo: txtLayerInfo ) else { print("error text filt"); continue; }
+                    print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
+                    selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
+                    offS = off
+                    AppState.shared.selTextExt = selExtent
+                }
+                
                 continue
             }
             
@@ -308,9 +317,9 @@ class VideoComposer {
                 
                 if selected == .layer {
                     if selIdx {
+                        print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
                         selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
                         offS = off
-                        print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
                         AppState.shared.selTextExt = selExtent
                     }
                 }

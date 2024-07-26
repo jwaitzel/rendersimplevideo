@@ -321,6 +321,7 @@ struct RenderLiveWithOptionsView: View {
             
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
                 var isSel = idx == selectedToolbarItemIdx
+                    
                 Button {
                     if isSel {
                         selectedToolbarItemIdx = nil
@@ -1167,8 +1168,8 @@ struct RenderLiveWithOptionsView: View {
 //                    let extAsp = extSize.width / extSize.height
 //                    let relAbs = CGPointMake(onDragTextLayerPos.x * minSquareHeight - minSquareHeight / 2.0, onDragTextLayerPos.y * minSquareHeight - minSquareHeight / 2.0)
                     // 3
-                    Rectangle()
-                        .stroke(.blue, lineWidth: 4.0)
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .stroke(.blue, lineWidth: 2.0)
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
                         .opacity(isDraggingIcon ? 1 : 0)
@@ -1179,23 +1180,6 @@ struct RenderLiveWithOptionsView: View {
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleToolbar()
                 })
-//                .padding(.bottom, 24.0)
-//                .overlay(alignment: .bottom) {
-//                    if selectedEditingTextIdx != nil {
-//                        Button {
-//                            
-//                        } label: {
-//                            Text("Done")
-//                        }
-//                        .foregroundColor(.primary)
-//                        .background {
-//                            foregroundStyle(.ultraThinMaterial)
-//                        }
-//                        .frame(maxWidth: .infinity, alignment: .trailing)
-//                    }
-//                    
-//                }
-        
 
             if let idx = AppState.shared.selIdx {
 
@@ -1209,6 +1193,31 @@ struct RenderLiveWithOptionsView: View {
 
                 //+ renderOptions.textLayers[idx].textStrikeStyle.rawValue
                 SelectedLayerFontOptionsView(selIdx: idx)
+                    .padding(.bottom, 32)
+                    .overlay(alignment: .bottomTrailing) {
+                        let moreStr = showExtraFontOptions ? "Less" : "More"
+                        Button {
+                            showExtraFontOptions = !showExtraFontOptions
+                        } label: {
+                            Text(moreStr)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 16)
+                                .background {
+                                    Capsule(style: .continuous)
+                                        .foregroundStyle(Color.gray)
+                                        .opacity(0.5)
+                                }
+//                                .clipShape(Capsule(style: .continuous))
+                        }
+                        .alignmentGuide(.bottom) { d in
+                            d[.top]
+                        }
+                        .foregroundColor(.primary.opacity(0.9))
+                    }
+
+                    .padding(.trailing, 12)
                 /// Update on change values
                     .onChange(of: (self.renderOptions.textLayers[idx].textFontSize + renderOptions.textLayers[idx].textFontWeight.rawValue +
                                    renderOptions.textLayers[idx].textRotation + renderOptions.textLayers[idx].textKerning + renderOptions.textLayers[idx].textLineSpacing +
@@ -1236,6 +1245,19 @@ struct RenderLiveWithOptionsView: View {
                     .onChange(of: self.renderOptions.textLayers[idx].zPosition,  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
+                    .onChange(of: self.renderOptions.textLayers[idx].shadowColor,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].shadowOpacity,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].shadowRadius,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: (self.renderOptions.textLayers[idx].shadowOffset.x + self.renderOptions.textLayers[idx].shadowOffset.y),  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+
 //                renderOptions.textLayers[selIdx].textZPosition
             }
             
@@ -1252,6 +1274,7 @@ struct RenderLiveWithOptionsView: View {
             VStack(spacing: 4) {
                 ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
                     let layerText = renderOptions.textLayers[idx]
+                    let isSel = AppState.shared.selIdx == idx
                     CellLayerView(layerText, idx)
                         .contentShape(.rect)
                         .onTapGesture {
@@ -1259,6 +1282,12 @@ struct RenderLiveWithOptionsView: View {
 //                            self.currentEditing = layerText.textString
 //                            self.selectedEditingTextIdx = idx
 //                            self.focusedField = .text
+                            if isSel {
+                                AppState.shared.selIdx = nil
+                                currentTxtLayer = nil
+                                reloadOnlyThumbnail()
+                                return
+                            }
                             currentTxtLayer = layerText
                             
                             didCreateNew = false
@@ -1381,73 +1410,105 @@ struct RenderLiveWithOptionsView: View {
     }
 
 
+    @State private var showExtraFontOptions: Bool = false
     @ViewBuilder
     func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
         
-
-        ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
-            Text("Color")
-                .frame(width: 120, alignment: .trailing)
-        })
-        .background {
-            Rectangle()
-                .foregroundStyle(.clear)
-                .onTapGesture {}
-        }
-
-
-//        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textTrackingStyle, title: "Tracking", unitStr: "px", minValue: 0)
-        
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
-      
-        WeightTextOptions(selIdx)
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
-
-        UnderlineTextOptions(selIdx)
-
-        WeightStrikeTextOptions(selIdx)
-        
-//        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textStrokeWidth, title: "Stroke Width", unitStr: ".px", unitScale: 1.0, minValue: -600, maxValue: 600)
-
-        ColorPicker(selection: $renderOptions.textLayers[selIdx].textStrokeColor, label: {
-            Text("Stroke")
-                .frame(width: 120, alignment: .trailing)
-        })
-        .background {
-            Rectangle()
-                .foregroundStyle(.clear)
-                .onTapGesture {}
-        }
-
-
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
-        
-
-        HStack {
-            Text("Z Position")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(width: 120, alignment: .trailing)
+        VStack(spacing: 16) {
             
-
-            Picker("", selection: $renderOptions.textLayers[selIdx].zPosition) {
-                ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
-                    let iPhoneColor = TextZPosition.allCases[idx]
-                    Text(iPhoneColor.rawValue)
-                        .tag(iPhoneColor)
-                }
+            ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
+                Text("Color")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .frame(width: 120, alignment: .trailing)
+            })
+            .background {
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .onTapGesture {}
             }
-            .pickerStyle(.segmented)
+            
+            
+            BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+          
+            WeightTextOptions(selIdx)
+            
+            BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
+
+    //        let showExtraFontOptions = false
+            if showExtraFontOptions {
+                UnderlineTextOptions(selIdx)
+
+                WeightStrikeTextOptions(selIdx)
+                
+        //        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textStrokeWidth, title: "Stroke Width", unitStr: ".px", unitScale: 1.0, minValue: -600, maxValue: 600)
+
+                ColorPicker(selection: $renderOptions.textLayers[selIdx].textStrokeColor, label: {
+                    Text("Stroke")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                        .frame(width: 120, alignment: .trailing)
+                })
+                .background {
+                    Rectangle()
+                        .foregroundStyle(.clear)
+                        .onTapGesture {}
+                }
+
+
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
+
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.x, title: "Shadow X", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.y, title: "Y", unitStr: "px")
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
+
+                ColorPicker(selection: $renderOptions.textLayers[selIdx].shadowColor, label: {
+                    Text("Color")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                        .frame(width: 120, alignment: .trailing)
+                })
+                .background {
+                    Rectangle()
+                        .foregroundStyle(.clear)
+                        .onTapGesture {}
+                }
+                
+                HStack {
+                    Text("Z Position")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                        .frame(width: 120, alignment: .trailing)
+                    
+
+                    Picker("", selection: $renderOptions.textLayers[selIdx].zPosition) {
+                        ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
+                            let iPhoneColor = TextZPosition.allCases[idx]
+                            Text(iPhoneColor.rawValue)
+                                .tag(iPhoneColor)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+            }
+
         }
+
         
+
     }
     
     
@@ -1456,7 +1517,7 @@ struct RenderLiveWithOptionsView: View {
         let newLayerText = RenderTextLayer()
         newLayerText.coordinates = coordinatesForRender
         newLayerText.textString = String(format: "")
-        newLayerText.zPosition = .behind
+        newLayerText.zPosition = .infront
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now()) {
             self.selectedEditingTextIdx = self.renderOptions.textLayers.count
@@ -1499,15 +1560,16 @@ struct RenderLiveWithOptionsView: View {
                 self.focusedField = .text
             } label: {
                 Image(systemName: "character.cursor.ibeam")
-                    .font(.system(size: 18, weight: .bold))
-                    .padding(13)
+                    .font(.system(size: 15, weight: .bold))
+                    .padding(10)
                     .background {
                         Circle()
                             .foregroundStyle(.ultraThinMaterial)
                     }
                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
             }
-            
+            .foregroundStyle(Color.primary.opacity(0.6))
+
             Menu {
                 Button {
                     self.currentEditing = layerText.textString
@@ -1601,9 +1663,7 @@ struct RenderLiveWithOptionsView: View {
                 RoundedRectangle(cornerRadius: 1, style: .continuous)
                     .stroke(Color.primary, lineWidth: 1.0)
                     .frame(width: iconSize.width, height: iconSize.height)
-//                    .border(.green)
                     .frame(width: 80, height: 80)
-//                    .border(.orange)
                 
                 let titleStr = String(format: "%i x %i", Int(size.width), Int(size.height))
                 Text(titleStr)
@@ -1961,7 +2021,7 @@ struct RenderLiveWithOptionsView: View {
                 let newLayerText = RenderTextLayer()
                 newLayerText.coordinates = coordinatesForRender
                 newLayerText.textString = String(format: "hey")
-                newLayerText.zPosition = .behind
+                newLayerText.zPosition = .infront
                 
 //                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
                 AppState.shared.selIdx = 0

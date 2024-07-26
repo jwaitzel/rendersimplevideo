@@ -34,6 +34,16 @@ class RenderTextLayer: ObservableObject {
     @Published var textStrokeWidth: CGFloat = 0.0
     @Published var textStrokeColor: Color = .black
     
+//    shadowOffset
+//    shadowRadius
+//    shadowOpacity
+    
+    @Published var shadowOffset: CGPoint = .zero
+    @Published var shadowRadius: CGFloat = 4.0
+    @Published var shadowOpacity: CGFloat = 80
+
+    @Published var shadowColor: Color = .black
+
 //    overlayTextFontSize
 //    overlayTextFontWeight
 }

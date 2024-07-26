@@ -37,6 +37,7 @@ struct BlenderStyleInput: View {
                         value = applyMinMax(value + $0)
                         startValue = value
                     }
+                    
                     HStack {
                         Button {
                             opOffX(-1)
