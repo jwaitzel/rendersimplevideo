@@ -120,19 +120,7 @@ class VideoComposer {
         shadowBlurFilter.setValue(shadowRoundedRectGenerator.outputImage, forKey: kCIInputImageKey)
         shadowBlurFilter.setValue(renderOptions.shadowRadius , forKey: kCIInputRadiusKey)
         
-        /// Behind Video Text old way
         var outImageRelative: CIImage? = backColorGenerator.outputImage
-//        if !renderOptions.overlayText.isEmpty && renderOptions.overlayTextZPosition == .behind {
-//            guard let (textComposite, _, _) = textCompositeFilter(renderOptions, text: renderOptions.overlayText,
-//                                                                  layerPos: renderOptions.overlayTextOffset,
-//                                                                  color: UIColor(renderOptions.overlayTextColor),
-//                                                                  fontSize: renderOptions.overlayTextFontSize,
-//                                                                  fontWeight: renderOptions.overlayTextFontWeight,
-//                                                                  textRotation: renderOptions.overlayTextRotation
-//            ) else { print("error text filt"); return nil }
-//            textComposite.setValue(backColorGenerator.outputImage, forKey: kCIInputBackgroundImageKey)
-//            outImageRelative = textComposite.outputImage
-//        }
         
         /// Text layers behind
         for i in 0..<renderOptions.textLayers.count {
@@ -195,7 +183,10 @@ class VideoComposer {
 //        txtShadowFx.fullscree  = true
         paraphStyle.lineSpacing = txtLayerInfo.textLineSpacing
         
-    
+        let imgAttach = UIImage(systemName: "xmark")!
+        let itemAttach = NSTextAttachment(image: imgAttach)
+        let strkWidth: CGFloat = (txtLayerInfo.textStrokeWidth / 100)
+        let strokeColor: UIColor = UIColor(txtLayerInfo.textStrokeColor)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
             .foregroundColor: color,
@@ -203,14 +194,15 @@ class VideoComposer {
             .kern : fontKern,
             .paragraphStyle : paraphStyle,
             .ligature : 2,
-            .strikethroughColor : UIColor.orange,
-//            .strokeWidth: 0.59,
-//            .strokeColor: UIColor.orange,
-                .underlineColor: UIColor.blue,
-            .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
+            .strokeWidth: strkWidth, //,
+            .strokeColor: strokeColor,
+            .strikethroughColor : strokeColor,
             .strikethroughStyle : txtLayerInfo.textStrikeStyle?.rawValue ?? .none, // txtLayerInfo.textStrikeStyle?.rawValue ?? 0,
+            .underlineColor: strokeColor,
+            .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
             .shadow : txtShadowFx,
-            .baselineOffset: 0
+            .baselineOffset: tracking,
+            .attachment : itemAttach
 //            .textEffect : txtLayerInfo.textTrackingEffect?.rawValue ?? []
         ]
         
@@ -263,10 +255,14 @@ class VideoComposer {
         /// After device layers
         for i in 0..<renderOptions.textLayers.count {
             
-            let txtLayerInfo = renderOptions.textLayers[i]
-            if txtLayerInfo.zPosition == .behind { continue }
-            
             let selIdx: Bool = AppState.shared.selIdx == i
+
+            let txtLayerInfo = renderOptions.textLayers[i]
+            if txtLayerInfo.zPosition == .behind {
+                print("Step continue")
+                continue
+            }
+            
             
             let textStr = txtLayerInfo.textString
             

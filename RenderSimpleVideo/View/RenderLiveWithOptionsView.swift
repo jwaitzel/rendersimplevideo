@@ -1212,7 +1212,9 @@ struct RenderLiveWithOptionsView: View {
                 /// Update on change values
                     .onChange(of: (self.renderOptions.textLayers[idx].textFontSize + renderOptions.textLayers[idx].textFontWeight.rawValue +
                                    renderOptions.textLayers[idx].textRotation + renderOptions.textLayers[idx].textKerning + renderOptions.textLayers[idx].textLineSpacing +
-                                   renderOptions.textLayers[idx].textTrackingStyle
+                                   renderOptions.textLayers[idx].textTrackingStyle +
+                                   renderOptions.textLayers[idx].textStrokeWidth
+                                   
                                   ),  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
@@ -1228,6 +1230,13 @@ struct RenderLiveWithOptionsView: View {
                     .onChange(of: self.renderOptions.textLayers[idx].textTrackingEffect,  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
+                    .onChange(of: self.renderOptions.textLayers[idx].textStrokeColor,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                    .onChange(of: self.renderOptions.textLayers[idx].zPosition,  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+//                renderOptions.textLayers[selIdx].textZPosition
             }
             
             
@@ -1330,8 +1339,8 @@ struct RenderLiveWithOptionsView: View {
                 .foregroundStyle(.primary)
                 .frame(width: 120, alignment: .trailing)
 
-            let strikeOptions: [NSUnderlineStyle?] = [nil, .single, .double, .thick, .byWord]
-            let strikeOptTitle: [String] = ["no", "single", "double", "thick", "word"]
+            let strikeOptions: [NSUnderlineStyle?] = [nil, .single, .double, .thick]
+            let strikeOptTitle: [String] = ["no", "single", "double", "thick"]
                         
             Picker("", selection: $renderOptions.textLayers[selIdx].textStrikeStyle) {
                 ForEach(0..<strikeOptions.count, id: \.self) { idx in
@@ -1376,56 +1385,6 @@ struct RenderLiveWithOptionsView: View {
     func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
         
 
-//        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textTrackingStyle, title: "Tracking", unitStr: "px", minValue: 0)
-        
-        UnderlineTextOptions(selIdx)
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
-      
-
-        WeightTextOptions(selIdx)
-        
-        WeightStrikeTextOptions(selIdx)
-        
-//        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
-        
-        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
-        
-        HStack {
-            Text("Text Effect")
-                .frame(width: 120, alignment: .trailing)
-
-            let txtFxtsTitles: [String] = ["none", "letter pressed"]
-            let effxtOptns: [NSAttributedString.TextEffectStyle?] = [nil, .letterpressStyle]
-            Picker("", selection: $renderOptions.textLayers[selIdx].textTrackingEffect) {
-                ForEach(0..<effxtOptns.count, id: \.self) { idx in
-                    let iPhoneColor = effxtOptns[idx]
-                    let fxTitle = txtFxtsTitles[idx]
-                    Text(fxTitle)
-                        .tag(iPhoneColor)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-
-        HStack {
-            Text("Z Position")
-                .frame(width: 120, alignment: .trailing)
-
-            Picker("", selection: $renderOptions.textLayers[selIdx].textZPosition) {
-                ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
-                    let iPhoneColor = TextZPosition.allCases[idx]
-                    Text(iPhoneColor.rawValue)
-                        .tag(iPhoneColor)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
-        
         ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
             Text("Color")
                 .frame(width: 120, alignment: .trailing)
@@ -1436,6 +1395,59 @@ struct RenderLiveWithOptionsView: View {
                 .onTapGesture {}
         }
 
+
+//        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textTrackingStyle, title: "Tracking", unitStr: "px", minValue: 0)
+        
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+      
+        WeightTextOptions(selIdx)
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
+
+        UnderlineTextOptions(selIdx)
+
+        WeightStrikeTextOptions(selIdx)
+        
+//        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textStrokeWidth, title: "Stroke Width", unitStr: ".px", unitScale: 1.0, minValue: -600, maxValue: 600)
+
+        ColorPicker(selection: $renderOptions.textLayers[selIdx].textStrokeColor, label: {
+            Text("Stroke")
+                .frame(width: 120, alignment: .trailing)
+        })
+        .background {
+            Rectangle()
+                .foregroundStyle(.clear)
+                .onTapGesture {}
+        }
+
+
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
+        
+        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+        
+
+        HStack {
+            Text("Z Position")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .frame(width: 120, alignment: .trailing)
+            
+
+            Picker("", selection: $renderOptions.textLayers[selIdx].zPosition) {
+                ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
+                    let iPhoneColor = TextZPosition.allCases[idx]
+                    Text(iPhoneColor.rawValue)
+                        .tag(iPhoneColor)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+        
     }
     
     
@@ -1444,9 +1456,7 @@ struct RenderLiveWithOptionsView: View {
         let newLayerText = RenderTextLayer()
         newLayerText.coordinates = coordinatesForRender
         newLayerText.textString = String(format: "")
-        newLayerText.zPosition = .infront
-        
-        
+        newLayerText.zPosition = .behind
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now()) {
             self.selectedEditingTextIdx = self.renderOptions.textLayers.count
@@ -1951,7 +1961,7 @@ struct RenderLiveWithOptionsView: View {
                 let newLayerText = RenderTextLayer()
                 newLayerText.coordinates = coordinatesForRender
                 newLayerText.textString = String(format: "hey")
-                newLayerText.zPosition = .infront
+                newLayerText.zPosition = .behind
                 
 //                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
                 AppState.shared.selIdx = 0

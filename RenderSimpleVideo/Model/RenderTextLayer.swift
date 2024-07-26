@@ -24,14 +24,16 @@ class RenderTextLayer: ObservableObject {
     @Published var textRotation: CGFloat = 0
     @Published var textKerning: CGFloat = 0
     @Published var textLineSpacing: CGFloat = 0
-    @Published var textZPosition: TextZPosition = .behind
-    @Published var textFontSize: CGFloat = 44
+    @Published var textFontSize: CGFloat = 64
     @Published var textFontWeight: UIFont.Weight = .bold
     @Published var textStrikeStyle: NSUnderlineStyle? = nil //NSUnderlineStyle.single//.none
     @Published var textUnderlineStyle: NSUnderlineStyle? = nil //NSUnderlineStyle.single//.none
     @Published var textTrackingStyle: CGFloat = 0
     @Published var textTrackingEffect: NSAttributedString.TextEffectStyle? = .letterpressStyle
 
+    @Published var textStrokeWidth: CGFloat = 0.0
+    @Published var textStrokeColor: Color = .black
+    
 //    overlayTextFontSize
 //    overlayTextFontWeight
 }
