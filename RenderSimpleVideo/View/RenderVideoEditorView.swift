@@ -288,7 +288,7 @@ struct RenderVideoEditorView: View {
             self.renderState = .rendering
         }
         
-        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, progress: { perc in
+        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, renderCustomCodeByKey: [:], progress: { perc in
             DispatchQueue.main.async {
                 self.renderProgress = perc
             }

@@ -277,6 +277,7 @@ class VideoComposer {
             }
             
             
+            //Replace custom codes with images
             let textStr = txtLayerInfo.textString
             let containsInCode = allKeys.contains(textStr)
             
@@ -294,23 +295,15 @@ class VideoComposer {
                 else if textStr == "/apb" {
                     appPreImgURL = Bundle.main.url(forResource: "appb", withExtension: "png")!
                 }
+                
                 let appPreImg: UIImage = containsInCode ? UIImage(data: renderCustomCodeByKey[textStr]!)! : UIImage(contentsOfFile: appPreImgURL.path)!
-                
-//                if containsInCode  {
-//                    if let data = renderCustomCodeByKey[textStr] {
-//                        appPreImg = UIImage(data: data)
-//                    }
-//                    
-//                }
-                
-                
                 
                 let preCIImg: CIImage =  CIImage(image: appPreImg)!
                 
                 let layerPos = txtLayerInfo.coordinates
                 let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
 
-                let scaledImgToFit = 0.3
+                let scaledImgToFit = 0.3 // Values for apples imgs, add custom
                 let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
                 
                 let transfSize = CGSize(width: preCIImg.extent.width * scaledImgToFit, height: preCIImg.extent.height * scaledImgToFit)
@@ -406,10 +399,11 @@ class VideoComposer {
 
     }
     
-    func createCompositionOnlyForPreview(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping (AVPlayerItem?, Error?) -> Void) {
+    func createCompositionOnlyForPreview(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, renderCustomCodeByKey: [String: Data], progress:@escaping (CGFloat)->(), completion: @escaping (AVPlayerItem?, Error?) -> Void) {
         let startRenderTime = Date()
         
-        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, progress: progress) { compoPair, errorOrNil in
+        print("Did set with keys \(renderCustomCodeByKey)")
+        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, renderCustomCodeByKey: renderCustomCodeByKey, progress: progress) { compoPair, errorOrNil in
             guard let (composition, videoComposition, timeRange) = compoPair else {
                 completion(nil, RenderError.failedCreateComposite)
                 return
@@ -422,11 +416,11 @@ class VideoComposer {
         }
     }
     
-    func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping (Error?) -> Void) {
+    func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, renderCustomCodeByKey: [String: Data], progress:@escaping (CGFloat)->(), completion: @escaping (Error?) -> Void) {
         
         let startRenderTime = Date()
         
-        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, progress: progress) { compoPair, errorOrNil in
+        compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, renderCustomCodeByKey: renderCustomCodeByKey, progress: progress) { compoPair, errorOrNil in
             
             guard let (composition, videoComposition, timeRange) = compoPair else {
                 completion(RenderError.failedCreateComposite)
@@ -471,7 +465,7 @@ class VideoComposer {
         
     }
     
-    func compositionSet(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, progress:@escaping (CGFloat)->(), completion: @escaping ((AVMutableComposition, AVMutableVideoComposition, CMTimeRange)?, Error?) -> Void) -> Void {
+    func compositionSet(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, renderCustomCodeByKey:  [String: Data], progress:@escaping (CGFloat)->(), completion: @escaping ((AVMutableComposition, AVMutableVideoComposition, CMTimeRange)?, Error?) -> Void) -> Void {
         
         
         // Create an AVMutableComposition
@@ -535,7 +529,10 @@ class VideoComposer {
             completion(nil, RenderError.failedCreateComposite)
             return
         }
-
+        
+        let allKeys: [String] = Array(renderCustomCodeByKey.keys)
+        print("render with keys \(allKeys)")
+        
 //        print("Video natural size \(videoTrackSize) videoTransform \(videoTransform) videoPrefferedTransform \(videoPreferredTransform)")
         let mutableVideoComposition = AVMutableVideoComposition(asset: composition) { filteringRequest in
             
@@ -550,13 +547,18 @@ class VideoComposer {
             /// Overlay layers
             var outImageRelative = lastFilter?.outputImage
             
+            //Replace custom codes with images
             for i in 0..<renderOptions.textLayers.count {
                 
                 let txtLayerInfo = renderOptions.textLayers[i]
+                let textStr = txtLayerInfo.textString
+                let containsInCode = allKeys.contains(textStr)
+                print("contains in code\(containsInCode)")
+
                 if txtLayerInfo.zPosition == .behind { continue }
                 
-                let textStr = txtLayerInfo.textString
-                if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" {
+
+                if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" || containsInCode {
                     
                     let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
                     var appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
@@ -570,7 +572,9 @@ class VideoComposer {
                         appPreImgURL = Bundle.main.url(forResource: "appb", withExtension: "png")!
                     }
                     
-                    let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
+                    let appPreImg: UIImage = containsInCode ? UIImage(data: renderCustomCodeByKey[textStr]!)! : UIImage(contentsOfFile: appPreImgURL.path)!
+
+//                    let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
                     let preCIImg: CIImage =  CIImage(image: appPreImg)!
                     
                     let layerPos = txtLayerInfo.coordinates

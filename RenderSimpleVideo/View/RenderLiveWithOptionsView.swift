@@ -272,7 +272,6 @@ struct RenderLiveWithOptionsView: View {
                             DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
                                 self.reloadPreviewPlayer()
                                 self.didCreateNew = false
-                                
                             }
                             
                             self.currentTxtLayer = nil
@@ -516,6 +515,9 @@ struct RenderLiveWithOptionsView: View {
     func selectLastLayerSel() {
         if let selID = self.lasLayerSel {
             AppState.shared.selIdx = selID
+            let layerToMove = self.renderOptions.textLayers[selID]
+            self.currentTxtLayer = layerToMove
+            self.didCreateNew = false
             self.reloadOnlyThumbnail()
         }
     }
@@ -739,8 +741,8 @@ struct RenderLiveWithOptionsView: View {
         guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
         
         let outputURL = URL.temporaryDirectory.appending(path: UUID().uuidString).appendingPathExtension(for: .mpeg4Movie)
-        
-        videoComposer.createCompositionOnlyForPreview(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions) { progressVal in
+        print("reload with data ")
+        videoComposer.createCompositionOnlyForPreview(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, renderCustomCodeByKey: self.imageBycodeKey) { progressVal in
             
         } completion: { playerItem, errorOrNil in
             
@@ -820,7 +822,7 @@ struct RenderLiveWithOptionsView: View {
             self.renderProgress = 0.0
         }
         
-        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, progress: { perc in
+        videoComposer.createAndExportComposition(videoURL: baseVideoURL, outputURL: outputURL, renderOptions: self.renderOptions, renderCustomCodeByKey: self.imageBycodeKey, progress: { perc in
             DispatchQueue.main.async {
                 self.renderProgress = perc
             }
@@ -1352,9 +1354,11 @@ struct RenderLiveWithOptionsView: View {
                                 
                                 return
                             }
-                            /// New Text layer
                             
-                            addNewTextLayer(coordinatesForRender)
+                            /// New Text layer
+                            if selectedTextToolbarItemIdx == 0 {
+                                addNewTextLayer(coordinatesForRender)
+                            }
                             
                         })
                 )
@@ -1866,6 +1870,7 @@ struct RenderLiveWithOptionsView: View {
                     if idx == AppState.shared.selIdx {
                         self.deselectLayer()
                     }
+                    self.currentTxtLayer = nil
                     renderOptions.textLayers.remove(at: idx)
 
                 } label: {
@@ -1974,7 +1979,6 @@ struct RenderLiveWithOptionsView: View {
 //        
         
         self.showSignaturePicker = true
-        
     }
     
     func selectCustomImageData(_ data: Data) {
@@ -1982,12 +1986,16 @@ struct RenderLiveWithOptionsView: View {
         guard let idx = AppState.shared.selIdx else { return; }
         
         let customStr = renderOptions.textLayers[idx].textString
+        
         guard !customStr.isEmpty else { print("empty"); return }
 
         print("Save data \(customStr)")
         imageBycodeKey[customStr] = data
 
         self.reloadOnlyThumbnail()
+        self.reloadPreviewPlayerWithTimer()
+        
+        self.selectedSignatureItems = []
     }
     
     enum FocusedField {
