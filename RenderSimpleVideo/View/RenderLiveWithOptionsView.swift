@@ -338,7 +338,7 @@ struct RenderLiveWithOptionsView: View {
         let xOffsetForLandscape = imgIsPortrait || isSquare ? 0 : -30.0
 //        let window = UIApplication.shared.windows.first
 //        let topPadding = (window?.safeAreaInsets.top ?? 0)
-        let _ = print("scaled  \(onlySqrDebuSize)")
+//        let _ = print("scaled  \(onlySqrDebuSize)")
         ZStack {
             
             Image(uiImage: showNewScreenshotAnimationImage!)

@@ -36,7 +36,7 @@ struct WelcomeSimpleModalView: View {
                         .frame(width: iconSquareSize, height: iconSquareSize)
                     
                     VStack(alignment: .leading) {
-                        Text("No watermark")
+                        Text("Simple & Fast")
                             .fontWeight(.semibold)
 
                         Text("Just select your screen recording and save.")
