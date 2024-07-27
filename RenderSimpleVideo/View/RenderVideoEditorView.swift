@@ -223,18 +223,18 @@ struct RenderVideoEditorView: View {
             .frame(width: 200, height: 200)
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             .overlay {
-                VStack(spacing: 16) {
+                VStack(spacing: 8) {
                     
                     if renderState == .rendering {
                         Text("Rendering...")
                             .font(.subheadline)
 
                         ProgressView(value: self.renderProgress, total: 1.0)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 10)
                             .progressViewStyle(.automatic)
                     } else if renderState == .finish {
                         Image(systemName: "checkmark.circle")
-                            .font(.system(size: 44))
+                            .font(.system(size: 34))
                             .fontWeight(.light)
                             .foregroundStyle(.green)
                     }

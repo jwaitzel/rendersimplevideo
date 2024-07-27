@@ -19,13 +19,12 @@ struct WelcomeSimpleModalView: View {
                     .fontWeight(.semibold)
                 
                 
-                Text("Enhance screen recordings with custom text and phone bezels")
+                Text("beautify your app demos instantly")
                     .font(.subheadline)
             }
             .padding(.horizontal, 24)
             .multilineTextAlignment(.center)
             .padding(.top, 64)
-            
             VStack(alignment: .leading, spacing: 32) {
                 
                 let iconSquareSize: CGFloat = 70

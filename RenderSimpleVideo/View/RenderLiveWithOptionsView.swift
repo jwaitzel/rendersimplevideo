@@ -136,7 +136,6 @@ struct RenderLiveWithOptionsView: View {
                     let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 0) {
-                            
                             HStack {
                                 Rectangle()
                                     .foregroundStyle(.gray.opacity(0.2))
@@ -194,14 +193,11 @@ struct RenderLiveWithOptionsView: View {
                                     .foregroundStyle(.clear)
                                 
                             }
-                            
-                            
-                                .onAppear {
-    //                                let mp4URL = Bundle.main.url(forResource: "end-result-old1", withExtension: "mp4")!
-                                    self.player = AVPlayer()
-                                }
-                                .ignoresSafeArea()
-                                .padding(.top, 64)
+                            .onAppear {
+                                self.player = AVPlayer()
+                            }
+                            .ignoresSafeArea()
+                            .padding(.top, 0)
 
                             if showOptions {
                                 VStack {
@@ -778,11 +774,10 @@ struct RenderLiveWithOptionsView: View {
                 RoundedRectangle(cornerRadius: 4, style: .continuous)
                     .stroke(.primary.opacity(0.2), lineWidth: 0.8)
             }
-            .frame(width: 30, height: 30)
+            .frame(width: 24, height: 24)
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             .overlay {
                 if renderState == .rendering {
-
                     ProgressView(value: self.renderProgress, total: 1.0)
                         .padding(.horizontal, 1)
                         .progressViewStyle(LinearProgressViewStyle())
@@ -791,7 +786,7 @@ struct RenderLiveWithOptionsView: View {
 
                 } else if renderState == .finish {
                     Image(systemName: "checkmark.circle")
-                        .font(.system(size: 20))
+                        .font(.system(size: 18))
                         .fontWeight(.light)
                         .foregroundStyle(.green)
                 }
@@ -881,8 +876,6 @@ struct RenderLiveWithOptionsView: View {
     func VideoLayersOptionsView() -> some View {
         VStack(spacing: 12.0) {
             
-
-            
             Text("Background Color")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -936,16 +929,21 @@ struct RenderLiveWithOptionsView: View {
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
                         .onChanged({ val in
+                            if !isDraggingIcon {
+                                isDraggingIcon = true
+                            }
                             let preValue = val.translation.width * (renderOptions.renderSize.width / sqSize ) + startValueOffX
                             let preValueY = -1.0 * val.translation.height * (renderOptions.renderSize.height / sqSize ) + startValueOffY
 
                             valueOffX = applyMinMax(preValue)
                             valueOffY = applyMinMax(preValueY)
+                            
 //                            print("x value \(valueOffX)")
                         })
                         .onEnded({ _ in
                             startValueOffX = valueOffX
                             startValueOffY = valueOffY
+                            isDraggingIcon = false
                         })
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
@@ -971,6 +969,24 @@ struct RenderLiveWithOptionsView: View {
                     self.renderOptions.scaleVideo += ((value) * (renderOptions.renderSize.width / sqSize ) * 0.5)
                     reloadPreviewPlayerWithTimer()
                 })
+                .overlay {
+                    
+                    let selExtent = AppState.shared.selTextExt ?? CGRect(x: 0, y: 0, width: 200, height: 200)
+                    let extSize = selExtent.size
+                    let selScale: CGFloat = (renderOptions.renderSize.width / sqSize )
+                    
+                    let _ = print("val \(CGAffineTransform.init(translationX: valueOffX, y: valueOffY))")
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .stroke(.clear.opacity(0.8), lineWidth: 2.0)
+                        .overlay {
+                            centerAxisIndicator
+                        }
+                        .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
+                        .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+                        .opacity(isDraggingIcon ? 1 : 0)
+                    //-sqSize/2.0 +
+                        .transformEffect(.init(translationX: valueOffX/selScale, y:(-valueOffY/selScale)))
+                }
                 .allowsHitTesting(selectedVideoToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleToolbar()
@@ -2278,15 +2294,15 @@ struct RenderLiveWithOptionsView: View {
                     .overlay{
                         Text("Rendering")
                             .frame(width: 60)
-                            .font(.system(size: 11))
-                            .offset(y: 20)
+                            .font(.system(size: 10))
+                            .offset(y: 14)
                     }
-//                    .frame(width: 36, height: 36)
+                    .offset(y: -4)
                     .frame(maxWidth: .infinity)
             } else {
                 Button {
                     saveImageAnimated()
-//                    makeVideoWithComposition()
+                    makeVideoWithComposition()
                 } label: {
                     OptionLabel("square.and.arrow.down", "Save")
                 }
@@ -2301,11 +2317,9 @@ struct RenderLiveWithOptionsView: View {
                 .foregroundStyle(.ultraThinMaterial) ////red
                 .ignoresSafeArea()
                 .frame(height: 60)
-                
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .ignoresSafeArea(.keyboard)
-
     }
     
     /// Select from Photos

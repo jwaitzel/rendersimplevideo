@@ -129,13 +129,6 @@ class VideoComposer {
             
             guard let (newLayerComposite, _, _) = textCompositeFilter(renderOptions,
                                                                       txtLayerInfo: txtLayerInfo
-//                                                                      text: txtLayerInfo.textString,
-//                                                                      layerPos: txtLayerInfo.coordinates,
-//                                                                      color: UIColor(txtLayerInfo.textColor),
-//                                                                      fontSize: txtLayerInfo.textFontSize,
-//                                                                      fontWeight: txtLayerInfo.textFontWeight,
-//                                                                      textRotation: txtLayerInfo.textRotation
-
             ) else { print("error text filt"); continue; }
             
             newLayerComposite.setValue(outImageRelative!, forKey: kCIInputBackgroundImageKey)
@@ -367,9 +360,8 @@ class VideoComposer {
             
             let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleStrokeGenerator")!
             
-            
             let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? -30 : 0.0, dy: selected == .phone ? -30 : 0)
-            roundedRectangleGenerator.setValue( centeredInsetRect ?? .zero, forKey: kCIInputExtentKey)
+            roundedRectangleGenerator.setValue(centeredInsetRect ?? .zero, forKey: kCIInputExtentKey)
             roundedRectangleGenerator.setValue(CIColor(color: .orange), forKey: kCIInputColorKey)
             roundedRectangleGenerator.setValue(8.0, forKey: kCIInputRadiusKey)
             roundedRectangleGenerator.setValue(4.0, forKey: kCIInputWidthKey)
@@ -436,7 +428,7 @@ class VideoComposer {
 //            }
             // Set up an AVAssetExportSession to export the composition
             //AVAssetExportPresetMediumQuality
-            guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetLowQuality) else {
+            guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
                 completion(RenderError.failedCreateExportSession)
                 return
             }
