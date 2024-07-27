@@ -303,7 +303,11 @@ class VideoComposer {
                 let layerPos = txtLayerInfo.coordinates
                 let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
 
-                let scaledImgToFit = 0.3 // Values for apples imgs, add custom
+                var scaledImgToFit = 0.3
+                if containsInCode {
+                    scaledImgToFit = txtLayerInfo.transformScale / 100.0
+                }
+
                 let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
                 
                 let transfSize = CGSize(width: preCIImg.extent.width * scaledImgToFit, height: preCIImg.extent.height * scaledImgToFit)
@@ -553,11 +557,10 @@ class VideoComposer {
                 let txtLayerInfo = renderOptions.textLayers[i]
                 let textStr = txtLayerInfo.textString
                 let containsInCode = allKeys.contains(textStr)
-                print("contains in code\(containsInCode)")
+//                print("contains in code\(containsInCode)")
 
                 if txtLayerInfo.zPosition == .behind { continue }
                 
-
                 if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" || containsInCode {
                     
                     let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
@@ -580,7 +583,10 @@ class VideoComposer {
                     let layerPos = txtLayerInfo.coordinates
                     let posRelToAbs = CGPoint(x: layerPos.x * renderOptions.renderSize.width * 1.0, y: (1.0 - layerPos.y) * renderOptions.renderSize.height * 1.0)
 
-                    let scaledImgToFit = 0.3
+                    var scaledImgToFit = 0.3
+                    if containsInCode {
+                        scaledImgToFit = txtLayerInfo.transformScale / 100.0
+                    }
                     let textCenterBeforeRot = CGAffineTransform(translationX: -(preCIImg.extent.width*scaledImgToFit)/2.0, y: -(preCIImg.extent.height*scaledImgToFit)/2.0)
                     
                     let transfSize = CGSize(width: preCIImg.extent.width * scaledImgToFit, height: preCIImg.extent.height * scaledImgToFit)

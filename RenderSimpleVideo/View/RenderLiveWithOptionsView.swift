@@ -12,7 +12,7 @@ import PhotosUI
 
 struct RenderLiveWithOptionsView: View {
     
-    @State private var showOptions: Bool = true
+    @State private var showOptions: Bool = false
     
     enum OptionsGroup: String, CaseIterable {
         case Video
@@ -338,8 +338,8 @@ struct RenderLiveWithOptionsView: View {
         let heightC: CGFloat = iconSquareSide * aspH
         let onlySqrDebuSize = CGSize(width: 120, height: 120)
         let iconSizeFitAspect: CGSize = imgIsPortrait ? CGSize(width: iconSquareSide, height: heightC) : isSquare ? CGSize(width: iconSquareSide, height: iconSquareSide) :  CGSize(width: max(240, iconSquareSide * aspW), height: iconSquareSide)
-        var iconSizeScaled = onlySqrDebuSize //true ?  : CGSize(width: 50, height: 50)
-        
+        var iconSizeScaled = iconSizeFitAspect //true ?  : CGSize(width: 50, height: 50)
+        let xOffsetForLandscape = imgIsPortrait || isSquare ? 0 : -30.0
 //        let window = UIApplication.shared.windows.first
 //        let topPadding = (window?.safeAreaInsets.top ?? 0)
         let _ = print("scaled  \(onlySqrDebuSize)")
@@ -348,25 +348,26 @@ struct RenderLiveWithOptionsView: View {
             Image(uiImage: showNewScreenshotAnimationImage!)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .overlay(content: {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.primary, lineWidth: 4.0)
-                })
+//                .overlay(content: {
+//                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+//                        .stroke(Color.primary, lineWidth: 4.0)
+//                })
                 .overlay {
                     Color.white.opacity(flashAnimation ? 0.0 : 1.0)
                         .ignoresSafeArea()
                 }
                 .frame(width: animateScreenshot ? iconSizeScaled.width : animateFromRect.width,
                        height: animateScreenshot ? iconSizeScaled.height : animateFromRect.height)
-                
                 .clipShape(RoundedRectangle(cornerRadius: animateScreenshot ? 16 : 0, style: .continuous))
+                .shadow(color: .black.opacity(0.2), radius: 4, x: 0.0, y: 0.0)
+                .frame(width: iconSquareSide, height: iconSquareSide)
                 .ignoresSafeArea()
 
         }
         .frame(width: animateScreenshot ? iconSizeScaled.width : animateFromRect.width,
                height: animateScreenshot ? iconSizeScaled.height : animateFromRect.height)
         
-        .offset(x: animateScreenshot ? UIScreen.main.bounds.width * (horizontalSizeClass == .compact ? 0.2 : 0.24)  : 0.0,
+        .offset(x: animateScreenshot ? (UIScreen.main.bounds.width * (horizontalSizeClass == .compact ? 0.2 : 0.24) + xOffsetForLandscape)  : 0.0,
                 y: animateScreenshot ? UIScreen.main.bounds.height * (horizontalSizeClass == .compact ? 0.3 : 0.34) : 0.0)
         
         .offset(x: secondSwipeAnimation ? UIScreen.main.bounds.width * 0.8 : 0)
@@ -733,6 +734,11 @@ struct RenderLiveWithOptionsView: View {
             
             self.player?.replaceCurrentItem(with: playerItem)
             
+//            let recreatePlayer = AVPlayer(playerItem: playerItem)
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
+//                self.player = recreatePlayer
+//                self.player?.play()
+//            })
             reloadOnlyThumbnail()
         }
     }
@@ -875,7 +881,6 @@ struct RenderLiveWithOptionsView: View {
     func VideoLayersOptionsView() -> some View {
         VStack(spacing: 12.0) {
             
-            RenderDimensionsOptionButtons()
 
             
             Text("Background Color")
@@ -991,6 +996,7 @@ struct RenderLiveWithOptionsView: View {
 
                 FormatLayerOptionButtons()
 
+                RenderDimensionsOptionButtons()
                 
                 DeviceLayerOptionButtons()
                 
@@ -1377,6 +1383,9 @@ struct RenderLiveWithOptionsView: View {
                     // 3
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .stroke(.orange.opacity(0.8), lineWidth: 2.0)
+                        .overlay {
+                            centerAxisIndicator
+                        }
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
                         .opacity(isDraggingIcon ? 1 : 0)
@@ -1412,7 +1421,7 @@ struct RenderLiveWithOptionsView: View {
                             if moreFontOptionsStateIdx > maxElm && moreStateDir == 1 {
                                 moreStateDir = -1
                             }
-                            if moreFontOptionsStateIdx < 0 && moreStateDir == -1 {
+                            if moreFontOptionsStateIdx < 1 && moreStateDir == -1 {
                                 moreStateDir = 1
                             }
                         } label: {
@@ -1473,6 +1482,10 @@ struct RenderLiveWithOptionsView: View {
                     .onChange(of: (self.renderOptions.textLayers[idx].shadowOffset.x + self.renderOptions.textLayers[idx].shadowOffset.y),  perform: { value in
                         self.reloadOnlyThumbnail()
                     })
+                    .onChange(of: (self.renderOptions.textLayers[idx].transformScale),  perform: { value in
+                        self.reloadOnlyThumbnail()
+                    })
+                //$renderOptions.textLayers[selIdx].transformScale
 
 //                renderOptions.textLayers[selIdx].textZPosition
             }
@@ -1505,6 +1518,14 @@ struct RenderLiveWithOptionsView: View {
                 .frame(height: 400)
         }
         
+    }
+    
+    var centerAxisIndicator: some View {
+        Rectangle()
+            .stroke(.clear, lineWidth: 2.0)
+            .overlay {
+                BlenderStyleAxisView()
+            }
     }
     
     @State private var lasLayerSel: Int?
@@ -1636,7 +1657,7 @@ struct RenderLiveWithOptionsView: View {
             let isCodeIncluded = allCodeKeys.contains(layerStr)
             
             if isCodeIncluded {
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].transformScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
             } else {
                 ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
                     Text("Color")

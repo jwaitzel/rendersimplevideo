@@ -19,10 +19,10 @@ class RenderTextLayer: ObservableObject {
     @Published var coordinates = CGPoint.zero
     @Published var zPosition: TextZPosition = .behind
 
-    @Published var transformScale: CGFloat = 0
+    @Published var transformScale: CGFloat = 100
 
     
-    @Published var textScale: CGFloat = 100
+//    @Published var textScale: CGFloat = 100
     @Published var textColor: Color = .black
     @Published var textRotation: CGFloat = 0
     @Published var textKerning: CGFloat = 0

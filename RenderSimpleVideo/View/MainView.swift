@@ -35,6 +35,20 @@ struct MainView: View {
         .sheet(isPresented: $showWelcome, content: {
             WelcomeSimpleModalView()
         })
+        .onAppear {
+            if !didShowWelcome {
+                withAnimation(.easeInOut) {
+                    showWelcome = true
+                }
+                didShowWelcome = true
+            } else {
+                /// Reset welcome
+//                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
+//                    didShowWelcome = false
+//                }
+            }
+            
+        }
 
         
     }
