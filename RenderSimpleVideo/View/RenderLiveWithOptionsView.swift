@@ -121,6 +121,8 @@ struct RenderLiveWithOptionsView: View {
     @State private var selectedSignatureItems: [PhotosPickerItem] = []
 
     
+    @State var moreFontOptionsStateIdx: Int = 0
+    
     
     var body: some View {
         
@@ -139,29 +141,7 @@ struct RenderLiveWithOptionsView: View {
                                 Rectangle()
                                     .foregroundStyle(.gray.opacity(0.2))
                                     .frame(width: playerContainerSize, height: playerContainerSize)
-        //                            .overlay {
-        //                                if let player {
-        //                                    VideoPlayerView(player: player)
-        //                                        .scaledToFit()
-        ////                                        .padding(.bottom, 84)
-        //                                }
-        //                            }
                                     .overlay {
-        //                                TabView {
-        //                                    if let rndImg = frameRenderImg {
-        //                                        Image(uiImage: rndImg)
-        //                                            .resizable()
-        //                                            .scaledToFit()
-        //    //                                        .frame(width: 140, height: 140)
-        //                                            .contentShape(.rect)
-        //
-        //                                    }
-        //
-        //
-        //                                }
-        //                                .tabViewStyle(.page(indexDisplayMode: .always))
-        //                                .indexViewStyle(.page(backgroundDisplayMode: .always))
-
                                         if let player {
                                             VideoPlayerView(player: player)
                                                 .scaledToFit()
@@ -569,13 +549,14 @@ struct RenderLiveWithOptionsView: View {
     @State private var videoSizeMB: CGFloat = 0.0
     @State private var videoInfoFPS: CGFloat = 0.0
     @State private var videoInfoName: String = "" //"REPPlay_Final17123128"
-
+    @State private var videoInfoDate:String?
+    
     @ViewBuilder
     func VideoInfo() -> some View {
         
         VStack {
             HStack {
-                Text("Tuesday • 23 Jul 2024 • 21:59")
+                Text(videoInfoDate ?? "no date")
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
             }
@@ -1252,6 +1233,8 @@ struct RenderLiveWithOptionsView: View {
         }
     }
     
+    @State private var moreStateDir: Int = 1
+    
     @ViewBuilder
     func TextLayerOptions() -> some View {
         
@@ -1419,9 +1402,19 @@ struct RenderLiveWithOptionsView: View {
                 SelectedLayerFontOptionsView(selIdx: idx)
                     .padding(.bottom, 32)
                     .overlay(alignment: .bottomTrailing) {
-                        let moreStr = showExtraFontOptions ? "Less" : "More"
+                        let maxElm: Int = 3
+                        let limit = moreFontOptionsStateIdx >= maxElm
+                        let moreStr = moreStateDir < 0 ? "Less" : "More"
                         Button {
-                            showExtraFontOptions = !showExtraFontOptions
+//                            showExtraFontOptions = !showExtraFontOptions
+                            print("moreFontOptionsStateIdx \(moreFontOptionsStateIdx)")
+                            moreFontOptionsStateIdx += moreStateDir
+                            if moreFontOptionsStateIdx > maxElm && moreStateDir == 1 {
+                                moreStateDir = -1
+                            }
+                            if moreFontOptionsStateIdx < 0 && moreStateDir == -1 {
+                                moreStateDir = 1
+                            }
                         } label: {
                             Text(moreStr)
                                 .font(.caption)
@@ -1629,96 +1622,23 @@ struct RenderLiveWithOptionsView: View {
         }
     }
 
+    var allCodeKeys: [String] {
+        Array(self.imageBycodeKey.keys)
+    }
 
-    @State private var showExtraFontOptions: Bool = false
+//    @State private var showExtraFontOptions: Bool = false
     @ViewBuilder
     func SelectedLayerFontOptionsView(selIdx: Int) -> some View {
         
         VStack(spacing: 16) {
             
-            ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
-                Text("Color")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .frame(width: 120, alignment: .trailing)
-            })
-            .background {
-                Rectangle()
-                    .foregroundStyle(.clear)
-                    .onTapGesture {}
-            }
+            let layerStr = renderOptions.textLayers[selIdx].textString
+            let isCodeIncluded = allCodeKeys.contains(layerStr)
             
-            HStack {
-                Text("Edit")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .frame(width: 120, alignment: .trailing)
-
-                Spacer()
-                Button {
-                    self.currentEditing = renderOptions.textLayers[selIdx].textString
-                    self.selectedEditingTextIdx = selIdx
-                    self.focusedField = .text
-                } label: {
-                    Image(systemName: "character.cursor.ibeam")
-                        .font(.system(size: 13, weight: .bold))
-                        .padding(8)
-                        .background {
-                            Circle()
-                                .foregroundStyle(.ultraThinMaterial)
-                        }
-                        .offset(x: 2)
-                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                }
-                .foregroundStyle(Color.primary.opacity(0.6))
-
-            }
-            .frame(maxWidth: .infinity)
-            
-            BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
-          
-            WeightTextOptions(selIdx)
-            
-            BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
-
-    //        let showExtraFontOptions = false
-            if showExtraFontOptions {
-                UnderlineTextOptions(selIdx)
-
-                WeightStrikeTextOptions(selIdx)
-                
-        //        BlenderStyleInput(value: $renderOptions.overlayTextScale, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
-                
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textStrokeWidth, title: "Stroke Width", unitStr: ".px", unitScale: 1.0, minValue: -600, maxValue: 600)
-
-                ColorPicker(selection: $renderOptions.textLayers[selIdx].textStrokeColor, label: {
-                    Text("Stroke")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                        .frame(width: 120, alignment: .trailing)
-                })
-                .background {
-                    Rectangle()
-                        .foregroundStyle(.clear)
-                        .onTapGesture {}
-                }
-
-
-                
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
-
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.x, title: "Shadow X", unitStr: "px")
-                
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.y, title: "Y", unitStr: "px")
-                
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
-                
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
-
-                ColorPicker(selection: $renderOptions.textLayers[selIdx].shadowColor, label: {
+            if isCodeIncluded {
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 0)
+            } else {
+                ColorPicker(selection: $renderOptions.textLayers[selIdx].textColor, label: {
                     Text("Color")
                         .font(.subheadline)
                         .fontWeight(.semibold)
@@ -1732,24 +1652,123 @@ struct RenderLiveWithOptionsView: View {
                 }
                 
                 HStack {
-                    Text("Z Position")
+                    Text("Edit")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
                         .frame(width: 120, alignment: .trailing)
-                    
 
-                    Picker("", selection: $renderOptions.textLayers[selIdx].zPosition) {
-                        ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
-                            let iPhoneColor = TextZPosition.allCases[idx]
-                            Text(iPhoneColor.rawValue)
-                                .tag(iPhoneColor)
+                    Spacer()
+                    Button {
+                        self.currentEditing = renderOptions.textLayers[selIdx].textString
+                        self.selectedEditingTextIdx = selIdx
+                        self.focusedField = .text
+                    } label: {
+                        Image(systemName: "character.cursor.ibeam")
+                            .font(.system(size: 13, weight: .bold))
+                            .padding(8)
+                            .background {
+                                Circle()
+                                    .foregroundStyle(.ultraThinMaterial)
+                            }
+                            .offset(x: 2)
+                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    }
+                    .foregroundStyle(Color.primary.opacity(0.6))
+
+                }
+                .frame(maxWidth: .infinity)
+                
+                
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+                
+                VStack(spacing: 16) {
+                    
+                    if moreFontOptionsStateIdx > 0 {
+                        
+                        WeightTextOptions(selIdx)
+                        
+                        BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textKerning, title: "Kerning", unitStr: "px")
+                        
+                        if moreFontOptionsStateIdx > 1 {
+                            
+                            UnderlineTextOptions(selIdx)
+
+                            WeightStrikeTextOptions(selIdx)
+                            
+                            
+                            BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textStrokeWidth, title: "Stroke Width", unitStr: ".px", unitScale: 1.0, minValue: -600, maxValue: 600)
+
+                            ColorPicker(selection: $renderOptions.textLayers[selIdx].textStrokeColor, label: {
+                                Text("Stroke")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.primary)
+                                    .frame(width: 120, alignment: .trailing)
+                            })
+                            .background {
+                                Rectangle()
+                                    .foregroundStyle(.clear)
+                                    .onTapGesture {}
+                            }
+
+
+                            if moreFontOptionsStateIdx > 2 {
+                                
+                                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.x, title: "Shadow X", unitStr: "px")
+                                
+                                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOffset.y, title: "Y", unitStr: "px")
+                                
+                                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowRadius, title: "Blur", unitStr: "px", minValue: 0)
+                                
+                                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].shadowOpacity, title: "Opacity", unitStr: "%", unitScale: 0.1, minValue: 0)
+                                
+                                ColorPicker(selection: $renderOptions.textLayers[selIdx].shadowColor, label: {
+                                    Text("Color")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.primary)
+                                        .frame(width: 120, alignment: .trailing)
+                                })
+                                .background {
+                                    Rectangle()
+                                        .foregroundStyle(.clear)
+                                        .onTapGesture {}
+                                }
+                                
+                                if moreFontOptionsStateIdx > 3 {
+                                    
+                                    BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textLineSpacing, title: "Line Spacing", unitStr: "px")
+                                    
+                                    HStack {
+                                        Text("Z Position")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.primary)
+                                            .frame(width: 120, alignment: .trailing)
+                                        
+                                        
+                                        Picker("", selection: $renderOptions.textLayers[selIdx].zPosition) {
+                                            ForEach(0..<TextZPosition.allCases.count, id: \.self) { idx in
+                                                let iPhoneColor = TextZPosition.allCases[idx]
+                                                Text(iPhoneColor.rawValue)
+                                                    .tag(iPhoneColor)
+                                            }
+                                        }
+                                        .pickerStyle(.segmented)
+                                    }
+                                    
+                                    BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+                                }
+                            }
                         }
                     }
-                    .pickerStyle(.segmented)
+
                 }
                 
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textRotation, title: "Rotation", unitStr: "º")
+        //        let showExtraFontOptions = false
+                
+
             }
 
         }
@@ -1932,6 +1951,7 @@ struct RenderLiveWithOptionsView: View {
         }
         
 
+        print("Selected items \(newSelectedItems)")
         var itemImageURL: URL?
         
 //        if firsItem.canLoadObject(ofClass: UIImage.self) {
@@ -1957,17 +1977,27 @@ struct RenderLiveWithOptionsView: View {
 //                itemVideoURL = video.url
                 self.selectCustomImageData(imgData)
             } else {
-                print("error mp4")
+                print("error png")
             }
             
         } else if type.conforms(to: UTType.jpeg) {
             print("JPG")
+            if let imgData = try await firsItem.loadTransferable(type: Data.self) {
+                print("Loaded data jpg \(imgData.count)")
+//                print("")
+//                itemVideoURL = video.url
+                self.selectCustomImageData(imgData)
+            } else {
+                print("error png")
+            }
+
         } else {
-           print("no video")
+           print("no img")
        }
 
     }
     
+    @State private var toSelectCustomIdx: Int?
     
     func selectCustomImage(for idx: Int ) {
         // Present image picker
@@ -1977,13 +2007,17 @@ struct RenderLiveWithOptionsView: View {
 //        let customImgURL = Bundle.main.url(forResource: "signaturex", withExtension: "png")!
 //        guard let imgData = try? Data(contentsOf: customImgURL) else { return }
 //        
-        
+        toSelectCustomIdx = idx
         self.showSignaturePicker = true
     }
     
     func selectCustomImageData(_ data: Data) {
         
-        guard let idx = AppState.shared.selIdx else { return; }
+        guard let idx = toSelectCustomIdx else {
+            self.selectedSignatureItems = []
+            print("no idx");
+            return;
+        }
         
         let customStr = renderOptions.textLayers[idx].textString
         
@@ -1996,6 +2030,7 @@ struct RenderLiveWithOptionsView: View {
         self.reloadPreviewPlayerWithTimer()
         
         self.selectedSignatureItems = []
+        toSelectCustomIdx = nil
     }
     
     enum FocusedField {
@@ -2239,7 +2274,7 @@ struct RenderLiveWithOptionsView: View {
             }
             
         }
-        .offset(y: 6)
+        .offset(y: horizontalSizeClass == .regular ? 0 : 0.0)
         .background {
             Rectangle()
                 .foregroundStyle(.ultraThinMaterial) ////red
@@ -2281,6 +2316,17 @@ struct RenderLiveWithOptionsView: View {
             } else {
                print("no video")
            }
+            // get info
+            Task {
+                guard let localID = firsItem.itemIdentifier else { return }
+                let result = PHAsset.fetchAssets(withLocalIdentifiers: [localID], options: nil)
+                if let asset = result.firstObject {
+                    print("Got " + asset.debugDescription)
+                    let longDateSting = asset.creationDate?.formatted(date: .complete, time: .complete)
+                    self.videoInfoDate = longDateSting
+                }
+
+            }
            
             if let itemVideoURL {
                 
@@ -2351,16 +2397,17 @@ struct RenderLiveWithOptionsView: View {
     
     @ViewBuilder
     func OptionLabel(_ icon: String, _ title: String) -> some View {
-        let iconSize: CGFloat = 32.0
-        VStack(spacing: 2) {
+        let iconSize: CGFloat = 24.0
+        VStack(spacing: 0) {
             Image(systemName: icon)
-                .font(.system(size: 24))
+                .font(.system(size: 18))
 //                .offset(y: -2)
                 .frame(width: iconSize, height: iconSize)
             
             Text(title)
-                .font(.caption2)
+                .font(.system(size: 12))
                 .fontWeight(.semibold)
+                .padding(.bottom, 6)
         }
         .frame(maxWidth: .infinity)
 
@@ -2382,6 +2429,8 @@ struct RenderLiveWithOptionsView: View {
             videoSizeMB = CGFloat(resValues) / 1024.0 / 1024.0
         }
         videoInfoName = asset.url.lastPathComponent
+        
+        self.videoInfoDate = Date.now.formatted(date: .long, time: .complete)
 
         self.renderOptions.videoDuration = asset.duration.seconds
 
