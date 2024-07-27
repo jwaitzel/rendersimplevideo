@@ -24,6 +24,7 @@
 		3858B12A2C54468900D3AFB2 /* appdwnld.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B1292C54468900D3AFB2 /* appdwnld.png */; };
 		3858B12C2C5446AA00D3AFB2 /* preb.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B12B2C5446AA00D3AFB2 /* preb.png */; };
 		3858B12E2C54505300D3AFB2 /* uiux-show3.mov in Resources */ = {isa = PBXBuildFile; fileRef = 3858B12D2C54505300D3AFB2 /* uiux-show3.mov */; };
+		3858B1302C555B7300D3AFB2 /* signaturex.png in Resources */ = {isa = PBXBuildFile; fileRef = 3858B12F2C555B7300D3AFB2 /* signaturex.png */; };
 		388D91DB2C46961400ABFC8E /* ResultRenderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 388D91DA2C46961400ABFC8E /* ResultRenderView.swift */; };
 		388D91E12C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DF2C46A3FA00ABFC8E /* iPhone 15 Pro - White Titanium - Portrait.png */; };
 		388D91E22C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 388D91DE2C46A3FA00ABFC8E /* iPhone 15 Pro - Natural Titanium - Portrait.png */; };
@@ -62,6 +63,7 @@
 		3858B1292C54468900D3AFB2 /* appdwnld.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = appdwnld.png; sourceTree = "<group>"; };
 		3858B12B2C5446AA00D3AFB2 /* preb.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = preb.png; sourceTree = "<group>"; };
 		3858B12D2C54505300D3AFB2 /* uiux-show3.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "uiux-show3.mov"; sourceTree = "<group>"; };
+		3858B12F2C555B7300D3AFB2 /* signaturex.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = signaturex.png; sourceTree = "<group>"; };
 		388D91DA2C46961400ABFC8E /* ResultRenderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultRenderView.swift; sourceTree = "<group>"; };
 		388D91DC2C46A3FA00ABFC8E /* iPhone 15 Pro - Black Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Black Titanium - Portrait.png"; sourceTree = "<group>"; };
 		388D91DD2C46A3FA00ABFC8E /* iPhone 15 Pro - Blue Titanium - Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "iPhone 15 Pro - Blue Titanium - Portrait.png"; sourceTree = "<group>"; };
@@ -209,6 +211,7 @@
 				3858B12B2C5446AA00D3AFB2 /* preb.png */,
 				3858B1292C54468900D3AFB2 /* appdwnld.png */,
 				3858B1272C54466900D3AFB2 /* appb.png */,
+				3858B12F2C555B7300D3AFB2 /* signaturex.png */,
 				3858B12D2C54505300D3AFB2 /* uiux-show3.mov */,
 				388D91E02C46A3FA00ABFC8E /* iPhone15Pro-Portrait */,
 				389466FB2C3BE15900EA4632 /* Preview Content */,
@@ -284,6 +287,7 @@
 			files = (
 				38B56F222C3EF3D10056227B /* screencap1.jpg in Resources */,
 				389466FD2C3BE15900EA4632 /* Preview Assets.xcassets in Resources */,
+				3858B1302C555B7300D3AFB2 /* signaturex.png in Resources */,
 				3858B12E2C54505300D3AFB2 /* uiux-show3.mov in Resources */,
 				38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */,
 				389466FA2C3BE15900EA4632 /* Assets.xcassets in Resources */,

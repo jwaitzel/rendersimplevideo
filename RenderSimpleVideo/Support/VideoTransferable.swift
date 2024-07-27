@@ -55,3 +55,22 @@ struct QuickTimeVideo: Transferable {
         }
     }
 }
+
+extension UIImage: Transferable {
+    
+    public static var transferRepresentation: some TransferRepresentation {
+        
+        DataRepresentation(exportedContentType: .png) { image in
+            if let pngData = image.pngData() {
+                return pngData
+            } else {
+                // Handle the case where UIImage could not be converted to png.
+                throw ConversionError.failedToConvertToPNG
+            }
+        }
+    }
+    
+    enum ConversionError: Error {
+        case failedToConvertToPNG
+    }
+}

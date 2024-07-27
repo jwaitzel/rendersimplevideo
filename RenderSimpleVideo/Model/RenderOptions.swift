@@ -50,7 +50,7 @@ class RenderOptions: ObservableObject {
     @Published var selectedFiltered: UIImage?
     @Published var videoDuration: CGFloat?
     
-    @Published var renderSize: CGSize = .init(width: 1920, height: 1080) //.init(width: 1024, height: 1024)
+    @Published var renderSize: CGSize = .init(width: 1024, height: 1024) //.init(width: 1920, height: 1080) //
 
     @Published var offsetX: CGFloat = 0.0
     @Published var offsetY: CGFloat = 0.0

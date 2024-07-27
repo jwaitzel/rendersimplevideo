@@ -236,7 +236,7 @@ class VideoComposer {
     }
     
     
-    func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions, selected: RenderSelectionElement? = nil) -> UIImage? {
+    func createImagePreview(_ screenImage: UIImage, renderOptions: RenderOptions, selected: RenderSelectionElement? = nil, renderCustomCodeByKey:  [String: Data]) -> UIImage? {
         
         let renderSize = renderOptions.renderSize
         let videoTrackSize = screenImage.size
@@ -252,6 +252,10 @@ class VideoComposer {
         var outImageRelative = lastFilter?.outputImage
         var selExtent: CGRect?
         var offS: CGPoint?
+        
+//        let renderCustomCodeByKey: [String: Data] = [:]
+        
+        let allKeys: [String] = Array(renderCustomCodeByKey.keys)
         
         /// After device layers
         for i in 0..<renderOptions.textLayers.count {
@@ -274,9 +278,10 @@ class VideoComposer {
             
             
             let textStr = txtLayerInfo.textString
+            let containsInCode = allKeys.contains(textStr)
             
             /// Replace with image pre-order
-            if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" {
+            if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" || containsInCode {
                 
                 let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
                 var appPreImgURL = Bundle.main.url(forResource: "pre4", withExtension: "png")!
@@ -289,8 +294,17 @@ class VideoComposer {
                 else if textStr == "/apb" {
                     appPreImgURL = Bundle.main.url(forResource: "appb", withExtension: "png")!
                 }
+                let appPreImg: UIImage = containsInCode ? UIImage(data: renderCustomCodeByKey[textStr]!)! : UIImage(contentsOfFile: appPreImgURL.path)!
                 
-                let appPreImg = UIImage(contentsOfFile: appPreImgURL.path)!
+//                if containsInCode  {
+//                    if let data = renderCustomCodeByKey[textStr] {
+//                        appPreImg = UIImage(data: data)
+//                    }
+//                    
+//                }
+                
+                
+                
                 let preCIImg: CIImage =  CIImage(image: appPreImg)!
                 
                 let layerPos = txtLayerInfo.coordinates

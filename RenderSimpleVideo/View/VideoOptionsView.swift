@@ -267,7 +267,7 @@ struct VideoOptionsView: View {
     }
     
     func applyFilters() {
-        if let filteredImg = videoComposer.createImagePreview(self.screenImage, renderOptions: self.renderOptions) {
+        if let filteredImg = videoComposer.createImagePreview(self.screenImage, renderOptions: self.renderOptions, renderCustomCodeByKey: [:]) {
 //            self.screenFiltered = filteredImg
             self.renderOptions.selectedFiltered = filteredImg
         }

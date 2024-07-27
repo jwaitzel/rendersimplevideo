@@ -363,7 +363,7 @@ struct RenderVideoEditorView: View {
                     self.renderOptions.selectedVideoThumbnail = thumbnail
                     self.renderOptions.selectedVideoURL = itemVideoURL
                     self.renderOptions.videoDuration = videoAsset.duration.seconds
-                    let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions)
+                    let filteredImg = videoComposer.createImagePreview(thumbnail, renderOptions: renderOptions, renderCustomCodeByKey: [:])
                     self.renderOptions.selectedFiltered = filteredImg
                     print("set thumbnail \(thumbnail)")
                 }
@@ -383,7 +383,7 @@ struct RenderVideoEditorView: View {
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
         self.renderOptions.videoDuration = asset.duration.seconds
         self.renderOptions.selectedVideoThumbnail = defaultThumb
-        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions)
+        let filteredImg = videoComposer.createImagePreview(defaultThumb, renderOptions: renderOptions, renderCustomCodeByKey: [:])
         self.renderOptions.selectedFiltered = filteredImg
                 
     }
