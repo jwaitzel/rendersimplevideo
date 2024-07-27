@@ -17,7 +17,13 @@ struct BlenderStyleInput: View {
     var unitScale: CGFloat = 1.0
     var minValue: CGFloat?
     var maxValue: CGFloat?
+    
+    @State private var animateShowAlpha: Bool = false
 
+    @State private var timerForOut: Timer?
+    
+    @State private var animateAlphaDistance: CGFloat = 0.0
+    
     var body: some View {
         ZStack {
             HStack {
@@ -38,36 +44,46 @@ struct BlenderStyleInput: View {
                         startValue = value
                     }
                     
+                    
                     HStack {
+                        
+                        let alphaForLeft: CGFloat = animateAlphaDistance < 0 && animateShowAlpha ? 0.9 : 0.02
                         Button {
                             opOffX(-1)
+                            self.animateAndStartOut()
                         } label: {
                             Image(systemName: "chevron.left")
                                 .frame(width: 34, height: 34)
                                 .background {
                                     Color(uiColor: .systemGray5)
+                                        .opacity(alphaForLeft)
                                 }
-                                .opacity(0.08)
+//                                .opacity(animateShowAlpha ? 0.04 : 0.8)
                         }
-                        .foregroundStyle(.primary.opacity(0.07))
+                        .foregroundStyle(.primary.opacity(alphaForLeft))
+//                        .opacity(animateAlphaDistance < 0 ? 1.0 : 0.9)
                         
                         Text("\(Int(value)) \(unitStr)")
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
                         
+                        let alphaForRight = animateShowAlpha && animateAlphaDistance > 0 ? 0.9 : 0.02
+
                         Button {
                             opOffX(1)
+                            self.animateAndStartOut()
                         } label: {
                             Image(systemName: "chevron.right")
                                 .frame(width: 34, height: 34)
                                 .background {
                                     Color(uiColor: .systemGray5)
+                                        .opacity(alphaForRight)
                                 }
-                                .opacity(0.08)
                         }
-                        .foregroundStyle(.primary.opacity(0.07))
-                        
+                        .foregroundStyle(.primary.opacity(alphaForRight))
+//                        .opacity(animateAlphaDistance > 0 ? 1.0 : 0.9)
+
                     }
                     .contentShape(.rect)
                     .simultaneousGesture(
@@ -75,9 +91,13 @@ struct BlenderStyleInput: View {
                             .onChanged({ val in
                                 let preValue = val.translation.width  * unitScale + startValue
                                 value = applyMinMax(preValue)
+                                
+                                animateAlphaDistance = val.translation.width
+                                animateAndStartOut()
                             })
                             .onEnded({ _ in
                                 startValue = value
+                                animateAndStartOut()
                             })
                     )
 
@@ -90,6 +110,23 @@ struct BlenderStyleInput: View {
         .onAppear {
             startValue = value
         }
+        
+    }
+    
+    func animateAndStartOut() {
+        
+        self.timerForOut?.invalidate()
+        if animateShowAlpha == false {
+            withAnimation(.linear(duration: 0.23).delay(0.09)) {
+                self.animateShowAlpha = true
+            }
+        }
+        
+        self.timerForOut = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
+            withAnimation(.linear(duration: 0.23).delay(0.09)) {
+                self.animateShowAlpha = false
+            }
+        })
     }
     
     func applyMinMax(_ value: CGFloat) -> CGFloat {
@@ -108,7 +145,8 @@ struct BlenderStyleInput: View {
     struct Prev: View {
         @State private var offX: CGFloat = 100
         var body: some View {
-            BlenderStyleInput(value: $offX, title: "Scale", unitStr: "%", unitScale: 0.1, minValue: 100, maxValue: 200)
+            BlenderStyleInput(value: $offX, title: "Scale", unitStr: "px", unitScale: 0.1, minValue: -200, maxValue: 200)
+                .preferredColorScheme(.dark)
 //            BlenderStyleInput(value: $offX, title: "Position X", unitStr: "px")
 
         }

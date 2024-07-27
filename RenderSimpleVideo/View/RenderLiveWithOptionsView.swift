@@ -40,7 +40,7 @@ struct RenderLiveWithOptionsView: View {
     
     private var videoComposer: VideoComposer = .init()
     
-    @State private var frameZeroImage: UIImage?
+    @State var frameZeroImage: UIImage?
     
     @Environment(\.containerNavPath) var navPath
     
@@ -97,6 +97,133 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var onDragTextLayerPos: CGPoint = .zero
     @State private var onDragTextLayerStartPos: CGPoint = .zero
+    
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @State private var animFrameProxy: GeometryProxy?
+    
+    @State private var offsetForYAlert: CGFloat = 0.0
+    
+    @State var animateFromRect: CGRect = .zero
+    @State var animateScreenshot = false
+    @State var secondSwipeAnimation = false
+    @State var flashAnimation = false
+    @State var showNewScreenshotAnimationImage:UIImage? = nil
+    
+    @State var offsetY: CGFloat = 0.0
+    @State var colorFeedbackForSave: CGFloat = 0.0
+    @State var gestureOffsetX: CGFloat = 0
+    @State var scaleOnTapAnimaiton = false
+    var onSaveImageAction: ((UIImage, CGRect)->())?
+    
+    @ViewBuilder
+    func NewScreenshotAnimatedView() -> some View {
+        
+        let isRenderLandspcpe = renderOptions.renderSize.width > renderOptions.renderSize.height
+        var aspect: CGFloat = isRenderLandspcpe ?  showNewScreenshotAnimationImage!.size.height / showNewScreenshotAnimationImage!.size.width : showNewScreenshotAnimationImage!.size.height / showNewScreenshotAnimationImage!.size.height
+                
+        let iconSizeWidth: CGFloat = horizontalSizeClass == .compact ? 160.0 : 190
+        let size = showNewScreenshotAnimationImage!.size
+        let aspH = (size.height / size.width) * 0.78
+        let aspW = (size.width / size.height) * 0.78
+        let imgIsPortrait = size.height > size.width
+        let isSquare = size.height == size.width
+        let iconSquareSide: CGFloat = iconSizeWidth
+        let heightC: CGFloat = iconSquareSide * aspH
+        let onlySqrDebuSize = CGSize(width: 120, height: 120)
+        let iconSizeFitAspect: CGSize = imgIsPortrait ? CGSize(width: iconSquareSide, height: heightC) : isSquare ? CGSize(width: iconSquareSide, height: iconSquareSide) :  CGSize(width: max(240, iconSquareSide * aspW), height: iconSquareSide)
+        var iconSizeScaled = onlySqrDebuSize //true ?  : CGSize(width: 50, height: 50)
+        
+//        let window = UIApplication.shared.windows.first
+//        let topPadding = (window?.safeAreaInsets.top ?? 0)
+        let _ = print("scaled  \(onlySqrDebuSize)")
+        ZStack {
+            
+            Image(uiImage: showNewScreenshotAnimationImage!)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .overlay(content: {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.primary, lineWidth: 4.0)
+                })
+                .overlay {
+                    Color.white.opacity(flashAnimation ? 0.0 : 1.0)
+                        .ignoresSafeArea()
+                }
+                .frame(width: animateScreenshot ? iconSizeScaled.width : animateFromRect.width,
+                       height: animateScreenshot ? iconSizeScaled.height : animateFromRect.height)
+                
+                .clipShape(RoundedRectangle(cornerRadius: animateScreenshot ? 16 : 0, style: .continuous))
+                .ignoresSafeArea()
+
+        }
+        .frame(width: animateScreenshot ? iconSizeScaled.width : animateFromRect.width,
+               height: animateScreenshot ? iconSizeScaled.height : animateFromRect.height)
+        
+        .offset(x: animateScreenshot ? UIScreen.main.bounds.width * (horizontalSizeClass == .compact ? 0.2 : 0.24)  : 0.0,
+                y: animateScreenshot ? UIScreen.main.bounds.height * (horizontalSizeClass == .compact ? 0.3 : 0.34) : 0.0)
+        
+        .offset(x: secondSwipeAnimation ? UIScreen.main.bounds.width * 0.8 : 0)
+
+    }
+
+
+    func resetNewScreenshotStates() {
+        
+        animateScreenshot = false
+        showNewScreenshotAnimationImage = nil
+        gestureOffsetX = 0
+        colorFeedbackForSave = 0
+        secondSwipeAnimation = false
+        flashAnimation = false
+        withAnimation(.easeInOut(duration: 0.3)) {
+            scaleOnTapAnimaiton = false
+        }
+//        self.animateFromRect = .zero
+        offsetY = 0.0
+    }
+    
+    func saveImageAnimated() {
+        
+        guard let zframe = frameZeroImage else { return }
+        showNewScreenshotAnimationImage = zframe
+//        let screenCapURL = Bundle.main.url(forResource: "screencap1", withExtension: "jpg")!
+//        let img = UIImage(contentsOfFile: screenCapURL.path())!
+        let centerScreenY = UIScreen.main.bounds.size.height / 2.0
+        let widthScre = UIScreen.main.bounds.width
+        var asp = zframe.size.width / zframe.size.height
+        if zframe.size.height > zframe.size.width && renderOptions.renderSize.height > renderOptions.renderSize.width {
+            asp = zframe.size.height / zframe.size.width
+        }
+        
+        let scaledAspHeight: CGFloat = widthScre //min(380.0, widthScre * asp)
+        let rectForAnim = CGRect(x: 0, y: centerScreenY, width: widthScre, height: scaledAspHeight)
+        
+
+        self.animateNewSaveImage(zframe, rectForAnim)
+    }
+    
+    func animateNewSaveImage(_ image: UIImage, _ frame: CGRect) {
+        /// - Save image animations
+        showNewScreenshotAnimationImage = image
+        animateFromRect = frame //initial rect position
+        print("Animation \(showNewScreenshotAnimationImage) fr \(animateFromRect)")
+        withAnimation(.interactiveSpring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.7).delay(0.1)) {
+            self.animateScreenshot = true
+        }
+        
+        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.secondSwipeAnimation = true
+            }
+            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.33) {
+                resetNewScreenshotStates()
+            }
+        }
+        withAnimation(.easeIn(duration: 0.55)) {
+            flashAnimation = true
+        }
+    }
+
     
     var body: some View {
         
@@ -199,16 +326,17 @@ struct RenderLiveWithOptionsView: View {
                                 .ignoresSafeArea()
                                 .padding(.top, 64)
 
-                            VStack {
-                                
-                                VideoInfo()
-                                    .opacity(showOptions ? 1 : 0)
-                                
-                                OptionsEditorView()
-                                    .opacity(showOptions ? 1 : 0)
+                            if showOptions {
+                                VStack {
+                                    
+                                    VideoInfo()
+//                                        .opacity(showOptions ? 1 : 0)
+                                    
+                                    OptionsEditorView()
+//                                        .opacity(showOptions ? 1 : 0)
+                                }
+                                .padding(.top, 32)
                             }
-                            .padding(.top, 32)
-                            
                         }
                         .offset(y: showOptions ? 0 : centerY)
 
@@ -222,6 +350,11 @@ struct RenderLiveWithOptionsView: View {
                 
                 topSettingsButtonMenu
                 
+            }
+        }
+        .overlay {
+            if showNewScreenshotAnimationImage != nil {
+                NewScreenshotAnimatedView()
             }
         }
         .toolbar {
@@ -320,16 +453,20 @@ struct RenderLiveWithOptionsView: View {
             
             
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
-                var isSel = idx == selectedTextToolbarItemIdx
+                
+                let isSel = idx == selectedTextToolbarItemIdx
                     
                 Button {
+                    print("Bt action")
                     if isSel {
+                        print("Bt is")
                         selectedTextToolbarItemIdx = nil
                         self.reloadOnlyThumbnail()
                         return
                     }
                     selectedTextToolbarItemIdx = idx
                     self.reloadOnlyThumbnail()
+                    print("sel")
                 } label: {
                     Image(systemName: toolBarOptionsItemsTitles[idx])
                 }
@@ -730,6 +867,9 @@ struct RenderLiveWithOptionsView: View {
     func VideoLayersOptionsView() -> some View {
         VStack(spacing: 12.0) {
             
+            RenderDimensionsOptionButtons()
+
+            
             Text("Background Color")
                 .font(.subheadline)
                 .fontWeight(.semibold)
@@ -843,7 +983,6 @@ struct RenderLiveWithOptionsView: View {
 
                 FormatLayerOptionButtons()
 
-                RenderDimensionsOptionButtons()
                 
                 DeviceLayerOptionButtons()
                 
@@ -934,6 +1073,18 @@ struct RenderLiveWithOptionsView: View {
                         let sqSizeOpt3: CGSize = .init(width: 1920, height: 886)
                         ButtonRoundedRectForSize(sqSizeOpt3, selSize.equalTo(sqSizeOpt3)) {
                             self.renderOptions.renderSize = sqSizeOpt3
+
+                        }
+                        
+                        let sqSizeOpt22: CGSize = .init(width: 1080, height: 1920)
+                        ButtonRoundedRectForSize(sqSizeOpt22, selSize.equalTo(sqSizeOpt22)) {
+                            self.renderOptions.renderSize = sqSizeOpt22
+
+                        }
+                        
+                        let sqSizeOpt33: CGSize = .init(width: 1920, height: 1080)
+                        ButtonRoundedRectForSize(sqSizeOpt33, selSize.equalTo(sqSizeOpt33)) {
+                            self.renderOptions.renderSize = sqSizeOpt33
 
                         }
 
@@ -1102,13 +1253,17 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-
+//                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+//                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .overlay(alignment: .bottom) {
                     if currentTxtLayer != nil {
                         Button {
                             deselectLayer()
+                            //Deselect tool
+                            selectedTextToolbarItemIdx = nil
                         } label: {
                             Text("Done")
+                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                         }
                         .foregroundStyle(.primary.opacity(0.8))
                         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -1118,8 +1273,6 @@ struct RenderLiveWithOptionsView: View {
                     }
                     
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .padding(.bottom, 16)
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
@@ -1181,8 +1334,6 @@ struct RenderLiveWithOptionsView: View {
                         })
                 )
                 .onChange(of: (valueOffX + valueOffY) , perform: { value in
-                    
-    
                 })
                 .gesture(
                     MagnificationGesture(minimumScaleDelta: 0.05)
@@ -1321,10 +1472,7 @@ struct RenderLiveWithOptionsView: View {
                     CellLayerView(layerText, idx)
                         .contentShape(.rect)
                         .onTapGesture {
-                            
-//                            self.currentEditing = layerText.textString
-//                            self.selectedEditingTextIdx = idx
-//                            self.focusedField = .text
+
                             if isSel {
                                 deselectLayer()
                                 return
@@ -1335,7 +1483,7 @@ struct RenderLiveWithOptionsView: View {
                             
                             // Select frame
                             AppState.shared.selIdx = idx
-                            
+                            selectedTextToolbarItemIdx = 1
                             self.reloadOnlyThumbnail()
                         }
 
@@ -1353,6 +1501,7 @@ struct RenderLiveWithOptionsView: View {
         
         currentTxtLayer = nil
         AppState.shared.selIdx = nil
+//        selectedTextToolbarItemIdx = nil
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1, execute: {
 //            self.reloadPreviewPlayer()
@@ -1757,10 +1906,10 @@ struct RenderLiveWithOptionsView: View {
             
             .background {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .foregroundColor(.gray.opacity(isSel ? 0.2 : 0.15))
+                    .foregroundColor(.gray.opacity(isSel ? 0.2 : 0.05))
             }
         }
-        .foregroundColor(isSel ? .primary : .secondary)
+        .foregroundColor(isSel ? .primary : .secondary.opacity(0.6))
 
     }
     
@@ -1937,7 +2086,8 @@ struct RenderLiveWithOptionsView: View {
                     .frame(maxWidth: .infinity)
             } else {
                 Button {
-                    makeVideoWithComposition()
+                    saveImageAnimated()
+//                    makeVideoWithComposition()
                 } label: {
                     OptionLabel("square.and.arrow.down", "Save")
                 }
@@ -2175,8 +2325,8 @@ struct VideoPlayerView: UIViewControllerRepresentable {
     RenderLiveWithOptionsView()
         .preferredColorScheme(.light)
 }
-
-#Preview {
-    RenderLiveWithOptionsView()
-        .preferredColorScheme(.dark)
-}
+//
+//#Preview {
+//    RenderLiveWithOptionsView()
+//        .preferredColorScheme(.dark)
+//}

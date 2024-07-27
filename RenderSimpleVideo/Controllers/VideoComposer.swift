@@ -424,7 +424,7 @@ class VideoComposer {
 //            }
             // Set up an AVAssetExportSession to export the composition
             //AVAssetExportPresetMediumQuality
-            guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
+            guard let exportSession = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetLowQuality) else {
                 completion(RenderError.failedCreateExportSession)
                 return
             }
