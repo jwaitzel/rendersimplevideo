@@ -1935,6 +1935,9 @@ struct RenderLiveWithOptionsView: View {
                     }
                     self.currentTxtLayer = nil
                     renderOptions.textLayers.remove(at: idx)
+                    if idx == lasLayerSel {
+                        lasLayerSel = nil
+                    }
 
                 } label: {
                     Label("Delete", systemImage: "xmark")
