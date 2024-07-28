@@ -196,8 +196,10 @@ struct RenderLiveWithOptionsView: View {
                             .onAppear {
                                 self.player = AVPlayer()
                             }
+                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
+
                             .ignoresSafeArea()
-                            .padding(.top, 0)
+                            .padding(.top, showOptions ? 8 : 0)
 
                             if showOptions {
                                 VStack {
@@ -479,7 +481,7 @@ struct RenderLiveWithOptionsView: View {
                     deselectLayer()
                 }
                 /// If selected move
-                if value == 1 {
+                if value == 1 && !didCreateNew {
                     selectLastLayerSel()
                 }
             }
@@ -991,6 +993,7 @@ struct RenderLiveWithOptionsView: View {
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleToolbar()
                 })
+                .padding(.bottom, 32)
 
 
             VStack(spacing: 12) {
@@ -1408,6 +1411,7 @@ struct RenderLiveWithOptionsView: View {
 //                        .offset(x: relAbs.x, y: relAbs.y)
 
                 }
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .allowsHitTesting(selectedTextToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleTextToolbar()
@@ -1547,7 +1551,10 @@ struct RenderLiveWithOptionsView: View {
     @State private var lasLayerSel: Int?
     func deselectLayer() {
         
-        lasLayerSel = AppState.shared.selIdx
+        if let lasSel = AppState.shared.selIdx {
+            lasLayerSel = AppState.shared.selIdx
+        }
+        
         currentTxtLayer = nil
         AppState.shared.selIdx = nil
 //        selectedTextToolbarItemIdx = nil
@@ -1717,7 +1724,7 @@ struct RenderLiveWithOptionsView: View {
                 .frame(maxWidth: .infinity)
                 
                 
-                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", minValue: 0)
+                BlenderStyleInput(value: $renderOptions.textLayers[selIdx].textFontSize, title: "Font Size", unitStr: "px", unitScale: 0.5, minValue: 0)
                 
                 VStack(spacing: 16) {
                     

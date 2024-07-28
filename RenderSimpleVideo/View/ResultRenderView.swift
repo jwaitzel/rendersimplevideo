@@ -66,9 +66,15 @@ struct ResultRenderView: View {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .foregroundStyle(Color(uiColor: .systemGray5))
                     }
-                    .shadow(color: .black.opacity(0.1), radius: 2.0, x: 0, y: 2)
                     
                 }
+                .overlay {
+                    if let videoSaveResult {
+                        ResultSaveOverlay(videoSaveResult)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .shadow(color: .black.opacity(0.1), radius: 2.0, x: 0, y: 2)
             }
         }
         .onAppear {
@@ -77,11 +83,10 @@ struct ResultRenderView: View {
                 self.player?.play()
             }
         }
-        .overlay {
-            if let videoSaveResult {
-                ResultSaveOverlay(videoSaveResult)
-            }
-        }
+//        .overlay {
+//            if let videoSaveResult {
+//            }
+//        }
     }
     
     func shareContent(videoURL: URL) {
@@ -99,6 +104,7 @@ struct ResultRenderView: View {
     
     
     func saveAction() {
+        
         PHPhotoLibrary.shared().performChanges({
             let request = PHAssetCreationRequest.forAsset()
             request.addResource(with: .video, fileURL: self.videoURL, options: nil)
@@ -107,14 +113,14 @@ struct ResultRenderView: View {
                 if let error = error {
                     print(error.localizedDescription)
                     self.videoSaveResult = .error
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        self.videoSaveResult = nil
+                    }
                 } else {
                     print("Saved successfully")
                     self.videoSaveResult = .succeed
                 }
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    self.videoSaveResult = nil
-                }
             }
         }
 
@@ -129,21 +135,26 @@ struct ResultRenderView: View {
     func ResultSaveOverlay(_ res: ResultSave) -> some View {
         RoundedRectangle(cornerRadius: 12, style: .continuous)
             .foregroundStyle(.ultraThinMaterial)
-            .frame(width: 200, height: 200)
-            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+            .frame(height: 60)
+            .frame(maxWidth: .infinity)
+//            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             .overlay {
                 VStack(spacing: 16) {
                     
                     if res == .error {
                         Image(systemName: "xmark.circle")
-                            .font(.system(size: 44))
+                            .font(.system(size: 22))
                             .fontWeight(.light)
                             .foregroundStyle(.red)
+                        
                     } else if res == .succeed {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 44))
-                            .fontWeight(.light)
-                            .foregroundStyle(.green)
+                        HStack {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: 22))
+                                .fontWeight(.light)
+                                .foregroundStyle(.green)
+                        }
+                        
                     }
                 }
             }
@@ -152,7 +163,7 @@ struct ResultRenderView: View {
 
 #Preview {
     struct PreviewData: View {
-        @State private var videoURL: URL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mp4")!
+        @State private var videoURL: URL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mov")!
         var body: some View {
             ResultRenderView(videoURL: videoURL)
         }
