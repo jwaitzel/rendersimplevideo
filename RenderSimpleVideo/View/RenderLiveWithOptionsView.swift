@@ -135,13 +135,19 @@ struct RenderLiveWithOptionsView: View {
     @State private var videoInfoName: String = "" //"REPPlay_Final17123128"
     @State private var videoInfoDate:String?
     
+    @State private var moreStateDir: Int = 1
+    
+    @State private var newOrigin: CGPoint?
+    @State private var regionEndPos: CGPoint?
+
+    
     //MARK: - Body
     var body: some View {
         
         NavigationStack {
             ZStack {
                 
-                centerPreviewVideoPlayer
+                centerPreviewVideoPlayerAndOptions
 
                 barButtons
                 
@@ -177,6 +183,7 @@ struct RenderLiveWithOptionsView: View {
                             self.currentTxtLayer = nil
                             self.selectedEditingTextIdx = nil
                             self.focusedField = .none
+                            clarCreateGizmoValues()
                             
                             //.append(newLayerText)
                         } label: {
@@ -236,7 +243,7 @@ struct RenderLiveWithOptionsView: View {
 
     }
     
-    var centerPreviewVideoPlayer: some View {
+    var centerPreviewVideoPlayerAndOptions: some View {
         
         GeometryReader {
             
@@ -275,7 +282,7 @@ struct RenderLiveWithOptionsView: View {
                     if showOptions {
                         VStack {
                             
-                            VideoInfo()
+//                            VideoInfo()
                             
                             OptionsEditorView()
                         }
@@ -495,8 +502,11 @@ struct RenderLiveWithOptionsView: View {
                 if  newValue == 0 {
                     deselectLayer()
                 }
-                /// If selected move
-                if value == 1 && !didCreateNew {
+                
+                print("Changed toolbar to \(value) didCreateNew \(didCreateNew) \(AppState.shared.selIdx) last \(lastLayerSel)")
+                /// If selected move //&& !didCreateNew
+                if value == 1 && AppState.shared.selIdx == nil {
+                    print("will select \(lastLayerSel)")
                     selectLastLayerSel()
                 }
             }
@@ -512,7 +522,10 @@ struct RenderLiveWithOptionsView: View {
             let layerToMove = self.renderOptions.textLayers[selID]
             self.currentTxtLayer = layerToMove
             self.didCreateNew = false
+            self.selectLayer(selID, layerToMove)
             self.reloadOnlyThumbnail()
+        } else {
+            print("no last idx")
         }
     }
 
@@ -656,13 +669,16 @@ struct RenderLiveWithOptionsView: View {
         UIApplication.shared.endEditing()
         
         if didCreateNew {
-            self.selectedTextToolbarItemIdx = 1
+//            self.selectedTextToolbarItemIdx = 1
         }
-        print("End editing \(didCreateNew)")
+        
+        self.clarCreateGizmoValues()
+        print("End editing \(didCreateNew) \(AppState.shared.selIdx)")
         //Change text
         if let edIdx = selectedEditingTextIdx {
             self.renderOptions.textLayers[edIdx].textString = currentEditing
             selectedEditingTextIdx = nil
+            self.lastLayerSel = edIdx
             self.currentEditing = ""
             self.reloadPreviewPlayerWithTimer()
         }
@@ -760,7 +776,7 @@ struct RenderLiveWithOptionsView: View {
         
         let isSelForVide = optionsGroup == .Video && selectedVideoToolbarItemIdx != nil
         let isSelForLayer = optionsGroup == .Text && AppState.shared.selIdx != nil
-        print("is sel one \(isSelForVide) isSelForLayer \(isSelForLayer)")
+        print("sel reload \(AppState.shared.selIdx) ")
         //selectedEditingTextIdx
         let filteredImg = videoComposer
             .createImagePreview(defaultThumb,
@@ -769,7 +785,7 @@ struct RenderLiveWithOptionsView: View {
 
         self.frameZeroImage = filteredImg
 
-        print("recreate thumbnail")
+//        print("recreate thumbnail")
 //        timerForReloadPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: { _ in
 //            self.reloadPreviewPlayer()
 //        })
@@ -882,7 +898,7 @@ struct RenderLiveWithOptionsView: View {
     
 
     @ViewBuilder
-    func VideoLayersOptionsView() -> some View {
+    func VideoOptionsView() -> some View {
         VStack(spacing: 12.0) {
             
             Text("Background Color")
@@ -925,12 +941,6 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-//                .overlay {
-//                    if selectedVideoToolbarItemIdx == nil {
-//                        Rectangle()
-//                            .foregroundStyle(.black.opacity(0.2))
-//                    }
-//                }
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
 //                .padding(.horizontal, 0)
@@ -938,9 +948,11 @@ struct RenderLiveWithOptionsView: View {
                 .gesture(
                     DragGesture(minimumDistance: 0.0)
                         .onChanged({ val in
+                            
                             if !isDraggingIcon {
                                 isDraggingIcon = true
                             }
+                            
                             let preValue = val.translation.width * (renderOptions.renderSize.width / sqSize ) + startValueOffX
                             let preValueY = -1.0 * val.translation.height * (renderOptions.renderSize.height / sqSize ) + startValueOffY
 
@@ -985,6 +997,7 @@ struct RenderLiveWithOptionsView: View {
                     let selScale: CGFloat = (renderOptions.renderSize.width / sqSize )
                     
                     let _ = print("val \(CGAffineTransform.init(translationX: valueOffX, y: valueOffY))")
+                    
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .stroke(.clear.opacity(0.8), lineWidth: 2.0)
                         .overlay {
@@ -992,7 +1005,7 @@ struct RenderLiveWithOptionsView: View {
                         }
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
-                        .opacity(isDraggingIcon ? 1 : 0)
+//                        .opacity(isDraggingIcon ? 1 : 0)
                     //-sqSize/2.0 +
                         .transformEffect(.init(translationX: valueOffX/selScale, y:(-valueOffY/selScale)))
                 }
@@ -1165,69 +1178,75 @@ struct RenderLiveWithOptionsView: View {
     
     
     @ViewBuilder
+    func MockupStypeSelectionView() -> some View {
+        Text("Mockup")
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+
+        HStack(spacing: 0.0) {
+            let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
+            let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
+
+            ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
+
+                let valSel = MockupStyle.allCases[idx]
+                let isSel = mockupStyleSelected == valSel
+                Button {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                        idxBottomSelected = idx
+                    }
+                    withAnimation(.linear(duration: 0.23)) {
+                        mockupStyleSelected = valSel
+                    }
+
+                } label: {
+                    let tt = stylesTitles[idx]
+                    let stI = styleIcons[idx]
+                    VStack(spacing: 4) {
+                        Image(systemName: stI)
+                            .font(.largeTitle)
+                            .fontWeight(.ultraLight)
+
+                        Text(tt)
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                    }
+                    .overlay(alignment: .bottom) {
+                        if idxBottomSelected == idx {
+                            Rectangle()
+                                .foregroundStyle(.primary.opacity(0.8))
+                                .frame(height: 1)
+                                .offset(y: 12)
+                                .padding(.horizontal, 0)
+                                .matchedGeometryEffect(id: "styleSel", in: animation)
+                        }
+                    }
+
+                }
+                .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .foregroundStyle(.secondary.opacity(0.4))
+                .frame(height: 1)
+                .offset(y: 12)
+                .padding(.horizontal, 12)
+        }
+        .padding(.bottom, 32)
+
+    }
+    
+    @ViewBuilder
     func OptionsEditorView() -> some View {
         VStack {
 
-            Text("Mockup")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.bottom, 12)
-
-            HStack(spacing: 0.0) {
-                let stylesTitles: [String] = ["Simple", "Scene 3D", "From Video"]
-                let styleIcons: [String] = ["iphone", "rotate.3d.circle", "video.circle"]
-
-                ForEach(0..<MockupStyle.allCases.count, id: \.self) { idx in
-
-                    let valSel = MockupStyle.allCases[idx]
-                    let isSel = mockupStyleSelected == valSel
-                    Button {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                            idxBottomSelected = idx
-                        }
-                        withAnimation(.linear(duration: 0.23)) {
-                            mockupStyleSelected = valSel
-                        }
-
-                    } label: {
-                        let tt = stylesTitles[idx]
-                        let stI = styleIcons[idx]
-                        VStack(spacing: 4) {
-                            Image(systemName: stI)
-                                .font(.largeTitle)
-                                .fontWeight(.ultraLight)
-
-                            Text(tt)
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                        }
-                        .overlay(alignment: .bottom) {
-                            if idxBottomSelected == idx {
-                                Rectangle()
-                                    .foregroundStyle(.primary.opacity(0.8))
-                                    .frame(height: 1)
-                                    .offset(y: 12)
-                                    .padding(.horizontal, 0)
-                                    .matchedGeometryEffect(id: "styleSel", in: animation)
-                            }
-                        }
-
-                    }
-                    .foregroundStyle(isSel ? Color.primary : Color.primary.opacity(0.2))
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .overlay(alignment: .bottom) {
-                Rectangle()
-                    .foregroundStyle(.secondary.opacity(0.4))
-                    .frame(height: 1)
-                    .offset(y: 12)
-                    .padding(.horizontal, 12)
-            }
-            .padding(.bottom, 32)
+//            MockupStypeSelectionView()
             
             switch self.mockupStyleSelected {
             case .simple:
@@ -1247,7 +1266,7 @@ struct RenderLiveWithOptionsView: View {
 
                 switch self.optionsGroup {
                 case .Video:
-                    VideoLayersOptionsView()
+                    VideoOptionsView()
                         .padding(.top, 16)
                 case .Text:
                     TextLayerOptions()
@@ -1264,13 +1283,8 @@ struct RenderLiveWithOptionsView: View {
             }
         }
     }
-    
-    @State private var moreStateDir: Int = 1
-    
-    @State private var newOrigin: CGPoint?
-    @State private var regionEndPos: CGPoint?
 
-    func clearValues() {
+    func clarCreateGizmoValues() {
         self.newOrigin = nil
         self.regionEndPos = nil
     }
@@ -1291,7 +1305,9 @@ struct RenderLiveWithOptionsView: View {
             
             let renderAspect = renderOptions.renderSize.width / renderOptions.renderSize.height
             let minSquareHeight: CGFloat = UIScreen.main.bounds.width
-            let maxWidth = minSquareHeight * renderAspect
+//            let maxWidth = minSquareHeight * renderAspect
+            
+            //// Square view to show frame and gestures
             RoundedRectangle(cornerRadius: 1.0, style: .continuous)
                 .foregroundStyle(.gray.opacity(0.2))
                 .frame(height: minSquareHeight)
@@ -1305,7 +1321,10 @@ struct RenderLiveWithOptionsView: View {
                 }
 //                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
 //                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
+            
+            /// Done buttons for layers editing
                 .overlay(alignment: .bottom) {
+                    /// Done btn
                     if currentTxtLayer != nil {
                         Button {
                             deselectLayer()
@@ -1324,16 +1343,20 @@ struct RenderLiveWithOptionsView: View {
                     
                 }
                 .overlay {
+                    /// On drag create text overlay
                     if selectedTextToolbarItemIdx == 0 {
+                        
                         ZStack {
                             if let newOrigin {
                                 Circle()
+                                    .foregroundStyle(.black)
                                     .frame(width: 10, height: 10)
                                     .position(x: newOrigin.x, y: newOrigin.y)
                             }
                             
                             if let regionEndPos {
                                 Circle()
+                                    .foregroundStyle(.black)
                                     .frame(width: 10, height: 10)
                                     .position(x: regionEndPos.x, y: regionEndPos.y)
                             }
@@ -1343,26 +1366,33 @@ struct RenderLiveWithOptionsView: View {
                                     let rectWithRegions = rectForDots(newOrigin, regionEndPos)
                                     let path = CGMutablePath()
                                     path.addRect(rectWithRegions)
-                                    ctx.stroke(Path(path), with: .color(.red))
+                                    ctx.stroke(Path(path), with: .color(.yellow))
                                 }
                             }
                         }
+//                        .opacity(isDraggingIcon ? 1 : 0)
                     }
                 }
                 .padding(.bottom, 16)
+            
+            /// Gesture for add new text tool
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged({ value in
+                            if selectedTextToolbarItemIdx != 0 { return }
                             if newOrigin == nil {
                                 newOrigin = value.startLocation
                             }
-                            
                             regionEndPos = value.location
         //                    print("val \(value.location)")
                         })
                         .onEnded({ value in
         //                    print("ended")
-                            clearValues()
+                            
+//                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+//                                clearValues()
+//                            })
+                            
                         })
                 )
                 .simultaneousGesture(
@@ -1381,7 +1411,7 @@ struct RenderLiveWithOptionsView: View {
                             let preValueY = val.translation.height + onDragTextLayerStartPos.y
 
                             onDragTextLayerPos = CGPointMake(preValueX, preValueY)
-                            print("Val \(val.translation) preValueX \(preValueX) preValueY \(preValueY)")
+//                            print("Val \(val.translation) preValueX \(preValueX) preValueY \(preValueY)")
 
     //                        let preValue = val.translation.width * (1024 / 300 ) + startValueOffX
     //                        let preValueY = -1.0 * val.translation.height * (1024 / 300 ) + startValueOffY
@@ -1397,11 +1427,10 @@ struct RenderLiveWithOptionsView: View {
                             
                             /// Val -width/2 - width/20
                             let xCords = (preValueX + minSquareHeight/2.0) / minSquareHeight //+ 1.0 // maxWidth
-                            
                             let yCords = (preValueY + minSquareHeight/2.0) / minSquareHeight// preValueY // minSquareHeight
                             
                             let coordinatesForRender = CGPoint(x: xCords, y: yCords)
-                            print("Coordinates for render \(xCords) \(yCords)")
+//                            print("Coordinates for render \(xCords) \(yCords)")
                             
                             onDragTextLayerStartPos = onDragTextLayerPos
 //                            onDragInitialLayerPos = onDragTextLayerPos
@@ -1418,7 +1447,19 @@ struct RenderLiveWithOptionsView: View {
                             
                             /// New Text layer
                             if selectedTextToolbarItemIdx == 0 {
+                                
+                                let rect = rectForDots(self.newOrigin ?? .zero, self.regionEndPos ?? .zero)
+                                
+                                let inputRect = rect
+                                
+                                let centeredBoxPosition = CGPoint(x:rect.midX / minSquareHeight, y: rect.midY / minSquareHeight) //
+                                let coordinatesForRender = centeredBoxPosition //CGPoint(x: xCords, y: yCords)
                                 addNewTextLayer(coordinatesForRender)
+                                
+                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
+                                    calculateValues(inputRect)
+                                }
+
                             }
                             
                         })
@@ -1442,24 +1483,67 @@ struct RenderLiveWithOptionsView: View {
                 })
                 .overlay {
 
-                    /// Ondrag
-                    
+                    /// Ondrag move tool indicator
                     let selScale = renderOptions.renderSize.width / minSquareHeight
                     let extSize = AppState.shared.selTextExt ?? .zero
                     
+                    let dragTextLayer = onDragTextLayerPos
+//                    let _ = print("dragTextLayer \(dragTextLayer)")
                     if selectedTextToolbarItemIdx == 1 {
-                        RoundedRectangle(cornerRadius: 2, style: .continuous)
-                            .stroke(.orange.opacity(0.8), lineWidth: 2.0)
-                            .overlay {
-                                centerAxisIndicator
+                        ZStack {
+                            
+                            /// Back gray circle
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .stroke(.green.opacity(0.0), lineWidth: 2.0)
+                                .overlay {
+                                    let minCircleSize = 6.0
+                                    Circle()
+                                        .foregroundStyle(.gray)
+                                        .frame(width: minCircleSize, height: minCircleSize)
+                                        .overlay {
+                                            Circle()
+                                                .stroke(.black, lineWidth: 1)
+                                        }
+                                }
+                                .offset(x: onDragTextLayerStartPos.x, y: onDragTextLayerStartPos.y)
+                                .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+
+                            Canvas { ctx, size in
+                                /// Line for connect
+                                /// Pos are in offset values, needds to convert
+                                let initialPos = CGPoint(x: onDragTextLayerStartPos.x + minSquareHeight, y: onDragTextLayerStartPos.y + minSquareHeight)
+                                let currentLineEnd = CGPoint(x: onDragTextLayerPos.x + minSquareHeight, y: onDragTextLayerPos.y + minSquareHeight)
+//                                let rectWithRegions = rectForDots(newOrigin, regionEndPos)
+                                print("Ct size \(size) initialPos \(initialPos) currentLineEnd \(currentLineEnd)")
+
+                                let path = CGMutablePath()
+                                path.move(to: initialPos)
+                                path.addLine(to: currentLineEnd)
+                                path.closeSubpath()
+                                ctx.stroke(Path(path), with: .color(.gray))
                             }
-                            .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
-                            .frame(width: extSize.width / selScale, height: extSize.height / selScale)
-                            .opacity(isDraggingIcon ? 1 : 0)
+//                            .frame(width: 390, height: 390)
+                            .allowsHitTesting(false)
+
+                            
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .stroke(.orange.opacity(0.89), lineWidth: 2.0)
+                                .overlay {
+                                    centerAxisIndicator
+                                }
+                                .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
+                                .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+                            
+                        }
+                        
+//                            .opacity(isDraggingIcon ? 1 : 0)
                         //                        .offset(x: relAbs.x, y: relAbs.y)
                     }
                 }
-            
+//                .onAppear {
+//                    let initialPosCoord: CGPoint = currentTxtLayer?.coordinates ?? .zero
+//                    onDragTextLayerPos = CGPointMake(initialPosCoord.x * minSquareHeight, initialPosCoord.y * minSquareHeight)
+//                }
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .allowsHitTesting(selectedTextToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
@@ -1560,33 +1644,52 @@ struct RenderLiveWithOptionsView: View {
             }
             
             
-            Text("Layers")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.top, 32)
+            /// Layers list
+            LayersList()
 
-            ///Layers
-            VStack(spacing: 4) {
-                ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
-                    let layerText = renderOptions.textLayers[idx]
-                    let isSel = AppState.shared.selIdx == idx
-                    CellLayerView(layerText, idx)
-                        .contentShape(.rect)
-//                        .highPriorityGesture (
-//                            
-//                        )
-
-                }
-            }
-            
             Rectangle()
                 .foregroundStyle(.clear)
                 .frame(height: 400)
         }
         
+    }
+    
+    func calculateValues(_ rect: CGRect) {
+        
+        /// Calculate font to fit
+        guard let txtLayerInfo = self.currentTxtLayer else { print("nono"); return }
+        
+        let attributes = videoComposer.fontDict(renderOptions, txtLayerInfo)
+        let text = self.currentEditing
+        let attrStringWithText = NSAttributedString(string: text, attributes: attributes)
+        let sizeToFit = attrStringWithText.height(withConstrainedWidth: rect.width)
+        
+        print("sizeToFit \(sizeToFit)")
+    }
+    
+    @ViewBuilder
+    func LayersList() -> some View {
+        
+        Text("Layers")
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.top, 32)
+
+//        let invLayers = Array(self.renderOptions.textLayers.reversed())
+        ///Layers
+        VStack(spacing: 4) {
+            ForEach(0..<self.renderOptions.textLayers.count, id: \.self) { idx in
+                let layerText = renderOptions.textLayers[idx]
+//                let isSel = AppState.shared.selIdx == idx
+                CellLayerView(layerText, idx)
+                    .contentShape(.rect)
+
+            }
+        }
+
     }
     
     func rectForDots(_ newOrigin: CGPoint, _ regionEndPos: CGPoint) -> CGRect {
@@ -1889,22 +1992,26 @@ struct RenderLiveWithOptionsView: View {
         let newLayerText = RenderTextLayer()
         newLayerText.coordinates = coordinatesForRender
         newLayerText.textString = String(format: "")
-        newLayerText.zPosition = .infront
+        newLayerText.zPosition = .infront // harcoded - fix - jw
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now()) {
+            
             self.selectedEditingTextIdx = self.renderOptions.textLayers.count
-            AppState.shared.selIdx = self.selectedEditingTextIdx
+            
+//            AppState.shared.selIdx = self.selectedEditingTextIdx
+            
+            self.currentEditing = newLayerText.textString
+            self.focusedField = .text
             self.renderOptions.textLayers.append(newLayerText)
-            //self.selectedTextToolbarItemIdx = 1 //add on accept
+            
+//            self.selectLayer(self.selectedEditingTextIdx ?? 0, newLayerText)
+            
             self.reloadPreviewPlayerWithTimer()
         }
         
-        currentTxtLayer = newLayerText
+//        currentTxtLayer = newLayerText
         print("drag add sticker end \(coordinatesForRender)")
         
-        self.currentEditing = newLayerText.textString
-        self.focusedField = .text
-
         didCreateNew = true
     }
     
@@ -1941,16 +2048,14 @@ struct RenderLiveWithOptionsView: View {
                         let isSel = AppState.shared.selIdx == idx
                         if isSel {
                             deselectLayer()
+                            print("Deselect")
                             return
                         }
-                        
-                        currentTxtLayer = layerText
+//                        print("Select ly \(idx)")
                         didCreateNew = false
-                        
                         // Select frame
-                        AppState.shared.selIdx = idx
-                        selectedTextToolbarItemIdx = 1
-                        self.reloadOnlyThumbnail()
+                        self.selectLayer(idx, layerText)
+                        selectedTextToolbarItemIdx = 1 /// Will auto select last idx
                     })
             )
             
@@ -2505,6 +2610,7 @@ struct RenderLiveWithOptionsView: View {
     
     @ViewBuilder
     func OptionLabel(_ icon: String, _ title: String) -> some View {
+        
         let iconSize: CGFloat = 24.0
         VStack(spacing: 0) {
             Image(systemName: icon)
@@ -2583,18 +2689,48 @@ struct RenderLiveWithOptionsView: View {
                         newLayerText.coordinates = coordinatesForRender
                         newLayerText.textString = String(format: "hey")
                         newLayerText.zPosition = .infront
-        
-        //                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
-                        AppState.shared.selIdx = 0 // for selection
-                        self.currentTxtLayer = newLayerText // for selection movement
                         self.renderOptions.textLayers.append(newLayerText)
+                
                         self.reloadPreviewPlayerWithTimer()
                         self.selectedTextToolbarItemIdx = 1
+                        self.selectLayer(0, newLayerText)
 
             }
         }
 
         
+    }
+    
+    func selectLayer(_ idx: Int, _ layer: RenderTextLayer) {
+        //                self.selectedEditingTextIdx = self.renderOptions.textLayers.count
+        self.currentTxtLayer = layer // for selection movement
+        AppState.shared.selIdx = idx // for selection
+
+        let minSquareSize: CGFloat = UIScreen.main.bounds.width
+        let scaleImg = renderOptions.renderSize.width / minSquareSize
+        let initialPosCoord: CGPoint = currentTxtLayer?.coordinates ?? .zero
+        
+        let preValueX: CGFloat = initialPosCoord.x
+        let preValueY: CGFloat = initialPosCoord.y
+        
+        print("initialPosCoord idx \(idx) \(initialPosCoord)")
+
+        /// Val -width/2 - width/20
+        let xCordsForOffset = ((preValueX - 1.0) * minSquareSize) + (minSquareSize/2.0)//((minSquareSize/2.0) - (preValueX * minSquareSize)) - (minSquareSize/2.0)//2.0// (preValueX + ) / minSquareHeight //+ 1.0 // maxWidth
+        let yCordsForOffset = ((minSquareSize/2.0) - ((1.0 - preValueY) * minSquareSize))// preValueY // minSquareHeight
+
+        let ppp = CGPointMake(xCordsForOffset, yCordsForOffset)
+        
+//        valueOffX = 0.0 //xCordsForOffset * scaleImg
+//        valueOffY = 0.0 //yCordsForOffset * scaleImg
+        
+        onDragTextLayerPos = ppp// .zero/// set current
+        onDragTextLayerStartPos = ppp // set for gesture initial state
+        
+        self.reloadOnlyThumbnail()
+        
+//        print("Set pot \(ppp)")
+
     }
 }
 
@@ -2620,6 +2756,7 @@ struct VideoPlayerView: UIViewControllerRepresentable {
 #Preview {
     RenderLiveWithOptionsView()
         .preferredColorScheme(.light)
+//        .addGrid()
 }
 //
 //#Preview {

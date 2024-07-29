@@ -52,7 +52,6 @@ struct BlenderStyleAxisView: View {
                 Circle()
                     .stroke(.black, lineWidth: 1)
             }
-
     }
     
     var centerDashCircle: some View {
@@ -94,4 +93,5 @@ struct BlenderStyleAxisView: View {
         .background {
             Color.gray
         }
+        .scaleEffect(2.0)
 }

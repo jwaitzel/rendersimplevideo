@@ -35,7 +35,7 @@ class VideoComposer {
         let backColorGenerator = CIFilter(name: "CIConstantColorGenerator", parameters: [kCIInputColorKey: backColor])!
 
         /// Video transform
-        print("Native size \(videoFrameSize)")
+//        print("Native size \(videoFrameSize)")
         var videoScaleToFit = renderSize.height / videoFrameSize.height
         if renderOptions.selectedFormat == .landscape {
             videoScaleToFit = renderSize.width / videoFrameSize.width
@@ -153,53 +153,63 @@ class VideoComposer {
     }
     
     
+    func fontDict(_ renderOptions: RenderOptions, _ txtLayerInfo: RenderTextLayer) -> [NSAttributedString.Key: Any] {
+        
+        let layerPos = txtLayerInfo.coordinates
+    //    color: UIColor(txtLayerInfo.textColor),
+        let fontSize = txtLayerInfo.textFontSize
+        let fontWeight = txtLayerInfo.textFontWeight
+        let textRotation = txtLayerInfo.textRotation
+    //        let fontSize: CGFloat = renderOptions.overlayTextFontSize
+    //        let text = renderOptions.overlayText
+            let color = UIColor(txtLayerInfo.textColor)
+            let fontKern = txtLayerInfo.textKerning
+            let tracking = txtLayerInfo.textTrackingStyle
+    //        let fontWeight = renderOptions.overlayTextFontWeight
+            let paraphStyle = NSMutableParagraphStyle()
+            let txtShadowFx = NSShadow()
+            txtShadowFx.shadowColor = UIColor(txtLayerInfo.shadowColor).withAlphaComponent(txtLayerInfo.shadowOpacity)
+            txtShadowFx.shadowBlurRadius = txtLayerInfo.shadowRadius
+            txtShadowFx.shadowOffset = CGSize(width: txtLayerInfo.shadowOffset.x, height: txtLayerInfo.shadowOffset.y)
+    //        txtShadowFx.fullscree  = true
+            paraphStyle.lineSpacing = txtLayerInfo.textLineSpacing
+            
+    //        let imgAttach = UIImage(systemName: "xmark")!
+    //        let itemAttach = NSTextAttachment(image: imgAttach)
+            
+            let strkWidth: CGFloat = (txtLayerInfo.textStrokeWidth / 100)
+            let strokeColor: UIColor = UIColor(txtLayerInfo.textStrokeColor)
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
+                .foregroundColor: color,
+    //            .tracking : tracking,
+                .kern : fontKern,
+                .paragraphStyle : paraphStyle,
+                .ligature : 2,
+                .strokeWidth: strkWidth, //,
+                .strokeColor: strokeColor,
+                .strikethroughColor : strokeColor,
+                .strikethroughStyle : txtLayerInfo.textStrikeStyle?.rawValue ?? .none, // txtLayerInfo.textStrikeStyle?.rawValue ?? 0,
+                .underlineColor: strokeColor,
+                .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
+                .shadow : txtShadowFx,
+                .baselineOffset: tracking,
+    //            .attachment : itemAttach
+    //            .textEffect : txtLayerInfo.textTrackingEffect?.rawValue ?? []
+            ]
+            
+
+        return attributes
+    }
+    
     func textCompositeFilter(_ renderOptions: RenderOptions, txtLayerInfo: RenderTextLayer) -> (CIFilter, CGRect, CGPoint)? {
         
+        let layerPos = txtLayerInfo.coordinates
+        let text = txtLayerInfo.textString
+        let textRotation = txtLayerInfo.textRotation
+
+        let attributes = fontDict(renderOptions, txtLayerInfo)
         //, layerPos: CGPoint, color: UIColor, fontSize: CGFloat, fontWeight: UIFont.Weight, textRotation: CGFloat
-    let text = txtLayerInfo.textString
-    let layerPos = txtLayerInfo.coordinates
-//    color: UIColor(txtLayerInfo.textColor),
-    let fontSize = txtLayerInfo.textFontSize
-    let fontWeight = txtLayerInfo.textFontWeight
-    let textRotation = txtLayerInfo.textRotation
-//        let fontSize: CGFloat = renderOptions.overlayTextFontSize
-//        let text = renderOptions.overlayText
-        let color = UIColor(txtLayerInfo.textColor)
-        let fontKern = txtLayerInfo.textKerning
-        let tracking = txtLayerInfo.textTrackingStyle
-//        let fontWeight = renderOptions.overlayTextFontWeight
-        let paraphStyle = NSMutableParagraphStyle()
-        let txtShadowFx = NSShadow()
-        txtShadowFx.shadowColor = UIColor(txtLayerInfo.shadowColor).withAlphaComponent(txtLayerInfo.shadowOpacity)
-        txtShadowFx.shadowBlurRadius = txtLayerInfo.shadowRadius
-        txtShadowFx.shadowOffset = CGSize(width: txtLayerInfo.shadowOffset.x, height: txtLayerInfo.shadowOffset.y)
-//        txtShadowFx.fullscree  = true
-        paraphStyle.lineSpacing = txtLayerInfo.textLineSpacing
-        
-//        let imgAttach = UIImage(systemName: "xmark")!
-//        let itemAttach = NSTextAttachment(image: imgAttach)
-        
-        let strkWidth: CGFloat = (txtLayerInfo.textStrokeWidth / 100)
-        let strokeColor: UIColor = UIColor(txtLayerInfo.textStrokeColor)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: fontSize, weight: fontWeight),
-            .foregroundColor: color,
-//            .tracking : tracking,
-            .kern : fontKern,
-            .paragraphStyle : paraphStyle,
-            .ligature : 2,
-            .strokeWidth: strkWidth, //,
-            .strokeColor: strokeColor,
-            .strikethroughColor : strokeColor,
-            .strikethroughStyle : txtLayerInfo.textStrikeStyle?.rawValue ?? .none, // txtLayerInfo.textStrikeStyle?.rawValue ?? 0,
-            .underlineColor: strokeColor,
-            .underlineStyle : txtLayerInfo.textUnderlineStyle?.rawValue ?? .none,
-            .shadow : txtShadowFx,
-            .baselineOffset: tracking,
-//            .attachment : itemAttach
-//            .textEffect : txtLayerInfo.textTrackingEffect?.rawValue ?? []
-        ]
-        
         let attributedString = NSAttributedString(string: text, attributes: attributes)
         
         // Create a CIImage from the attributed string
@@ -250,17 +260,21 @@ class VideoComposer {
         
         let allKeys: [String] = Array(renderCustomCodeByKey.keys)
         
+        print("Called preview ")
+        
         /// After device layers
         for i in 0..<renderOptions.textLayers.count {
             
-            let selIdx: Bool = AppState.shared.selIdx == i
+            let isSelIdx: Bool = AppState.shared.selIdx == i
+            
+//            print("Is sel \(isSelIdx)")
             let txtLayerInfo = renderOptions.textLayers[i]
             
             if txtLayerInfo.zPosition == .behind {
                 print("Step continue but select if selected")
-                if selIdx {
+                if isSelIdx {
                     guard let (_, ext, off) = textCompositeFilter(renderOptions, txtLayerInfo: txtLayerInfo ) else { print("error text filt"); continue; }
-                    print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
+                    print("Sel idx \(AppState.shared.selIdx) size \(ext.size) coord \(txtLayerInfo.coordinates) selIdx \(isSelIdx)")
                     selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
                     offS = off
                     AppState.shared.selTextExt = selExtent
@@ -269,12 +283,11 @@ class VideoComposer {
                 continue
             }
             
-            
             //Replace custom codes with images
             let textStr = txtLayerInfo.textString
             let containsInCode = allKeys.contains(textStr)
             
-            /// Replace with image pre-order
+            /// Replace with image pre-order and custom images
             if textStr == "/pa" || textStr == "/pab" || textStr == "/app" || textStr == "/apb" || containsInCode {
                 
                 let combineImg = CIFilter(name: "CISourceOverCompositing")! //CIBlendWithMask //CISourceOverCompositing
@@ -313,8 +326,9 @@ class VideoComposer {
                 outImageRelative = combineImg.outputImage
                 
                 if selected == .layer {
-                    if selIdx {
+                    if isSelIdx {
                         selExtent = CGRect(origin: .init(x: layerPos.x, y: layerPos.y), size: transfSize)
+                        print("Sel sel \(posRelToAbs)")
                         offS = posRelToAbs
                         AppState.shared.selTextExt = selExtent
                     }
@@ -322,6 +336,7 @@ class VideoComposer {
                 
             } else {
                 
+                /// Text composite
                 guard let (newLayerComposite, ext, off) = textCompositeFilter(renderOptions,
                                                                               txtLayerInfo: txtLayerInfo
                 ) else { print("error text filt"); continue; }
@@ -331,11 +346,12 @@ class VideoComposer {
                 outImageRelative = newLayerComposite.outputImage
                 
                 if selected == .layer {
-                    if selIdx {
-                        print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
+                    if isSelIdx {
+//                        print("Sel size \(ext.size) coord \(txtLayerInfo.coordinates)")
                         selExtent = CGRect(origin: .init(x: txtLayerInfo.coordinates.x, y: txtLayerInfo.coordinates.y), size: ext.size)
                         offS = off
                         AppState.shared.selTextExt = selExtent
+                        print("off set from after layer \(off) \(AppState.shared.selIdx) i \(i) isSelIdx \(isSelIdx)")
                     }
                 }
                 
@@ -348,7 +364,7 @@ class VideoComposer {
             selExtent = sourceCI.extent
         }
         
-        print("selExtent \(selExtent)")
+//        print("selExtent \(selExtent)")
         
         var outputCImg: CIImage? = outImageRelative
         
@@ -370,6 +386,7 @@ class VideoComposer {
             addRectForSelComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
             
             let scaleVal = 1.0
+            print("translate \(offS) for idx \(AppState.shared.selIdx)")
             let transfoOut: CGAffineTransform = .init(translationX: (offS?.x ?? 0) - ((selExtent?.width ?? 0.0) * scaleVal) / 2.0,
                                                      y: (offS?.y ?? 0) - ((selExtent?.height ?? 0.0) * scaleVal) / 2.0 )
             
