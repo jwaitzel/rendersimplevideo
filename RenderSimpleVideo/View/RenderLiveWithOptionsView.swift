@@ -12,14 +12,16 @@ import PhotosUI
 
 struct RenderLiveWithOptionsView: View {
     
-    @State private var showOptions: Bool = false
+    @State private var showOptions: Bool = true
     
     enum OptionsGroup: String, CaseIterable {
         case Video
         case Text
         case Shadow
     }
-    
+    @AppStorage("optionsGroup") var optionsGroupSaved: OptionsGroup = .Video
+    @State var optionsGroup: OptionsGroup = .Video
+
     enum MockupStyle: CaseIterable {
         case simple
 //        case scene3d
@@ -29,21 +31,22 @@ struct RenderLiveWithOptionsView: View {
     @State private var mockupStyleSelected: MockupStyle = .simple
     @State private var idxBottomSelected: Int = 0
     
-    @State var optionsGroup: OptionsGroup = .Video
-    @AppStorage("optionsGroup") var optionsGroupSaved: OptionsGroup = .Video
 
     @State private var player: AVPlayer?
     
-    @State private var showImagePicker: Bool = false
-    @StateObject var renderOptions: RenderOptions = .init()
+    /// Video Picker
+    @State private var shoeVideosPicker: Bool = false
     @State private var selectedItems: [PhotosPickerItem] = []
     
+    @StateObject var renderOptions: RenderOptions = .init()
     private var videoComposer: VideoComposer = .init()
     
     @State var frameZeroImage: UIImage?
     
+    /// Nav
     @Environment(\.containerNavPath) var navPath
     
+    /// Render state properties
     enum RenderState {
         case none
         case rendering
@@ -52,25 +55,22 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var renderState: RenderState = .none
     @State private var renderProgress: CGFloat = 0.0
-    
     @State private var renderVideoURL: URL?
-    
     @State private var showRenderResultView: Bool = false
     
     @ObservedObject var storeKit: StoreKitManager = .shared
     
+    /// Stop motion player - not enabled yet
     @State private var timerForStopPlayer: Timer?
     @State private var frameRenderImg: UIImage?
     @State private var playerStopMotionIdx: Int = 0
     @State private var totalStopMotionFrames: Int = 2
-    
     @State private var isPlaying: Bool = false
-    
     @State private var showButtonCenterPlay: Bool = false
-
+    
     @State private var selectedEditingTextIdx: Int?
     
-    /// Dragging values For Move
+    /// Dragging values For Move Video Layer
     @State var valueOffX: CGFloat = 0.0 //= 0.0
     @State var startValueOffX: CGFloat = 0.0
     
@@ -79,12 +79,14 @@ struct RenderLiveWithOptionsView: View {
 
     var minValue: CGFloat?
     var maxValue: CGFloat?
-
+    
+    /// Zoom for Video Layer
     @State private var currentZoom = 0.0
     @State private var totalZoom = 1.0
 
     @Namespace var animation
     
+    /// For gizmo
     @State private var startAddTextCoordinate: CGPoint = .zero
     
     @State private var currentTxtLayer: RenderTextLayer?
@@ -99,10 +101,8 @@ struct RenderLiveWithOptionsView: View {
     @State private var onDragTextLayerStartPos: CGPoint = .zero
     
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @State private var animFrameProxy: GeometryProxy?
-    
-    @State private var offsetForYAlert: CGFloat = 0.0
-    
+
+    /// Animation for save movie
     @State var animateFromRect: CGRect = .zero
     @State var animateScreenshot = false
     @State var secondSwipeAnimation = false
@@ -112,114 +112,36 @@ struct RenderLiveWithOptionsView: View {
     @State var offsetY: CGFloat = 0.0
     @State var colorFeedbackForSave: CGFloat = 0.0
     @State var gestureOffsetX: CGFloat = 0
-    @State var scaleOnTapAnimaiton = false
-    var onSaveImageAction: ((UIImage, CGRect)->())?
-    
-    @State private var imageBycodeKey: [String: Data] = [:]
+//    @State var scaleOnTapAnimaiton = false
 
+    
+    /// Custom Images
+    @State private var imageBycodeKey: [String: Data] = [:]
+    /// Image picker for custom text layer
     @State private var showSignaturePicker: Bool = false
     @State private var selectedSignatureItems: [PhotosPickerItem] = []
-
     
     @State var moreFontOptionsStateIdx: Int = 0
     
+    /// Blender style toolbar selected item
+    @State private var selectedVideoToolbarItemIdx: Int? = 0
+    @State private var selectedTextToolbarItemIdx: Int? = 0
+
     
+    /// Video info section properties
+    @State private var nativeVideoSize: CGSize = .zero
+    @State private var videoSizeMB: CGFloat = 0.0
+    @State private var videoInfoFPS: CGFloat = 0.0
+    @State private var videoInfoName: String = "" //"REPPlay_Final17123128"
+    @State private var videoInfoDate:String?
+    
+    //MARK: - Body
     var body: some View {
         
         NavigationStack {
             ZStack {
                 
-                let playerContainerSize: CGFloat = showOptions ? 120 : 396
-                GeometryReader {
-                    let sSize: CGSize = $0.size
-    //                let _ = print("size \(sSize)")
-                    let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 0) {
-                            HStack {
-                                Rectangle()
-                                    .foregroundStyle(.gray.opacity(0.2))
-                                    .frame(width: playerContainerSize, height: playerContainerSize)
-                                    .overlay {
-                                        if let player {
-                                            VideoPlayerView(player: player)
-                                                .scaledToFit()
-                                        }
-                                        
-                                    }
-        //                            .overlay {
-        //                                if showButtonCenterPlay {
-        //                                    ZStack {
-        //                                        if isPlaying {
-        //                                            Image(systemName: "play.fill")
-        //                                                .font(.system(size: 40))
-        //                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-        //                                        } else {
-        //                                            Image(systemName: "pause.fill")
-        //                                                .font(.system(size: 40))
-        //                                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
-        //                                        }
-        //
-        //                                    }
-        //                                }
-        //
-        //                            }
-        //                            .contentShape(.rect)
-        //                            .onTapGesture {
-        //                                if isPlaying {
-        //                                    /// Stop
-        //                                    self.isPlaying = false
-        //                                    self.timerForStopPlayer?.invalidate()
-        //                                } else {
-        //                                    self.isPlaying = true
-        //                                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
-        //                                        self.playerStopMotionIdx += 1
-        //                                        self.requestNewTimeThumbForIdx()
-        //                                    })
-        //                                }
-        //
-        //                                withAnimation(.linear(duration: 0.2)) {
-        //                                    showButtonCenterPlay = true
-        //                                }
-        //                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
-        //                                    withAnimation(.linear(duration: 0.2)) {
-        //                                        showButtonCenterPlay = false
-        //                                    }
-        //                                }
-        //
-        //                            }
-                                
-                                Rectangle() //spacer
-                                    .foregroundStyle(.clear)
-                                
-                            }
-                            .onAppear {
-                                self.player = AVPlayer()
-                            }
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
-
-                            .ignoresSafeArea()
-                            .padding(.top, showOptions ? 8 : 0)
-
-                            if showOptions {
-                                VStack {
-                                    
-                                    VideoInfo()
-//                                        .opacity(showOptions ? 1 : 0)
-                                    
-                                    OptionsEditorView()
-//                                        .opacity(showOptions ? 1 : 0)
-                                }
-                                .padding(.top, 32)
-                            }
-                        }
-                        .offset(y: showOptions ? 0 : centerY)
-
-                    }
-                    .ignoresSafeArea()
-                    .frame(height: sSize.height)
-
-                }
+                centerPreviewVideoPlayer
 
                 barButtons
                 
@@ -248,7 +170,7 @@ struct RenderLiveWithOptionsView: View {
                             }
                             
                             DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
-                                self.reloadPreviewPlayer()
+                                self.reloadPreviewPlayerWithTimer()
                                 self.didCreateNew = false
                             }
                             
@@ -288,7 +210,6 @@ struct RenderLiveWithOptionsView: View {
                     .textFieldStyle(.roundedBorder)
                     .padding(.vertical, 16)
 
-
             }
         }
         .onAppear {
@@ -305,7 +226,7 @@ struct RenderLiveWithOptionsView: View {
             }
         }
         .onChange(of: renderOptions.backColor, perform: { _ in
-            self.reloadPreviewPlayer()
+            self.reloadPreviewPlayerWithTimer()
         })
         .sheet(isPresented: $showRenderResultView, content: {
             if let renderVideoURL {
@@ -315,10 +236,107 @@ struct RenderLiveWithOptionsView: View {
 
     }
     
-    
-    @State private var selectedVideoToolbarItemIdx: Int? = 0
-    @State private var selectedTextToolbarItemIdx: Int? = 0
+    var centerPreviewVideoPlayer: some View {
+        
+        GeometryReader {
+            
+            let playerContainerSize: CGFloat = showOptions ? 120 : 396
+            let sSize: CGSize = $0.size
+            let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
+            let safeTop = $0.safeAreaInsets.top
+//                    let _ = print("safeTop \(safeTop)")
+            ScrollView(showsIndicators: false) {
+                
+                /// Video Player centered
+                VStack(spacing: 0) {
+                    
+                    HStack {
+                        
+                        Rectangle()
+                            .foregroundStyle(.gray.opacity(0.2))
+                            .frame(width: playerContainerSize, height: playerContainerSize)
+                            .overlay {
+                                if let player {
+                                    VideoPlayerView(player: player)
+                                        .scaledToFit()
+                                }
+                            }
+                            
+                        Spacer()
+                        
+                    }
+                    .onAppear {
+                        self.player = AVPlayer()
+                    }
+                    .shadow(color: .black.opacity(showOptions ? 0 : 0.2), radius: 2, x: 0.0, y: 0.0)
+                    .ignoresSafeArea()
+                    .padding(.top, showOptions ? safeTop : 0)
 
+                    if showOptions {
+                        VStack {
+                            
+                            VideoInfo()
+                            
+                            OptionsEditorView()
+                        }
+                        .frame(width: sSize.width)
+                        .padding(.top, 32)
+                    }
+                }
+                .offset(y: showOptions ? 0 : centerY)
+
+            }
+            .ignoresSafeArea()
+            .frame(width:sSize.width, height: sSize.height)
+        }
+    }
+    
+    @ViewBuilder
+    func StopMotionStylePlayer() -> some View {
+        Rectangle()
+            .overlay {
+                if showButtonCenterPlay {
+                    ZStack {
+                        if isPlaying {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 40))
+                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+                        } else {
+                            Image(systemName: "pause.fill")
+                                .font(.system(size: 40))
+                                .shadow(color: .black.opacity(0.4), radius: 10, x: 0.0, y: 0.0)
+                        }
+
+                    }
+                }
+
+            }
+            .contentShape(.rect)
+            .onTapGesture {
+                if isPlaying {
+                    /// Stop
+                    self.isPlaying = false
+                    self.timerForStopPlayer?.invalidate()
+                } else {
+                    self.isPlaying = true
+                    self.timerForStopPlayer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true, block: { timer in
+                        self.playerStopMotionIdx += 1
+                        self.requestNewTimeThumbForIdx()
+                    })
+                }
+
+                withAnimation(.linear(duration: 0.2)) {
+                    showButtonCenterPlay = true
+                }
+                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 2.0) {
+                    withAnimation(.linear(duration: 0.2)) {
+                        showButtonCenterPlay = false
+                    }
+                }
+            }
+    }
+    
+    
     //MARK: Animation for save image
     @ViewBuilder
     func NewScreenshotAnimatedView() -> some View {
@@ -372,7 +390,6 @@ struct RenderLiveWithOptionsView: View {
 
     }
 
-
     func resetNewScreenshotStates() {
         
         animateScreenshot = false
@@ -381,9 +398,9 @@ struct RenderLiveWithOptionsView: View {
         colorFeedbackForSave = 0
         secondSwipeAnimation = false
         flashAnimation = false
-        withAnimation(.easeInOut(duration: 0.3)) {
-            scaleOnTapAnimaiton = false
-        }
+//        withAnimation(.easeInOut(duration: 0.3)) {
+//            scaleOnTapAnimaiton = false
+//        }
 //        self.animateFromRect = .zero
         offsetY = 0.0
     }
@@ -429,12 +446,10 @@ struct RenderLiveWithOptionsView: View {
             flashAnimation = true
         }
     }
-
-    
     
     @ViewBuilder
     func BlenderStyleTextToolbar() -> some View {
-        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text",                     "arrow.up.and.down.and.arrow.left.and.right"
+        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text", "arrow.up.and.down.and.arrow.left.and.right"
         ]
         VStack(spacing: 0.0) {
             
@@ -492,7 +507,7 @@ struct RenderLiveWithOptionsView: View {
     }
     
     func selectLastLayerSel() {
-        if let selID = self.lasLayerSel {
+        if let selID = self.lastLayerSel {
             AppState.shared.selIdx = selID
             let layerToMove = self.renderOptions.textLayers[selID]
             self.currentTxtLayer = layerToMove
@@ -503,15 +518,12 @@ struct RenderLiveWithOptionsView: View {
 
     @ViewBuilder
     func BlenderStyleToolbar() -> some View {
-        let toolBarOptionsItemsTitles = [                     "arrow.up.and.down.and.arrow.left.and.right",
-                                         "arrow.up.backward.and.arrow.down.forward"
-        ]
+        let toolBarOptionsItemsTitles = ["arrow.up.and.down.and.arrow.left.and.right",
+                                         "arrow.up.backward.and.arrow.down.forward"]
+        
         VStack(spacing: 0.0) {
-            
-            
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
-                var isSel = idx == selectedVideoToolbarItemIdx
-                    
+                let isSel = idx == selectedVideoToolbarItemIdx
                 Button {
                     if isSel {
                         selectedVideoToolbarItemIdx = nil
@@ -544,11 +556,6 @@ struct RenderLiveWithOptionsView: View {
     }
     
     
-    @State private var nativeVideoSize: CGSize = .zero
-    @State private var videoSizeMB: CGFloat = 0.0
-    @State private var videoInfoFPS: CGFloat = 0.0
-    @State private var videoInfoName: String = "" //"REPPlay_Final17123128"
-    @State private var videoInfoDate:String?
     
     @ViewBuilder
     func VideoInfo() -> some View {
@@ -657,7 +664,7 @@ struct RenderLiveWithOptionsView: View {
             self.renderOptions.textLayers[edIdx].textString = currentEditing
             selectedEditingTextIdx = nil
             self.currentEditing = ""
-            self.reloadPreviewPlayer()
+            self.reloadPreviewPlayerWithTimer()
         }
         
     }
@@ -709,7 +716,7 @@ struct RenderLiveWithOptionsView: View {
                        renderOptions.shadowOffset.y +
                        renderOptions.shadowRadius +
                        renderOptions.shadowOpacity), perform: { value in
-            self.reloadPreviewPlayer()
+            self.reloadPreviewPlayerWithTimer()
         })
         .padding(.top, 16)
         .padding(.bottom, 120)
@@ -1234,7 +1241,7 @@ struct RenderLiveWithOptionsView: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 12)
                 .onChange(of: optionsGroup) { new in
-                    optionsGroupSaved = new
+                    optionsGroupSaved = new /// To save on user defaults
                     self.reloadOnlyThumbnail()
                 }
 
@@ -1259,6 +1266,14 @@ struct RenderLiveWithOptionsView: View {
     }
     
     @State private var moreStateDir: Int = 1
+    
+    @State private var newOrigin: CGPoint?
+    @State private var regionEndPos: CGPoint?
+
+    func clearValues() {
+        self.newOrigin = nil
+        self.regionEndPos = nil
+    }
     
     @ViewBuilder
     func TextLayerOptions() -> some View {
@@ -1308,8 +1323,49 @@ struct RenderLiveWithOptionsView: View {
                     }
                     
                 }
+                .overlay {
+                    if selectedTextToolbarItemIdx == 0 {
+                        ZStack {
+                            if let newOrigin {
+                                Circle()
+                                    .frame(width: 10, height: 10)
+                                    .position(x: newOrigin.x, y: newOrigin.y)
+                            }
+                            
+                            if let regionEndPos {
+                                Circle()
+                                    .frame(width: 10, height: 10)
+                                    .position(x: regionEndPos.x, y: regionEndPos.y)
+                            }
+
+                            if let newOrigin, let regionEndPos {
+                                Canvas { ctx, size in
+                                    let rectWithRegions = rectForDots(newOrigin, regionEndPos)
+                                    let path = CGMutablePath()
+                                    path.addRect(rectWithRegions)
+                                    ctx.stroke(Path(path), with: .color(.red))
+                                }
+                            }
+                        }
+                    }
+                }
                 .padding(.bottom, 16)
-                .gesture(
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged({ value in
+                            if newOrigin == nil {
+                                newOrigin = value.startLocation
+                            }
+                            
+                            regionEndPos = value.location
+        //                    print("val \(value.location)")
+                        })
+                        .onEnded({ value in
+        //                    print("ended")
+                            clearValues()
+                        })
+                )
+                .simultaneousGesture(
                     DragGesture(minimumDistance: 0.0)
                         .onChanged({ val in
                             
@@ -1339,8 +1395,6 @@ struct RenderLiveWithOptionsView: View {
                             let preValueX = val.translation.width + onDragTextLayerStartPos.x
                             let preValueY = val.translation.height + onDragTextLayerStartPos.y
                             
-                            
-                            /// -150 - 150
                             /// Val -width/2 - width/20
                             let xCords = (preValueX + minSquareHeight/2.0) / minSquareHeight //+ 1.0 // maxWidth
                             
@@ -1354,12 +1408,11 @@ struct RenderLiveWithOptionsView: View {
                             
                             self.isDraggingIcon = false
                             
-                            if currentTxtLayer != nil {
-                                currentTxtLayer?.coordinates = coordinatesForRender
+                            if let currentTxtLayer {
+                                currentTxtLayer.coordinates = coordinatesForRender
 //                                onDragTextLayerPos = coordinatesForRender //rel
 //                                onDragTextLayerStartPos = .zero
                                 self.reloadPreviewPlayer()
-                                
                                 return
                             }
                             
@@ -1388,35 +1441,32 @@ struct RenderLiveWithOptionsView: View {
     //                reloadPreviewPlayerWithTimer()
                 })
                 .overlay {
-//                    if let selTextLayer = currentTxtLayer {
-//                        let absPos = CGPoint(x: selTextLayer.coordinates.x * minSquareHeight, y: 0.0)
-////                            .offset(absPos)
-//                    }
-                    
-//                    let onDragTextLayerPos = CGPointMake(onDragTextLayerPos.x + onDragTextLayerStartPos.x, onDragTextLayerPos.y + onDragTextLayerStartPos.y)
+
+                    /// Ondrag
                     
                     let selScale = renderOptions.renderSize.width / minSquareHeight
                     let extSize = AppState.shared.selTextExt ?? .zero
-//                    let extAsp = extSize.width / extSize.height
-//                    let relAbs = CGPointMake(onDragTextLayerPos.x * minSquareHeight - minSquareHeight / 2.0, onDragTextLayerPos.y * minSquareHeight - minSquareHeight / 2.0)
-                    // 3
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .stroke(.orange.opacity(0.8), lineWidth: 2.0)
-                        .overlay {
-                            centerAxisIndicator
-                        }
-                        .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
-                        .frame(width: extSize.width / selScale, height: extSize.height / selScale)
-                        .opacity(isDraggingIcon ? 1 : 0)
-//                        .offset(x: relAbs.x, y: relAbs.y)
-
+                    
+                    if selectedTextToolbarItemIdx == 1 {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .stroke(.orange.opacity(0.8), lineWidth: 2.0)
+                            .overlay {
+                                centerAxisIndicator
+                            }
+                            .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
+                            .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+                            .opacity(isDraggingIcon ? 1 : 0)
+                        //                        .offset(x: relAbs.x, y: relAbs.y)
+                    }
                 }
+            
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .allowsHitTesting(selectedTextToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
                     BlenderStyleTextToolbar()
                 })
 
+            ///Selected layer data
             if let idx = AppState.shared.selIdx {
 
             Text("Selected Layer")
@@ -1461,7 +1511,6 @@ struct RenderLiveWithOptionsView: View {
                         }
                         .foregroundColor(.primary.opacity(0.9))
                     }
-
                     .padding(.trailing, 12)
                 /// Update on change values
                     .onChange(of: (self.renderOptions.textLayers[idx].textFontSize + renderOptions.textLayers[idx].textFontWeight.rawValue +
@@ -1540,6 +1589,20 @@ struct RenderLiveWithOptionsView: View {
         
     }
     
+    func rectForDots(_ newOrigin: CGPoint, _ regionEndPos: CGPoint) -> CGRect {
+        
+        let minX = min(newOrigin.x, regionEndPos.x)
+        let maxX = max(newOrigin.x, regionEndPos.x)
+        
+        let minY = min(newOrigin.y, regionEndPos.y)
+        let maxY = max(newOrigin.y, regionEndPos.y)
+
+        let regRect = CGRect.init(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+        return regRect
+    }
+    
+
+    
     var centerAxisIndicator: some View {
         Rectangle()
             .stroke(.clear, lineWidth: 2.0)
@@ -1548,11 +1611,11 @@ struct RenderLiveWithOptionsView: View {
             }
     }
     
-    @State private var lasLayerSel: Int?
+    @State private var lastLayerSel: Int?
     func deselectLayer() {
         
         if let lasSel = AppState.shared.selIdx {
-            lasLayerSel = AppState.shared.selIdx
+            lastLayerSel = lasSel
         }
         
         currentTxtLayer = nil
@@ -1560,7 +1623,6 @@ struct RenderLiveWithOptionsView: View {
 //        selectedTextToolbarItemIdx = nil
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1, execute: {
-//            self.reloadPreviewPlayer()
             self.reloadOnlyThumbnail()
         })
     }
@@ -1846,6 +1908,17 @@ struct RenderLiveWithOptionsView: View {
         didCreateNew = true
     }
     
+    fileprivate func deleteLayerAction(_ idx: Int) {
+        if idx == AppState.shared.selIdx {
+            self.deselectLayer()
+        }
+        self.currentTxtLayer = nil
+        renderOptions.textLayers.remove(at: idx)
+        if idx == lastLayerSel {
+            lastLayerSel = nil
+        }
+    }
+    
     @ViewBuilder
     func CellLayerView(_ layerText: RenderTextLayer, _ idx: Int) -> some View {
         HStack {
@@ -1880,7 +1953,6 @@ struct RenderLiveWithOptionsView: View {
                         self.reloadOnlyThumbnail()
                     })
             )
-            
             
             
             Button {
@@ -1929,16 +2001,7 @@ struct RenderLiveWithOptionsView: View {
 
                 
                 Button {
-                    
-                    if idx == AppState.shared.selIdx {
-                        self.deselectLayer()
-                    }
-                    self.currentTxtLayer = nil
-                    renderOptions.textLayers.remove(at: idx)
-                    if idx == lasLayerSel {
-                        lasLayerSel = nil
-                    }
-
+                    deleteLayerAction(idx)
                 } label: {
                     Label("Delete", systemImage: "xmark")
                 }
@@ -2275,13 +2338,13 @@ struct RenderLiveWithOptionsView: View {
         HStack {
             
             Button{
-                showImagePicker = true
+                shoeVideosPicker = true
             } label: {
                 OptionLabel("iphone.badge.play", "Media")
             }
             .frame(maxWidth: .infinity)
             .foregroundStyle(.secondary)
-            .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
+            .photosPicker(isPresented: $shoeVideosPicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
             /// Load when selected items change
             .onChange(of: selectedItems) { newSelectedItems in
                 processSelectedVideo(newSelectedItems)

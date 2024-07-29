@@ -63,3 +63,15 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+
+
+extension View {
+    /// - Current phone screen size
+    var safeArea: UIEdgeInsets {
+        guard let safeArea = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.safeAreaInsets else {
+            return .zero
+        }
+        return safeArea
+    }
+}
+
