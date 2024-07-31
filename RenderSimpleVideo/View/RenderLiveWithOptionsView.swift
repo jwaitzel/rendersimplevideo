@@ -410,11 +410,11 @@ struct RenderLiveWithOptionsView: View {
     
     func shakeLeft() {
 
-        withAnimation(.linear(duration: 0.125)) {
+        withAnimation(.linear(duration: 0.125 * (shakeLoop == 2 ? 0.5 : 1))) {
             shakeIdx = 1
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.124, execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.124 * (shakeLoop == 2 ? 0.5 : 1), execute: {
             self.shakeRight()
         })
         
@@ -1651,6 +1651,7 @@ struct RenderLiveWithOptionsView: View {
 //                                .allowsHitTesting(false)
 
                         }
+                        .offset(y: -8)
                         .allowsHitTesting(false)
 //                            .opacity(isDraggingIcon ? 1 : 0)
                         //                        .offset(x: relAbs.x, y: relAbs.y)
