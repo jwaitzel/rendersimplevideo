@@ -12,7 +12,7 @@ import PhotosUI
 
 struct RenderLiveWithOptionsView: View {
     
-    @State private var showOptions: Bool = true
+    @State private var showOptions: Bool = false
     
     enum OptionsGroup: String, CaseIterable {
         case Video
@@ -366,6 +366,7 @@ struct RenderLiveWithOptionsView: View {
 //        let window = UIApplication.shared.windows.first
 //        let topPadding = (window?.safeAreaInsets.top ?? 0)
 //        let _ = print("scaled  \(onlySqrDebuSize)")
+        
         ZStack {
             
             Image(uiImage: showNewScreenshotAnimationImage!)
@@ -394,8 +395,57 @@ struct RenderLiveWithOptionsView: View {
                 y: animateScreenshot ? UIScreen.main.bounds.height * (horizontalSizeClass == .compact ? 0.3 : 0.34) : 0.0)
         
         .offset(x: secondSwipeAnimation ? UIScreen.main.bounds.width * 0.8 : 0)
+        .offset(x: shakeIdx == 1 ? 6.0 : shakeIdx == 2 ? -6 : 0.0)
 
     }
+    
+    @State private var shakeIdx: Int = 0
+    @State private var shakeLoop: Int = 2
+    
+    func shake() {
+        shakeIdx = 0
+        shakeLoop = 2
+        shakeLeft()
+    }
+    
+    func shakeLeft() {
+
+        withAnimation(.linear(duration: 0.125)) {
+            shakeIdx = 1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.124, execute: {
+            self.shakeRight()
+        })
+        
+    }
+    
+    func shakeRight() {
+        
+        withAnimation(.linear(duration: 0.125)) {
+            shakeIdx = 2
+        }
+        
+        shakeLoop -= 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.124){
+            if shakeLoop > 0 {
+                shakeLeft()
+            } else {
+                withAnimation(.easeIn(duration: 0.25)) {
+                    shakeIdx = 0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5){
+                    withAnimation(.linear(duration: 0.3).delay(0.01)) {
+                        self.secondSwipeAnimation = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                        resetNewScreenshotStates()
+                    }
+                }
+            }
+        }
+    }
+    
 
     func resetNewScreenshotStates() {
         
@@ -430,8 +480,10 @@ struct RenderLiveWithOptionsView: View {
         
 
         self.animateNewSaveImage(zframe, rectForAnim)
+        
     }
     
+    @State private var shouldShake: Bool = false
     func animateNewSaveImage(_ image: UIImage, _ frame: CGRect) {
         /// - Save image animations
         showNewScreenshotAnimationImage = image
@@ -442,17 +494,27 @@ struct RenderLiveWithOptionsView: View {
         }
         
         DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                self.secondSwipeAnimation = true
-            }
-            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.33) {
-                resetNewScreenshotStates()
+            if !shouldShake {
+                //// If state two play animation
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    self.secondSwipeAnimation = true
+                }
+                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.3) {
+                    resetNewScreenshotStates()
+                }
+            } else {
+                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.01) {
+                    self.shake()
+                }
             }
         }
+        
         withAnimation(.easeIn(duration: 0.55)) {
             flashAnimation = true
         }
     }
+    
+    @State private var shakeAnimation: Bool = false
     
     @ViewBuilder
     func BlenderStyleTextToolbar() -> some View {
@@ -493,15 +555,6 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     } else {
                         Image(systemName: toolBarOptionsItemsTitles[idx])
-                            .background {
-                                Rectangle()
-                                    .foregroundStyle(Color.black.opacity(0.2))
-                                    .overlay {
-                                        if isSel {
-                                            Color.accentColor.opacity(0.5)
-                                        }
-                                    }
-                            }
                     }
                 }
                 .frame(width: 36, height: 36)
@@ -554,6 +607,16 @@ struct RenderLiveWithOptionsView: View {
         let toolBarOptionsItemsTitles = ["arrow.up.and.down.and.arrow.left.and.right",
                                          "arrow.up.backward.and.arrow.down.forward"]
         
+        let customImgs: [Int: UIImage] = [
+            0 : UIImage(named: "moveblendericon")!,
+            1 : UIImage(named: "scaleicon")!
+        ]
+
+        let customSelImgs: [Int: UIImage] = [
+            0 : UIImage(named: "move-sel")!,
+            1 : UIImage(named: "scale-sel")!
+        ]
+
         VStack(spacing: 0.0) {
             ForEach(0..<toolBarOptionsItemsTitles.count, id: \.self) { idx in
                 let isSel = idx == selectedVideoToolbarItemIdx
@@ -566,20 +629,23 @@ struct RenderLiveWithOptionsView: View {
                     selectedVideoToolbarItemIdx = idx
                     self.reloadOnlyThumbnail()
                 } label: {
-                    Image(systemName: toolBarOptionsItemsTitles[idx])
+                    if let ui = customImgs[idx], let uiSel = customSelImgs[idx]  {
+                        Image(uiImage: isSel ? uiSel : ui)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        Image(systemName: toolBarOptionsItemsTitles[idx])
+                    }
                 }
                 .foregroundStyle(.primary)
-                .frame(width: 44, height: 44)
+                .frame(width: 36, height: 36)
+                .foregroundStyle(.primary)
+                .frame(width: 48, height: 48)
                 .background {
                     Rectangle()
-                        .foregroundStyle(Color.black.opacity(0.2))
-                        .overlay {
-                            if isSel {
-                                Color.accentColor.opacity(0.5)
-                            }
-                        }
+                        .foregroundStyle(isSel ? Color(red: 56/255, green: 115/255, blue: 184/255) : Color(red: 40/255, green: 40/255, blue: 40/255))
                 }
-                
+
 
             }
         }
@@ -1022,11 +1088,9 @@ struct RenderLiveWithOptionsView: View {
                 })
                 .overlay {
                     
-                    let selExtent = AppState.shared.selTextExt ?? CGRect(x: 0, y: 0, width: 200, height: 200)
+                    let selExtent = AppState.shared.selTextExt ?? CGRect.zero
                     let extSize = selExtent.size
                     let selScale: CGFloat = (renderOptions.renderSize.width / sqSize )
-                    
-//                    let _ = print("val \(CGAffineTransform.init(translationX: valueOffX, y: valueOffY))")
                     
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .stroke(.clear.opacity(0.8), lineWidth: 2.0)
@@ -1035,8 +1099,6 @@ struct RenderLiveWithOptionsView: View {
                         }
                         .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                         .frame(width: extSize.width / selScale, height: extSize.height / selScale)
-//                        .opacity(isDraggingIcon ? 1 : 0)
-                    //-sqSize/2.0 +
                         .transformEffect(.init(translationX: valueOffX/selScale, y:(-valueOffY/selScale)))
                 }
                 .allowsHitTesting(selectedVideoToolbarItemIdx != nil)
@@ -1382,7 +1444,7 @@ struct RenderLiveWithOptionsView: View {
                         ZStack {
                             if let newOrigin {
                                 Circle()
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(.black.opacity(0.2))
                                     .frame(width: 10, height: 10)
                                     .position(x: newOrigin.x, y: newOrigin.y)
                             }
@@ -1596,6 +1658,7 @@ struct RenderLiveWithOptionsView: View {
                 }
                 .onAppear {
                     if selectedTextToolbarItemIdx == 1 {
+                        
                         let initialPosCoord: CGPoint = currentTxtLayer?.coordinates ?? .zero
                         
                         let coordsAbs = CGPointMake(initialPosCoord.x * minSquareHeight, initialPosCoord.y * minSquareHeight)
@@ -2547,25 +2610,30 @@ struct RenderLiveWithOptionsView: View {
             .foregroundStyle(showOptions ? .primary : .secondary)
                  
             
-            if renderState != .none {
-                RenderStatusOverlay()
-                    .overlay{
-                        Text("Rendering")
-                            .frame(width: 60)
-                            .font(.system(size: 10))
-                            .offset(y: 14)
-                    }
-                    .offset(y: -4)
-                    .frame(maxWidth: .infinity)
-            } else {
-                Button {
-                    saveImageAnimated()
+            Button {
+                self.shouldShake = videoComposer.isRendering
+                saveImageAnimated()
+                if !videoComposer.isRendering {
                     makeVideoWithComposition()
-                } label: {
-                    OptionLabel("square.and.arrow.down", "Save")
                 }
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.secondary)
+            } label: {
+                OptionLabel("square.and.arrow.down", "Save")
+                    .opacity(renderState == .none ? 1 : 0)
+            }
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(.secondary)
+            .overlay {
+                if renderState != .none {
+                    RenderStatusOverlay()
+                        .overlay{
+                            Text("Rendering")
+                                .frame(width: 60)
+                                .font(.system(size: 10))
+                                .offset(y: 14)
+                        }
+                        .offset(y: -4)
+                        .frame(maxWidth: .infinity)
+                }
             }
             
         }
@@ -2758,24 +2826,25 @@ struct RenderLiveWithOptionsView: View {
                 self.frameZeroImage = filteredImg
             }
             
-            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1) {
-                        self.reloadPreviewPlayer()
-                
-                        // debug layer
-        
-                        let coordinatesForRender = CGPointMake(0.25, 0.5)
-        
-                        let newLayerText = RenderTextLayer()
-                        newLayerText.coordinates = coordinatesForRender
-                        newLayerText.textString = String(format: "hey")
-                        newLayerText.zPosition = .infront
-                        self.renderOptions.textLayers.append(newLayerText)
-                
-                        self.reloadPreviewPlayerWithTimer()
-                        self.selectedTextToolbarItemIdx = 1
-                        self.selectLayer(0, newLayerText)
-
-            }
+            //// Debug add layer
+//            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.1) {
+//                        self.reloadPreviewPlayer()
+//                
+//                        // debug layer
+//        
+//                        let coordinatesForRender = CGPointMake(0.25, 0.5)
+//        
+//                        let newLayerText = RenderTextLayer()
+//                        newLayerText.coordinates = coordinatesForRender
+//                        newLayerText.textString = String(format: "hey")
+//                        newLayerText.zPosition = .infront
+//                        self.renderOptions.textLayers.append(newLayerText)
+//                
+//                        self.reloadPreviewPlayerWithTimer()
+//                        self.selectedTextToolbarItemIdx = 1
+//                        self.selectLayer(0, newLayerText)
+//
+//            }
         }
 
         

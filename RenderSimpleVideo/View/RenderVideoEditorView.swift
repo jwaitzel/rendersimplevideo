@@ -177,6 +177,7 @@ struct RenderVideoEditorView: View {
                 .overlay {
                     if renderState != .none {
                         RenderStatusOverlay()
+                            .allowsHitTesting(false)
                     }
                 }
                 .padding(.bottom, 84)
@@ -240,6 +241,7 @@ struct RenderVideoEditorView: View {
                     }
                 }
             }
+            .allowsHitTesting(false)
     }
     
     @ViewBuilder

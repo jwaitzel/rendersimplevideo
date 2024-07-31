@@ -25,6 +25,8 @@ enum RenderSelectionElement {
 
 class VideoComposer {
     
+    var isRendering: Bool = false
+    
     /// (input filter, output filter, text filter)
     func compositeFilter(renderOptions: RenderOptions, videoFrameSize: CGSize) -> (CIFilter, CIFilter, CIFilter?, CIFilter?, CGAffineTransform)? {
         
@@ -432,6 +434,7 @@ class VideoComposer {
     func createAndExportComposition(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, renderCustomCodeByKey: [String: Data], progress:@escaping (CGFloat)->(), completion: @escaping (Error?) -> Void) {
         
         let startRenderTime = Date()
+        self.isRendering = true
         
         compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, renderCustomCodeByKey: renderCustomCodeByKey, progress: progress) { compoPair, errorOrNil in
             
@@ -460,6 +463,8 @@ class VideoComposer {
             
             // Perform the export
             exportSession.exportAsynchronously {
+                
+                self.isRendering = false
                 switch exportSession.status {
                 case .completed:
                     let endTiem = Date().timeIntervalSince(startRenderTime)
