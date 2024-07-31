@@ -27,7 +27,7 @@ class RenderTextLayer: ObservableObject {
     @Published var textRotation: CGFloat = 0
     @Published var textKerning: CGFloat = 0
     @Published var textLineSpacing: CGFloat = 0
-    @Published var textFontSize: CGFloat = 64
+    @Published var textFontSize: CGFloat = 32
     @Published var textFontWeight: UIFont.Weight = .bold
     @Published var textStrikeStyle: NSUnderlineStyle? = nil //NSUnderlineStyle.single//.none
     @Published var textUnderlineStyle: NSUnderlineStyle? = nil //NSUnderlineStyle.single//.none

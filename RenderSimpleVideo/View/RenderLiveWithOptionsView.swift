@@ -456,7 +456,17 @@ struct RenderLiveWithOptionsView: View {
     
     @ViewBuilder
     func BlenderStyleTextToolbar() -> some View {
-        let toolBarOptionsItemsTitles = ["hand.point.up.left.and.text", "arrow.up.and.down.and.arrow.left.and.right"
+        let toolBarOptionsItemsTitles = [
+            "hand.point.up.left.and.text",
+            "arrow.up.and.down.and.arrow.left.and.right"
+        ]
+        let customImgs: [Int: UIImage] = [
+            1 : UIImage(named: "moveblendericon")!,
+            0 : UIImage(named: "addtext")!
+        ]
+        let customSelImgs: [Int: UIImage] = [
+            1 : UIImage(named: "move-sel")!,
+            0 : UIImage(named: "addtext-sel")!
         ]
         VStack(spacing: 0.0) {
             
@@ -477,20 +487,30 @@ struct RenderLiveWithOptionsView: View {
                     self.reloadOnlyThumbnail()
                     print("sel")
                 } label: {
-                    Image(systemName: toolBarOptionsItemsTitles[idx])
+                    if let ui = customImgs[idx], let uiSel = customSelImgs[idx]  {
+                        Image(uiImage: isSel ? uiSel : ui)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        Image(systemName: toolBarOptionsItemsTitles[idx])
+                            .background {
+                                Rectangle()
+                                    .foregroundStyle(Color.black.opacity(0.2))
+                                    .overlay {
+                                        if isSel {
+                                            Color.accentColor.opacity(0.5)
+                                        }
+                                    }
+                            }
+                    }
                 }
+                .frame(width: 36, height: 36)
                 .foregroundStyle(.primary)
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
                 .background {
                     Rectangle()
-                        .foregroundStyle(Color.black.opacity(0.2))
-                        .overlay {
-                            if isSel {
-                                Color.accentColor.opacity(0.5)
-                            }
-                        }
+                        .foregroundStyle(isSel ? Color(red: 56/255, green: 115/255, blue: 184/255) : Color(red: 40/255, green: 40/255, blue: 40/255))
                 }
-                
 
             }
         }
@@ -669,11 +689,20 @@ struct RenderLiveWithOptionsView: View {
         UIApplication.shared.endEditing()
         
         if didCreateNew {
-//            self.selectedTextToolbarItemIdx = 1
+            
+            let inputRect = rectForDots(self.newOrigin ?? .zero, self.regionEndPos ?? .zero)
+            calculateValues(inputRect)
+            print("print fit rect \(didCreateNew) \(inputRect)")
+
+            self.selectedTextToolbarItemIdx = 1
+
+            self.clarCreateGizmoValues()
+
+//            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.4) {
+//
+//            }
         }
         
-        self.clarCreateGizmoValues()
-        print("End editing \(didCreateNew) \(AppState.shared.selIdx)")
         //Change text
         if let edIdx = selectedEditingTextIdx {
             self.renderOptions.textLayers[edIdx].textString = currentEditing
@@ -921,7 +950,7 @@ struct RenderLiveWithOptionsView: View {
                 }
 
             
-            Text("Move And Scale")
+            Text("Move and scale")
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
@@ -964,6 +993,7 @@ struct RenderLiveWithOptionsView: View {
                         .onEnded({ _ in
                             startValueOffX = valueOffX
                             startValueOffY = valueOffY
+                            
                             isDraggingIcon = false
                         })
                 )
@@ -996,7 +1026,7 @@ struct RenderLiveWithOptionsView: View {
                     let extSize = selExtent.size
                     let selScale: CGFloat = (renderOptions.renderSize.width / sqSize )
                     
-                    let _ = print("val \(CGAffineTransform.init(translationX: valueOffX, y: valueOffY))")
+//                    let _ = print("val \(CGAffineTransform.init(translationX: valueOffX, y: valueOffY))")
                     
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .stroke(.clear.opacity(0.8), lineWidth: 2.0)
@@ -1014,6 +1044,10 @@ struct RenderLiveWithOptionsView: View {
                     BlenderStyleToolbar()
                 })
                 .padding(.bottom, 32)
+                .onAppear {
+                    //Reload blender gizmo position
+                    onDragTextLayerPos = .zero// .zero/// set current
+                }
 
 
             VStack(spacing: 12) {
@@ -1312,6 +1346,7 @@ struct RenderLiveWithOptionsView: View {
                 .foregroundStyle(.gray.opacity(0.2))
                 .frame(height: minSquareHeight)
                 .padding(.horizontal, 0)
+            /// Base Icon
                 .overlay {
                     if let frameZeroImage {
                         Image(uiImage: frameZeroImage)
@@ -1319,9 +1354,6 @@ struct RenderLiveWithOptionsView: View {
                             .aspectRatio(contentMode: .fit)
                     }
                 }
-//                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-//                .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
-            
             /// Done buttons for layers editing
                 .overlay(alignment: .bottom) {
                     /// Done btn
@@ -1342,8 +1374,9 @@ struct RenderLiveWithOptionsView: View {
                     }
                     
                 }
+            /// On drag create text yellow overlay
                 .overlay {
-                    /// On drag create text overlay
+                    
                     if selectedTextToolbarItemIdx == 0 {
                         
                         ZStack {
@@ -1456,9 +1489,6 @@ struct RenderLiveWithOptionsView: View {
                                 let coordinatesForRender = centeredBoxPosition //CGPoint(x: xCords, y: yCords)
                                 addNewTextLayer(coordinatesForRender)
                                 
-                                DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1.0) {
-                                    calculateValues(inputRect)
-                                }
 
                             }
                             
@@ -1489,7 +1519,10 @@ struct RenderLiveWithOptionsView: View {
                     
                     let dragTextLayer = onDragTextLayerPos
 //                    let _ = print("dragTextLayer \(dragTextLayer)")
+                    
+                    /// Selectes tood move
                     if selectedTextToolbarItemIdx == 1 {
+                        
                         ZStack {
                             
                             /// Back gray circle
@@ -1507,25 +1540,45 @@ struct RenderLiveWithOptionsView: View {
                                 }
                                 .offset(x: onDragTextLayerStartPos.x, y: onDragTextLayerStartPos.y)
                                 .frame(width: extSize.width / selScale, height: extSize.height / selScale)
+//                                .allowsHitTesting(false)
 
+                            /// Dashed line
                             Canvas { ctx, size in
                                 /// Line for connect
                                 /// Pos are in offset values, needds to convert
-                                let initialPos = CGPoint(x: onDragTextLayerStartPos.x + minSquareHeight, y: onDragTextLayerStartPos.y + minSquareHeight)
-                                let currentLineEnd = CGPoint(x: onDragTextLayerPos.x + minSquareHeight, y: onDragTextLayerPos.y + minSquareHeight)
+                                let initialPos = CGPoint(x: onDragTextLayerStartPos.x + size.width/2.0, y: onDragTextLayerStartPos.y + size.height/2.0) //minSquareHeight - onDragTextLayerStartPos.y
+                                
+                                let currentLineEnd = CGPoint(x: onDragTextLayerPos.x + size.width/2.0, y: onDragTextLayerPos.y + size.height/2.0)
+                                
+//                                currentLineEnd = .init(x: size.width, y: size.height)
 //                                let rectWithRegions = rectForDots(newOrigin, regionEndPos)
-                                print("Ct size \(size) initialPos \(initialPos) currentLineEnd \(currentLineEnd)")
+                                let sizeOfLine = CGFloat((currentLineEnd.x - initialPos.x) * (currentLineEnd.x - initialPos.x)).squareRoot() + CGFloat( (currentLineEnd.y - initialPos.y) * (currentLineEnd.y - initialPos.y) ).squareRoot()
+//                                print("Ct size \(size) initialPos \(initialPos) currentLineEnd \(currentLineEnd) sizeOfLine \(sizeOfLine)")
 
                                 let path = CGMutablePath()
                                 path.move(to: initialPos)
                                 path.addLine(to: currentLineEnd)
-                                path.closeSubpath()
-                                ctx.stroke(Path(path), with: .color(.gray))
+                                
+                                let dashPath = UIBezierPath()
+                                
+                                /// Not working
+                                dashPath.lineCapStyle = .butt
+                                dashPath.setLineDash([7.0, 7.0], count: 2, phase: 0.0)
+                                dashPath.move(to: initialPos)
+                                dashPath.addLine(to: currentLineEnd)
+                                dashPath.close()
+
+//                                let mutPath = path.cgPath
+                                let phaseRel: CGFloat = sizeOfLine.truncatingRemainder(dividingBy: 7)// 7.0 //sizeOfLine.formRemainder(dividingBy: 7.0)
+                                ctx.stroke(Path(path), with: .color(.black.opacity(0.9)), style: .init(lineWidth: 2.0, dash: [7, 7], dashPhase: phaseRel))
+//                                ctx.stroke(Path(dashPath.cgPath), with: .color(.red))
                             }
+//                            .stroke(.red)
 //                            .frame(width: 390, height: 390)
-                            .allowsHitTesting(false)
+//                            .allowsHitTesting(false)
 
                             
+                            /// Blender style icon
                             RoundedRectangle(cornerRadius: 2, style: .continuous)
                                 .stroke(.orange.opacity(0.89), lineWidth: 2.0)
                                 .overlay {
@@ -1533,17 +1586,33 @@ struct RenderLiveWithOptionsView: View {
                                 }
                                 .offset(x: onDragTextLayerPos.x, y: onDragTextLayerPos.y)
                                 .frame(width: extSize.width / selScale, height: extSize.height / selScale)
-                            
+//                                .allowsHitTesting(false)
+
                         }
-                        
+                        .allowsHitTesting(false)
 //                            .opacity(isDraggingIcon ? 1 : 0)
                         //                        .offset(x: relAbs.x, y: relAbs.y)
                     }
                 }
-//                .onAppear {
-//                    let initialPosCoord: CGPoint = currentTxtLayer?.coordinates ?? .zero
-//                    onDragTextLayerPos = CGPointMake(initialPosCoord.x * minSquareHeight, initialPosCoord.y * minSquareHeight)
-//                }
+                .onAppear {
+                    if selectedTextToolbarItemIdx == 1 {
+                        let initialPosCoord: CGPoint = currentTxtLayer?.coordinates ?? .zero
+                        
+                        let coordsAbs = CGPointMake(initialPosCoord.x * minSquareHeight, initialPosCoord.y * minSquareHeight)
+                        
+                        onDragTextLayerPos = coordsAbs
+                        onDragInitialLayerPos = coordsAbs
+                        if let lyrI = AppState.shared.selIdx, let lyrVal = self.currentTxtLayer {
+                            self.selectLayer(lyrI, lyrVal)
+                            print("Set pos \(coordsAbs)")
+                        }
+
+//                        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.0, execute: {
+//                        })
+//                        self.reloadOnlyThumbnail()
+                        
+                    }
+                }
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0.0, y: 0.0)
                 .allowsHitTesting(selectedTextToolbarItemIdx != nil)
                 .overlay(alignment: .topTrailing, content: {
@@ -1657,14 +1726,25 @@ struct RenderLiveWithOptionsView: View {
     func calculateValues(_ rect: CGRect) {
         
         /// Calculate font to fit
-        guard let txtLayerInfo = self.currentTxtLayer else { print("nono"); return }
+        guard var txtLayerInfo = renderOptions.textLayers.last else { print("nono"); return }
         
-        let attributes = videoComposer.fontDict(renderOptions, txtLayerInfo)
-        let text = self.currentEditing
-        let attrStringWithText = NSAttributedString(string: text, attributes: attributes)
-        let sizeToFit = attrStringWithText.height(withConstrainedWidth: rect.width)
+        var didFitHeight: Bool = false
         
-        print("sizeToFit \(sizeToFit)")
+        while !didFitHeight {
+            
+            let attributes = videoComposer.fontDict(renderOptions, txtLayerInfo)
+            print(" \(rect) attributes \(attributes)")
+
+            let text = self.currentEditing
+            let attrStringWithText = NSAttributedString(string: text, attributes: attributes)
+            let sizeToFit = attrStringWithText.height(withConstrainedWidth: rect.width)
+            if sizeToFit > rect.height {
+                didFitHeight = true
+            } else {
+                txtLayerInfo.textFontSize += 4.0
+            }
+        }
+        
     }
     
     @ViewBuilder
@@ -2639,7 +2719,7 @@ struct RenderLiveWithOptionsView: View {
 
         if let result = result as? URLResourceValues {
             let resValues = (result.allValues[URLResourceKey.fileSizeKey] as? NSNumber)?.intValue ?? 0
-            print("resValues \(resValues)")
+//            print("resValues \(resValues)")
             videoSizeMB = CGFloat(resValues) / 1024.0 / 1024.0
         }
         videoInfoName = asset.url.lastPathComponent
@@ -2713,7 +2793,7 @@ struct RenderLiveWithOptionsView: View {
         let preValueX: CGFloat = initialPosCoord.x
         let preValueY: CGFloat = initialPosCoord.y
         
-        print("initialPosCoord idx \(idx) \(initialPosCoord)")
+//        print("initialPosCoord idx \(idx) \(initialPosCoord)")
 
         /// Val -width/2 - width/20
         let xCordsForOffset = ((preValueX - 1.0) * minSquareSize) + (minSquareSize/2.0)//((minSquareSize/2.0) - (preValueX * minSquareSize)) - (minSquareSize/2.0)//2.0// (preValueX + ) / minSquareHeight //+ 1.0 // maxWidth

@@ -378,7 +378,7 @@ class VideoComposer {
             
             let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? -30 : 0.0, dy: selected == .phone ? -30 : 0)
             roundedRectangleGenerator.setValue(centeredInsetRect ?? .zero, forKey: kCIInputExtentKey)
-            roundedRectangleGenerator.setValue(CIColor(color: .orange), forKey: kCIInputColorKey)
+            roundedRectangleGenerator.setValue(CIColor(color:selected == .phone ? .orange : .clear), forKey: kCIInputColorKey)
             roundedRectangleGenerator.setValue(8.0, forKey: kCIInputRadiusKey)
             roundedRectangleGenerator.setValue(4.0, forKey: kCIInputWidthKey)
             
@@ -415,7 +415,7 @@ class VideoComposer {
     func createCompositionOnlyForPreview(videoURL: URL, outputURL: URL, renderOptions: RenderOptions, renderCustomCodeByKey: [String: Data], progress:@escaping (CGFloat)->(), completion: @escaping (AVPlayerItem?, Error?) -> Void) {
         let startRenderTime = Date()
         
-        print("Did set with keys \(renderCustomCodeByKey)")
+//        print("Did set with keys \(renderCustomCodeByKey)")
         compositionSet(videoURL: videoURL, outputURL: outputURL, renderOptions: renderOptions, renderCustomCodeByKey: renderCustomCodeByKey, progress: progress) { compoPair, errorOrNil in
             guard let (composition, videoComposition, timeRange) = compoPair else {
                 completion(nil, RenderError.failedCreateComposite)
