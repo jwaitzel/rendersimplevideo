@@ -1451,7 +1451,7 @@ struct RenderLiveWithOptionsView: View {
                             
                             if let regionEndPos {
                                 Circle()
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(.black.opacity(0.2))
                                     .frame(width: 10, height: 10)
                                     .position(x: regionEndPos.x, y: regionEndPos.y)
                             }
