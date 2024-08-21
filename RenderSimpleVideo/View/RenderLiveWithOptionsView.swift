@@ -140,85 +140,71 @@ struct RenderLiveWithOptionsView: View {
     @State private var newOrigin: CGPoint?
     @State private var regionEndPos: CGPoint?
 
+//    @State private var navPath: NavigationPath = .init()
     
     //MARK: - Body
     var body: some View {
         
-        NavigationStack {
-            ZStack {
-                
-                centerPreviewVideoPlayerAndOptions
+        ZStack {
+            
+            centerPreviewVideoPlayerAndOptions
+            
+            barButtons
+            
+            topSettingsButtonMenu
+            
+            if focusedField == .text {
+                VStack {
+                    HStack {
+                        if didCreateNew {
+                            Button {
+                                
+                                cancelNewAction()
+                                //.append(newLayerText)
+                            } label: {
+                                Text("Cancel")
+                            }
+                            .foregroundColor(.primary.opacity(0.9))
+                            .opacity(self.didCreateNew ? 1.0 : 0.0)
+                        }
+                        
+                        
+                        Spacer()
+                        
+                        Button {
+                            self.endEditingTextF()
+                        } label: {
+                            Text("Done")
+                        }
+                        .foregroundColor(.primary.opacity(0.9))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 12)
+                    .background {
+                        Rectangle()
+                            .foregroundStyle(.ultraThinMaterial)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
-                barButtons
-                
-                topSettingsButtonMenu
-                
             }
+            
+//            .opacity( ? 1)
         }
+        
         .overlay {
             if showNewScreenshotAnimationImage != nil {
                 NewScreenshotAnimatedView()
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .keyboard) {
-                HStack {
-                    /// Remove just created (bad code) - needs redo :jw
-                    if didCreateNew {
-                        Button {
-
-                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.01) {
-                                
-                                AppState.shared.selIdx = nil
-                                let lastIdx = self.renderOptions.textLayers.count-1
-                                self.renderOptions.textLayers.remove(at: lastIdx)
-                                
-                            }
-                            
-                            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
-                                self.reloadPreviewPlayerWithTimer()
-                                self.didCreateNew = false
-                            }
-                            
-                            self.currentTxtLayer = nil
-                            self.selectedEditingTextIdx = nil
-                            self.focusedField = .none
-                            clarCreateGizmoValues()
-                            
-                            //.append(newLayerText)
-                        } label: {
-                            Text("Cancel")
-                        }
-                        .foregroundColor(.primary.opacity(0.9))
-                        .opacity(self.didCreateNew ? 1.0 : 0.0)
-                    }
-                    
-                    
-                    Spacer()
-                    
-                    Button {
-                        self.endEditingTextF()
-                    } label: {
-                        Text("Done")
-                    }
-                    .foregroundColor(.primary.opacity(0.9))
-                    .opacity(self.currentEditing.isEmpty ? 0 : 1)
-                }
-                
-            }
-        }
         .overlay {
             if selectedEditingTextIdx != nil {
                 CenterTextField()
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                    .font(.largeTitle)
-                    .padding(.vertical, 16)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.vertical, 16)
-
+//                    .padding(.horizontal, 16)
+//                    .padding(.vertical, 32)
             }
         }
+        
         .onAppear {
             optionsGroup = optionsGroupSaved
         }
@@ -241,6 +227,26 @@ struct RenderLiveWithOptionsView: View {
             }
         })
 
+    }
+    
+    func cancelNewAction() {
+        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.01) {
+            
+            AppState.shared.selIdx = nil
+            let lastIdx = self.renderOptions.textLayers.count-1
+            self.renderOptions.textLayers.remove(at: lastIdx)
+            
+        }
+        
+        DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) {
+            self.reloadPreviewPlayerWithTimer()
+            self.didCreateNew = false
+        }
+        
+        self.currentTxtLayer = nil
+        self.selectedEditingTextIdx = nil
+        self.focusedField = .none
+        clarCreateGizmoValues()
     }
     
     var centerPreviewVideoPlayerAndOptions: some View {
@@ -278,7 +284,7 @@ struct RenderLiveWithOptionsView: View {
                     .shadow(color: .black.opacity(showOptions ? 0 : 0.2), radius: 2, x: 0.0, y: 0.0)
                     .ignoresSafeArea()
                     .padding(.top, showOptions ? safeTop : 0)
-
+                    
                     if showOptions {
                         VStack {
                             
@@ -2398,20 +2404,32 @@ struct RenderLiveWithOptionsView: View {
 
     @FocusState private var focusedField: FocusedField?
 
+    init() {
+          UITableView.appearance().backgroundColor = .green // Uses UIColor
+        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: UIBarMetrics.default)
+        UINavigationBar.appearance().shadowImage = UIImage()
+        UINavigationBar.appearance().isTranslucent = true
+        UINavigationBar.appearance().tintColor = .clear
+        UINavigationBar.appearance().backgroundColor = .clear
+
+      }
     
     @State private var currentEditing: String = ""
     @ViewBuilder
     func CenterTextField() -> some View {
-//        TextField("", text: $currentEditing)
-//        TextEditor(text: $currentEditing)
-        TextField("", text: $currentEditing,  axis: .vertical)
+        TextField("", text: $currentEditing,  axis: .vertical) //
             .focused($focusedField, equals: .text)
-        .lineLimit(1...5)
-        .textInputAutocapitalization(.never)
-        .frame(height: 200)
-        .onSubmit {
-            self.endEditingTextF()
-        }
+            .lineLimit(1...5)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.alphabet)
+            .disableAutocorrection(true)
+            .multilineTextAlignment(.center)
+            .font(.largeTitle)
+            .textFieldStyle(.roundedBorder)
+            .frame(height: 200)
+            .onSubmit {
+                self.endEditingTextF()
+            }
     }
     
     @ViewBuilder
@@ -2802,7 +2820,7 @@ struct RenderLiveWithOptionsView: View {
     func setDefaultData() {
         //uiux-short
         //uiux-black-sound //uiux-black-sound
-        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uiux-show3", withExtension: "mov")
+        self.renderOptions.selectedVideoURL = Bundle.main.url(forResource: "uxgreen3", withExtension: "mov")
         
         let asset = AVURLAsset(url: self.renderOptions.selectedVideoURL!)
         
