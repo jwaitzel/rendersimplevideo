@@ -376,28 +376,41 @@ class VideoComposer {
             
             let addRectForSelComposite = CIFilter(name: "CISourceOverCompositing")!
             
-            if let roundedRectangleGenerator = CIFilter(name: "CIRoundedRectangleStrokeGenerator") {
+            var roundedGenFilterName = "CIRoundedRectangleStrokeGenerator"
+            if #available(iOS 16, *) {
+                roundedGenFilterName = "CIRoundedRectangleGenerator"
+            }
+            
+            if let roundedRectangleGenerator = CIFilter(name: roundedGenFilterName) {
                 
-                let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? -30 : 0.0, dy: selected == .phone ? -30 : 0)
+                let insetVal: CGFloat = -30.0
+                var alphaForSelected = 1.0
+                if #available(iOS 16, *) {
+                    alphaForSelected = 0.25
+                }
+
+                let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? insetVal : 0.0, dy: selected == .phone ? insetVal : 0)
                 roundedRectangleGenerator.setValue(centeredInsetRect ?? .zero, forKey: kCIInputExtentKey)
-                roundedRectangleGenerator.setValue(CIColor(color:selected == .phone ? .orange : .clear), forKey: kCIInputColorKey)
+                roundedRectangleGenerator.setValue(CIColor(color:selected == .phone ? .orange.withAlphaComponent(alphaForSelected) : .clear), forKey: kCIInputColorKey)
                 roundedRectangleGenerator.setValue(8.0, forKey: kCIInputRadiusKey)
-                roundedRectangleGenerator.setValue(4.0, forKey: kCIInputWidthKey)
+                if #available(iOS 17, *) {
+                    roundedRectangleGenerator.setValue(4.0, forKey: kCIInputWidthKey)
+                }
                 
                 /// Back
-                addRectForSelComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey)
+                addRectForSelComposite.setValue(outImageRelative, forKey: kCIInputBackgroundImageKey  )
                 
                 let scaleVal = 1.0
                 print("translate \(offS) for idx \(AppState.shared.selIdx)")
                 let transfoOut: CGAffineTransform = .init(translationX: (offS?.x ?? 0) - ((selExtent?.width ?? 0.0) * scaleVal) / 2.0,
                                                          y: (offS?.y ?? 0) - ((selExtent?.height ?? 0.0) * scaleVal) / 2.0 )
                 
-                var transTo = selected == .phone ? .identity : selected == .layer ? transfoOut : .identity //.concatenating(transfoOut)
+                let transTo = selected == .phone ? .identity : selected == .layer ? transfoOut : .identity //.concatenating(transfoOut)
                 
                 /// Sel frame
                 addRectForSelComposite.setValue(
                     roundedRectangleGenerator.outputImage?.transformed(by: transTo), //?.transformed(by: transTo),
-                    forKey: kCIInputImageKey)
+                    forKey: kCIInputImageKey )
             }
 
             outputCImg = addRectForSelComposite.outputImage
