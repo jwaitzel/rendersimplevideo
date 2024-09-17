@@ -101,7 +101,7 @@ struct RenderVideoEditorView: View {
                 }
                 
                 .foregroundStyle(.primary)
-                .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
+                .photosPicker(isPresented: $showImagePicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .all(of:[.videos])) //.all(of: [, .screenRecordings] //.videos //screenRecordings
                 /// Load when selected items change
                 .onChange(of: selectedItems) { newSelectedItems in
                     processSelectedVideo(newSelectedItems)

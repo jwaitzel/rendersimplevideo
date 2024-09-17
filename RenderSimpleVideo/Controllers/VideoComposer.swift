@@ -376,17 +376,17 @@ class VideoComposer {
             
             let addRectForSelComposite = CIFilter(name: "CISourceOverCompositing")!
             
-            var roundedGenFilterName = "CIRoundedRectangleStrokeGenerator"
-            if #available(iOS 16, *) {
-                roundedGenFilterName = "CIRoundedRectangleGenerator"
+            var roundedGenFilterName = "CIRoundedRectangleGenerator"
+            if #available(iOS 17, *) {
+                roundedGenFilterName = "CIRoundedRectangleStrokeGenerator"
             }
             
             if let roundedRectangleGenerator = CIFilter(name: roundedGenFilterName) {
                 
                 let insetVal: CGFloat = -30.0
-                var alphaForSelected = 1.0
-                if #available(iOS 16, *) {
-                    alphaForSelected = 0.25
+                var alphaForSelected = 0.25
+                if #available(iOS 17, *) {
+                    alphaForSelected = 1.0
                 }
 
                 let centeredInsetRect = selExtent?.insetBy(dx: selected == .phone ? insetVal : 0.0, dy: selected == .phone ? insetVal : 0)

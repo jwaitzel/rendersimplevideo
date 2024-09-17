@@ -288,7 +288,7 @@ struct RenderLiveWithOptionsView: View {
                     if showOptions {
                         VStack {
                             
-//                            VideoInfo()
+                            VideoInfo()
                             
                             OptionsEditorView()
                         }
@@ -2169,6 +2169,12 @@ struct RenderLiveWithOptionsView: View {
         if idx == AppState.shared.selIdx {
             self.deselectLayer()
         }
+        
+        if let sel = AppState.shared.selIdx {
+            if idx < sel {
+                AppState.shared.selIdx = sel - 1 // Fix layer selected idx
+            }
+        }
         self.currentTxtLayer = nil
         renderOptions.textLayers.remove(at: idx)
         if idx == lastLayerSel {
@@ -2611,7 +2617,7 @@ struct RenderLiveWithOptionsView: View {
             }
             .frame(maxWidth: .infinity)
             .foregroundStyle(.secondary)
-            .photosPicker(isPresented: $shoeVideosPicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .screenRecordings) //.all(of: [, .screenRecordings] //.videos
+            .photosPicker(isPresented: $shoeVideosPicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .any(of: [.screenRecordings, .videos])) //.all(of: [, .screenRecordings] //.videos
             /// Load when selected items change
             .onChange(of: selectedItems) { newSelectedItems in
                 processSelectedVideo(newSelectedItems)
