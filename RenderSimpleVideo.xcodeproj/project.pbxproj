@@ -43,6 +43,8 @@
 		38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */; };
 		38D0D6802C760B1B003CDCB3 /* uxgreen3.mov in Resources */ = {isa = PBXBuildFile; fileRef = 38D0D67F2C760B1B003CDCB3 /* uxgreen3.mov */; };
 		38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCCB2C51FF1B00F51B9C /* pre4.png */; };
+		38DE74FA2CB7269000F01898 /* CustomRecordOverlayOptionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */; };
+		38DE74FC2CB7396600F01898 /* ComposerRecordOverlayTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DE74FB2CB7396600F01898 /* ComposerRecordOverlayTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +86,8 @@
 		38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerTest.swift; sourceTree = "<group>"; };
 		38D0D67F2C760B1B003CDCB3 /* uxgreen3.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = uxgreen3.mov; sourceTree = "<group>"; };
 		38DCDCCB2C51FF1B00F51B9C /* pre4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pre4.png; sourceTree = "<group>"; };
+		38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRecordOverlayOptionCell.swift; sourceTree = "<group>"; };
+		38DE74FB2CB7396600F01898 /* ComposerRecordOverlayTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerRecordOverlayTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,6 +134,7 @@
 				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
 				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
 				380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */,
+				38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */,
 				3858B1312C559B6D00D3AFB2 /* BlenderStyleAxisView.swift */,
 				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
 				38B56F262C3F17C30056227B /* BlenderStyleInput.swift */,
@@ -155,6 +160,7 @@
 			children = (
 				38B56F232C3EF9090056227B /* VideoComposer.swift */,
 				38C5DCB82C470F1E00F83D44 /* ComposerTest.swift */,
+				38DE74FB2CB7396600F01898 /* ComposerRecordOverlayTest.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -311,8 +317,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38DE74FA2CB7269000F01898 /* CustomRecordOverlayOptionCell.swift in Sources */,
 				38137FD52C4AE33D00D66D12 /* StoreKitManager.swift in Sources */,
 				38B56F242C3EF9090056227B /* VideoComposer.swift in Sources */,
+				38DE74FC2CB7396600F01898 /* ComposerRecordOverlayTest.swift in Sources */,
 				389467042C3BE16B00EA4632 /* RenderVideoEditorView.swift in Sources */,
 				389466F82C3BE15700EA4632 /* ContentView.swift in Sources */,
 				3844A1202C3FFFB7002FE045 /* MainView.swift in Sources */,
@@ -482,7 +490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.42;
+				MARKETING_VERSION = 1.43;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -519,7 +527,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.42;
+				MARKETING_VERSION = 1.43;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

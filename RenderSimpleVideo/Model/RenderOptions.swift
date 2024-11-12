@@ -83,6 +83,8 @@ class RenderOptions: ObservableObject {
     @Published var overlayTextZPosition: TextZPosition = .behind
 
     @Published var textLayers: [RenderTextLayer] = []
+    
+    @Published var recordIndicatorTextOverlay: String = "4:20"
 
     init() {
         self.selectediPhoneOverlay = selectediPhoneColor.image()

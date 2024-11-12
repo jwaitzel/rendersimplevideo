@@ -36,7 +36,7 @@ struct SettingsView: View {
                     navPath.wrappedValue.append(Routes.uelaAgree)
                 }
 
-            Text("v1.42")
+            Text("v1.43")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)

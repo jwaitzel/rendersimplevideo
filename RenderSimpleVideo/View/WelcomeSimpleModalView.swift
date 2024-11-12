@@ -19,7 +19,7 @@ struct WelcomeSimpleModalView: View {
                     .fontWeight(.semibold)
                 
                 
-                Text("beautify your app demos instantly")
+                Text("Beautify your app demos instantly")
                     .font(.subheadline)
             }
             .padding(.horizontal, 24)
@@ -30,9 +30,9 @@ struct WelcomeSimpleModalView: View {
                 let iconSquareSize: CGFloat = 70
                 HStack {
                     
-                    Image(systemName: "tag.slash")
+                    Image(systemName: "hare")
                         .foregroundStyle(.tint)
-                        .font(.system(size: 44))
+                        .font(.system(size: 38))
                         .frame(width: iconSquareSize, height: iconSquareSize)
                     
                     VStack(alignment: .leading) {

@@ -19,6 +19,7 @@ struct RenderLiveWithOptionsView: View {
         case Text
         case Shadow
     }
+    
     @AppStorage("optionsGroup") var optionsGroupSaved: OptionsGroup = .Video
     @State var optionsGroup: OptionsGroup = .Video
 
@@ -124,8 +125,8 @@ struct RenderLiveWithOptionsView: View {
     @State var moreFontOptionsStateIdx: Int = 0
     
     /// Blender style toolbar selected item
-    @State private var selectedVideoToolbarItemIdx: Int? = 0
-    @State private var selectedTextToolbarItemIdx: Int? = 0
+    @State private var selectedVideoToolbarItemIdx: Int? = nil
+    @State private var selectedTextToolbarItemIdx: Int? = nil
 
     
     /// Video info section properties
@@ -226,7 +227,11 @@ struct RenderLiveWithOptionsView: View {
                 ResultRenderView(videoURL: renderVideoURL)
             }
         })
-
+        .overlay {
+            if showRecordOverlay {
+                OverRecordTextInputView(text: $renderOptions.recordIndicatorTextOverlay, showing: $showRecordOverlay)
+            }
+        }
     }
     
     func cancelNewAction() {
@@ -840,6 +845,8 @@ struct RenderLiveWithOptionsView: View {
     }
 
     
+    @State private var showRecordOverlay: Bool = false
+    
     func reloadPreviewPlayer() {
         
         guard let baseVideoURL = renderOptions.selectedVideoURL else { print("missing base video"); return }
@@ -1143,15 +1150,9 @@ struct RenderLiveWithOptionsView: View {
                 
                 DeviceColorLayerOptionButtons()
                 
-                Text("Custom Record Indicator Overlay")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-                    .padding(.top, 16)
-                    .padding(.bottom, 32)
 
+
+                CustomRecordOverlayOptionCell(recordIndicatorOverlayText: $renderOptions.recordIndicatorTextOverlay, showRecordOverlayTextInput: $showRecordOverlay)
             }
             .padding(.trailing, 12)
 
@@ -1168,6 +1169,19 @@ struct RenderLiveWithOptionsView: View {
         .padding(.bottom, 120.0)
         .padding(.top, 16)
     }
+    
+//    @ViewBuilder
+//    func CustomRecordIndicatorView() -> some View {
+//        Capsule(style: .continuous)
+//            .foregroundStyle(.red)
+//            .frame(width: 32, height: 16)
+//            .scaleEffect(2.0)
+//            .overlay {
+//                Text("3:21")
+//                    .foregroundStyle(.white)
+//                    .font(.system(size: 20, weight: .bold, design: .default))
+//            }
+//    }
     
     func reloadPreviewPlayerWithTimer() {
         
@@ -2926,11 +2940,47 @@ struct VideoPlayerView: UIViewControllerRepresentable {
     }
 }
 
+struct OverRecordTextInputView: View {
+    @Binding var text: String //= "4:20"
+    @Binding var showing: Bool
+    var body: some View {
+        TextField("", text: $text)
+            .foregroundStyle(.white)
+            .font(.system(size: 22, weight: .semibold))
+            .multilineTextAlignment(.center)
+            .background {
+                Capsule(style: .continuous)
+                    .foregroundStyle(.red)
+                    .frame(width: 90, height: 34)
+            }
+            .frame(width: 94)
+            .onChange(of: text, perform: { value in
+                if value.count > 5 {
+                    text.removeFirst()
+                }
+            })
+            .overlay(alignment: .topTrailing) {
+                Button {
+                    showing.toggle()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                }
+                .foregroundStyle(.secondary)
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 0)
+//                .contentShape(.rect)
+                .offset(x: 9, y: -9)
+                .border(.red)
+            }
+    }
+}
+
 
 #Preview {
-    RenderLiveWithOptionsView()
+    OverRecordTextInputView(text: .constant("4:20"), showing: .constant(false))
+//    RenderLiveWithOptionsView()
         .preferredColorScheme(.light)
-//        .addGrid()
+        .addGrid()
 }
 //
 //#Preview {
