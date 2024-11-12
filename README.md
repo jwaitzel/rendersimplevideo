@@ -2,6 +2,8 @@
 
 From screen recording to polished videos
 
+🤪 all the code is in one file because I wanted to make a joke 🤪 RenderLiveWithOptionsView.swift with 3000 loc
+
 ## AppStore Link
 
 [https://apps.apple.com/us/app/simple-mockup-video/id6538732540](https://apps.apple.com/us/app/simple-mockup-video/id6538732540)
