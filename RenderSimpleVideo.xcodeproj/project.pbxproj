@@ -45,6 +45,7 @@
 		38DCDCCC2C51FF1C00F51B9C /* pre4.png in Resources */ = {isa = PBXBuildFile; fileRef = 38DCDCCB2C51FF1B00F51B9C /* pre4.png */; };
 		38DE74FA2CB7269000F01898 /* CustomRecordOverlayOptionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */; };
 		38DE74FC2CB7396600F01898 /* ComposerRecordOverlayTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DE74FB2CB7396600F01898 /* ComposerRecordOverlayTest.swift */; };
+		38DED40F2D12355C00497A24 /* VideoInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38DED40E2D12355C00497A24 /* VideoInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +89,7 @@
 		38DCDCCB2C51FF1B00F51B9C /* pre4.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pre4.png; sourceTree = "<group>"; };
 		38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomRecordOverlayOptionCell.swift; sourceTree = "<group>"; };
 		38DE74FB2CB7396600F01898 /* ComposerRecordOverlayTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerRecordOverlayTest.swift; sourceTree = "<group>"; };
+		38DED40E2D12355C00497A24 /* VideoInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 			children = (
 				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
 				380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */,
+				38DED40E2D12355C00497A24 /* VideoInfoView.swift */,
 				38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */,
 				3858B1312C559B6D00D3AFB2 /* BlenderStyleAxisView.swift */,
 				38B56F1F2C3EF2540056227B /* VideoOptionsView.swift */,
@@ -337,6 +340,7 @@
 				3858B1202C53C24F00D3AFB2 /* RenderTextLayer.swift in Sources */,
 				38C5DCB92C470F1E00F83D44 /* ComposerTest.swift in Sources */,
 				388D91E62C46A9B900ABFC8E /* WelcomeSimpleModalView.swift in Sources */,
+				38DED40F2D12355C00497A24 /* VideoInfoView.swift in Sources */,
 				389466F62C3BE15700EA4632 /* RenderSimpleVideoApp.swift in Sources */,
 				3844A12B2C4127A7002FE045 /* RenderOptions.swift in Sources */,
 				3844A1222C400033002FE045 /* AppState.swift in Sources */,

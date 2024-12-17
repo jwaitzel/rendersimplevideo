@@ -36,7 +36,7 @@ struct RenderLiveWithOptionsView: View {
     @State private var player: AVPlayer?
     
     /// Video Picker
-    @State private var shoeVideosPicker: Bool = false
+    @State private var showVideosPicker: Bool = false
     @State private var selectedItems: [PhotosPickerItem] = []
     
     @StateObject var renderOptions: RenderOptions = .init()
@@ -145,6 +145,21 @@ struct RenderLiveWithOptionsView: View {
     
     var isDeviceiPad: Bool = UIDevice.current.userInterfaceIdiom == .pad
 
+    @State private var lastLayerSel: Int?
+    
+    var allCodeKeys: [String] {
+        Array(self.imageBycodeKey.keys)
+    }
+    
+    @State private var toSelectCustomIdx: Int?
+    
+    enum FocusedField {
+        case text
+    }
+
+    @FocusState private var focusedField: FocusedField?
+    
+    
 //    @State private var navPath: NavigationPath = .init()
     
     //MARK: - Body
@@ -194,7 +209,6 @@ struct RenderLiveWithOptionsView: View {
 
             }
             
-//            .opacity( ? 1)
         }
         
         .overlay {
@@ -258,6 +272,7 @@ struct RenderLiveWithOptionsView: View {
         clarCreateGizmoValues()
     }
     
+    /// View with options
     var centerPreviewVideoPlayerAndOptions: some View {
         
         GeometryReader {
@@ -304,7 +319,8 @@ struct RenderLiveWithOptionsView: View {
                     if showOptions {
                         VStack {
                             
-                            VideoInfo()
+//                            VideoInfo()
+                            VideoInfoView(videoInfoDate: videoInfoDate, videoInfoName: videoInfoName, nativeVideoSize: nativeVideoSize, videoSizeMB: videoSizeMB, videoDuration: renderOptions.videoDuration)
                             
                             OptionsEditorView()
                         }
@@ -675,103 +691,7 @@ struct RenderLiveWithOptionsView: View {
         .padding(.trailing, 8)
         .padding(.top, 8)
     }
-    
-    
-    
-    @ViewBuilder
-    func VideoInfo() -> some View {
         
-        VStack {
-            HStack {
-                Text(videoInfoDate ?? "no date")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-            }
-            .padding(.horizontal, 12)
-                        
-            Text(videoInfoName)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-            /// Screen record info box
-            VStack(spacing: 0.0) {
-                HStack {
-                    Text("Screen Recording")
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
-                    
-                    Spacer()
-                    
-                    Text("mov")
-                        .font(.caption2)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
-                        .background {
-                            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                                .foregroundStyle(.gray.opacity(0.4))
-                                .ignoresSafeArea()
-                        }
-                        .ignoresSafeArea()
-                    
-                    Image(systemName: "record.circle")
-                    
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 12)
-                .background {
-                    RoundedRectangle(cornerRadius: 0, style: .continuous)
-                        .foregroundStyle(.secondary.opacity(0.3))
-                }
-
-                let natSizeStr = String(format:"%ix%i", Int(nativeVideoSize.width), Int(nativeVideoSize.height) )
-                ///Size info
-                VStack(spacing: 4) {
-                    Text("No information")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    let totMbSize = String(format: "%i MB", Int(videoSizeMB))
-                    Text("\(natSizeStr) • \(totMbSize)")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                }
-                .font(.system(size: 13, weight: .regular, design: .monospaced))
-                .padding(.horizontal, 8)
-                .padding(.top, 4)
-                .padding(.bottom, 16)
-                .foregroundStyle(.primary.opacity(0.6))
-                
-                Divider()
-                
-                HStack {
-                    Text("59,99 FPS")
-                        .frame(maxWidth: .infinity )
-                    
-                    Divider()
-                    
-                    let durString = String(format: "%.2fs", renderOptions.videoDuration ?? 0.0)
-                    Text(durString) //"00:07"
-                        .frame(maxWidth: .infinity )
-                }
-                .foregroundStyle(.primary.opacity(0.6))
-                .font(.system(size: 13, weight: .regular, design: .monospaced))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                
-
-            }
-            .background {
-                RoundedRectangle(cornerRadius: 0, style: .continuous)
-                    .foregroundStyle(.secondary.opacity(0.2))
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .padding(.horizontal, 8)
-            
-        }
-        .padding(.bottom, 24)
-        
-
-    }
-    
     func endEditingTextF() {
         
         UIApplication.shared.endEditing()
@@ -1878,8 +1798,6 @@ struct RenderLiveWithOptionsView: View {
         return regRect
     }
     
-
-    
     var centerAxisIndicator: some View {
         Rectangle()
             .stroke(.clear, lineWidth: 2.0)
@@ -1888,7 +1806,8 @@ struct RenderLiveWithOptionsView: View {
             }
     }
     
-    @State private var lastLayerSel: Int?
+
+    
     func deselectLayer() {
         
         if let lasSel = AppState.shared.selIdx {
@@ -2005,9 +1924,7 @@ struct RenderLiveWithOptionsView: View {
         }
     }
 
-    var allCodeKeys: [String] {
-        Array(self.imageBycodeKey.keys)
-    }
+   
 
 //    @State private var showExtraFontOptions: Bool = false
     @ViewBuilder
@@ -2392,7 +2309,8 @@ struct RenderLiveWithOptionsView: View {
 
     }
     
-    @State private var toSelectCustomIdx: Int?
+
+    
     
     func selectCustomImage(for idx: Int ) {
         // Present image picker
@@ -2428,11 +2346,7 @@ struct RenderLiveWithOptionsView: View {
         toSelectCustomIdx = nil
     }
     
-    enum FocusedField {
-        case text
-    }
 
-    @FocusState private var focusedField: FocusedField?
 
     init() {
           UITableView.appearance().backgroundColor = .green // Uses UIColor
@@ -2445,6 +2359,7 @@ struct RenderLiveWithOptionsView: View {
       }
     
     @State private var currentEditing: String = ""
+    
     @ViewBuilder
     func CenterTextField() -> some View {
         TextField("", text: $currentEditing,  axis: .vertical) //
@@ -2635,13 +2550,13 @@ struct RenderLiveWithOptionsView: View {
         HStack {
             
             Button{
-                shoeVideosPicker = true
+                showVideosPicker = true
             } label: {
                 OptionLabel("iphone.badge.play", "Media")
             }
             .frame(maxWidth: .infinity)
             .foregroundStyle(.secondary)
-            .photosPicker(isPresented: $shoeVideosPicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .any(of: [.screenRecordings, .videos])) //.all(of: [, .screenRecordings] //.videos
+            .photosPicker(isPresented: $showVideosPicker, selection: $selectedItems, maxSelectionCount: 1, selectionBehavior: .default, matching: .any(of: [.screenRecordings, .videos])) //.all(of: [, .screenRecordings] //.videos
             /// Load when selected items change
             .onChange(of: selectedItems) { newSelectedItems in
                 processSelectedVideo(newSelectedItems)
@@ -2726,6 +2641,7 @@ struct RenderLiveWithOptionsView: View {
             } else {
                print("no video")
            }
+            
             // get info
             Task {
                 guard let localID = firsItem.itemIdentifier else { return }
