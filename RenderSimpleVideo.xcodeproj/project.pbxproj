@@ -132,7 +132,6 @@
 			isa = PBXGroup;
 			children = (
 				3844A11F2C3FFFB7002FE045 /* MainView.swift */,
-				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
 				380349C62C500004009ED7F9 /* RenderLiveWithOptionsView.swift */,
 				38DE74F92CB7269000F01898 /* CustomRecordOverlayOptionCell.swift */,
 				3858B1312C559B6D00D3AFB2 /* BlenderStyleAxisView.swift */,
@@ -185,6 +184,14 @@
 			path = "iPhone15Pro-Portrait";
 			sourceTree = "<group>";
 		};
+		388F1DA92D10DA0B000A3845 /* ZDeprecated */ = {
+			isa = PBXGroup;
+			children = (
+				389467032C3BE16B00EA4632 /* RenderVideoEditorView.swift */,
+			);
+			path = ZDeprecated;
+			sourceTree = "<group>";
+		};
 		389466E92C3BE15700EA4632 = {
 			isa = PBXGroup;
 			children = (
@@ -212,6 +219,7 @@
 				3844A12C2C4127B7002FE045 /* Model */,
 				3844A1272C4068E9002FE045 /* View */,
 				3844A1292C406942002FE045 /* Controllers */,
+				388F1DA92D10DA0B000A3845 /* ZDeprecated */,
 				3844A1282C406936002FE045 /* Support */,
 				38259C572C4A7E21006D52AF /* LocalTestProducts.storekit */,
 				389466F92C3BE15900EA4632 /* Assets.xcassets */,
@@ -478,6 +486,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Mockup Video";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow access to Photos to save the mockups in your library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to Photos to customize the mockups with your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -490,16 +499,16 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -515,6 +524,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Mockup Video";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Allow access to Photos to save the mockups in your library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow access to Photos to customize the mockups with your photos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -527,16 +537,16 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.43;
+				MARKETING_VERSION = 1.44;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jrwappdev.RenderSimpleVideo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

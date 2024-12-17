@@ -125,8 +125,8 @@ struct RenderLiveWithOptionsView: View {
     @State var moreFontOptionsStateIdx: Int = 0
     
     /// Blender style toolbar selected item
-    @State private var selectedVideoToolbarItemIdx: Int? = nil
-    @State private var selectedTextToolbarItemIdx: Int? = nil
+    @State private var selectedVideoToolbarItemIdx: Int? = 0
+    @State private var selectedTextToolbarItemIdx: Int? = 0
 
     
     /// Video info section properties
@@ -140,6 +140,10 @@ struct RenderLiveWithOptionsView: View {
     
     @State private var newOrigin: CGPoint?
     @State private var regionEndPos: CGPoint?
+    
+    @State private var showRecordOverlay: Bool = false
+    
+    var isDeviceiPad: Bool = UIDevice.current.userInterfaceIdiom == .pad
 
 //    @State private var navPath: NavigationPath = .init()
     
@@ -258,17 +262,24 @@ struct RenderLiveWithOptionsView: View {
         
         GeometryReader {
             
-            let playerContainerSize: CGFloat = showOptions ? 120 : 396
+            let fullSizeWidth = isDeviceiPad ? 650 : 396.0
+            let smallSizeWidth = isDeviceiPad ? 220.0 : 120.0
+            let playerContainerSize: CGFloat = showOptions ? smallSizeWidth : fullSizeWidth
             let sSize: CGSize = $0.size
             let centerY: CGFloat = (sSize.height - playerContainerSize) / 2.0
             let safeTop = $0.safeAreaInsets.top
-//                    let _ = print("safeTop \(safeTop)")
+//            let _ = print("safeTop \(safeTop)")
+            
             ScrollView(showsIndicators: false) {
                 
                 /// Video Player centered
                 VStack(spacing: 0) {
                     
                     HStack {
+                        
+                        if !showOptions {
+                            Spacer()
+                        }
                         
                         Rectangle()
                             .foregroundStyle(.gray.opacity(0.2))
@@ -845,7 +856,6 @@ struct RenderLiveWithOptionsView: View {
     }
 
     
-    @State private var showRecordOverlay: Bool = false
     
     func reloadPreviewPlayer() {
         
@@ -2977,8 +2987,8 @@ struct OverRecordTextInputView: View {
 
 
 #Preview {
-    OverRecordTextInputView(text: .constant("4:20"), showing: .constant(false))
-//    RenderLiveWithOptionsView()
+//    OverRecordTextInputView(text: .constant("4:20"), showing: .constant(false))
+    RenderLiveWithOptionsView()
         .preferredColorScheme(.light)
         .addGrid()
 }
